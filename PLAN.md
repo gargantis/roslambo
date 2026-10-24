@@ -2,6 +2,7 @@
 
 **Status:** approved by the owner on 2026-10-24.
 - The owner left the open questions to Claude's judgement for the MVP, so every question is settled at its proposal except four. Q-1, Q-2, Q-9 and Q-19 need facts or choices only the owner has.
+- Q-19 was settled on 2026-10-24: no license. The owner keeps all rights.
 - Manual runs are deferred for now (§15).
 - M0 finished on 2026-10-24: see [research/lockstep/REPORT.md](research/lockstep/REPORT.md). Its amendments are marked "M0" in §3, §4, §9 and A.4.
 
@@ -80,7 +81,6 @@ Approval needs only §0–§4. Once the plan is approved, a Q, C, D or M number 
 | Q-1 (reference devices) | M4 |
 | Q-2 (machines, people and networks for the deferred manual runs) | M6 |
 | Q-9 (domain) | M6 |
-| Q-19 (license, and whether the repo is public) | M1 |
 
 ### Group A — needs your answer
 
@@ -109,7 +109,7 @@ Approval needs only §0–§4. Once the plan is approved, a Q, C, D or M number 
 | Q-16 | Two tabs of one browser share one player ID (C-15) | One game tab at a time. A second tab offers to take over. |
 | Q-17 | Everyone in a room sees every player's ID, so anyone can claim to be a returning player (C-14) | Honor system for the MVP. A key pair per browser can fix it later. |
 | Q-18 | Keys on non-QWERTY keyboards (C-17) | Physical key positions (`KeyW`, `KeyA`, `KeyD`), so AZERTY plays on Z, Q and D. |
-| Q-19 | License | MIT, like amorfus. Is the repo public? |
+| Q-19 | License | **Settled 2026-10-24 by the owner: no license, all rights reserved.** `package.json` says `"license": "UNLICENSED"`, and the README says no license is granted. The repo is public (checked 2026-10-24), so it can be read but not reused. Bundled packages' own notices still ship (§18). |
 | Q-20 | A phone held sideways | The arena fills the height, with the buttons in a column beside it. |
 | Q-21 | Cancelling Ready | Pressing Ready again cancels it, except during the countdown. |
 | Q-22 | Display name length | Up to 20 characters, always shown as plain text. |
@@ -942,9 +942,10 @@ Rules:
 | `lint` | ESLint, including the determinism and boundary rules |
 | `typecheck` | `tsc --noEmit` |
 | `test` | vitest |
-| `build` | `typecheck && vite build && node scripts/audit-dist.mjs` |
+| `build` | `typecheck && vite build && node scripts/licenses.mjs && node scripts/audit-dist.mjs` |
 | `e2e` | Playwright: Chromium, Firefox and WebKit, against the local relay |
-| `check` | `lint && typecheck && test && build && e2e`: the gate |
+| `public-scan` | tracked files contain no home paths or key material (the repo is public) |
+| `check` | `lint && public-scan && typecheck && test && build && e2e`: the gate |
 | `deploy` | `check && wrangler deploy` (first run: your go-ahead) |
 | `emit-goldens` | rewrites the golden hashes; refuses unless `ROSLAMBO_EMIT_GOLDENS=1` |
 
@@ -1087,7 +1088,9 @@ Rules:
   - the round-ID module, ported from amorfus;
   - `third-party.json`; the dist audit; `wrangler.jsonc` without a domain;
   - the local Nostr relay, ported from amorfus;
-  - CI; README skeleton; LICENSE (Q-19); `.nvmrc`.
+  - CI; README skeleton; `.nvmrc`. No LICENSE (Q-19).
+  - Added at build time, because the repo is public: amorfus's `public-scan` in the gate, a repo `CLAUDE.md`, and a CI job that runs the unit suite on arm64, so the M2 goldens are checked on a second architecture (D-1).
+  - `.npmrc` sets `legacy-peer-deps`: npm 10's resolver crashes on this dependency graph, as it did for amorfus. `npm ci` is unaffected.
 - *Exit:* `npm install && npm run build` emits `dist/`; `npm run check` is green locally and in CI.
 
 **M2 — Simulation core and tuning**

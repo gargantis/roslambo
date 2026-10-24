@@ -1,0 +1,33 @@
+# PLAN §13 CI: the full gate on push and pull request. No secrets in CI.
+name: check
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Playwright browsers and their system libraries
+        run: npx playwright install --with-deps chromium firefox webkit
+      - run: npm run check
+
+  # Determinism on a second architecture (D-1): from M2 the unit suite
+  # holds the simulation goldens, which must hash the same on arm64.
+  unit-arm64:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm test

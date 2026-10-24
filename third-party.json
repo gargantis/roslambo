@@ -1,0 +1,66 @@
+[
+  {
+    "host": "relay.damus.io",
+    "url": "wss://relay.damus.io",
+    "kind": "signaling",
+    "purpose": "Nostr relay Trystero uses to exchange encrypted WebRTC offers",
+    "operator": "Damus (independent relay operator)",
+    "sees": "IP, Origin, User-Agent, timing, hashed room topic, per-load Nostr key and Trystero peer ID, encrypted session-description sizes"
+  },
+  {
+    "host": "relay.primal.net",
+    "url": "wss://relay.primal.net",
+    "kind": "signaling",
+    "purpose": "Nostr relay Trystero uses to exchange encrypted WebRTC offers",
+    "operator": "Primal (independent relay operator)",
+    "sees": "IP, Origin, User-Agent, timing, hashed room topic, per-load Nostr key and Trystero peer ID, encrypted session-description sizes"
+  },
+  {
+    "host": "nos.lol",
+    "url": "wss://nos.lol",
+    "kind": "signaling",
+    "purpose": "Nostr relay Trystero uses to exchange encrypted WebRTC offers",
+    "operator": "independent relay operator (unverified)",
+    "sees": "IP, Origin, User-Agent, timing, hashed room topic, per-load Nostr key and Trystero peer ID, encrypted session-description sizes"
+  },
+  {
+    "host": "offchain.pub",
+    "url": "wss://offchain.pub",
+    "kind": "signaling",
+    "purpose": "Nostr relay Trystero uses to exchange encrypted WebRTC offers",
+    "operator": "independent relay operator",
+    "sees": "IP, Origin, User-Agent, timing, hashed room topic, per-load Nostr key and Trystero peer ID, encrypted session-description sizes"
+  },
+  {
+    "host": "nostr.bitcoiner.social",
+    "url": "wss://nostr.bitcoiner.social",
+    "kind": "signaling",
+    "purpose": "Nostr relay Trystero uses to exchange encrypted WebRTC offers",
+    "operator": "independent relay operator",
+    "sees": "IP, Origin, User-Agent, timing, hashed room topic, per-load Nostr key and Trystero peer ID, encrypted session-description sizes"
+  },
+  {
+    "host": "yabu.me",
+    "url": "wss://yabu.me/v2",
+    "kind": "signaling",
+    "purpose": "Nostr relay Trystero uses to exchange encrypted WebRTC offers",
+    "operator": "independent relay operator",
+    "sees": "IP, Origin, User-Agent, timing, hashed room topic, per-load Nostr key and Trystero peer ID, encrypted session-description sizes"
+  },
+  {
+    "host": "stun.cloudflare.com",
+    "url": "stun:stun.cloudflare.com:3478",
+    "kind": "stun",
+    "purpose": "STUN: finds this machine's public address for direct connections",
+    "operator": "Cloudflare",
+    "sees": "IP and port"
+  },
+  {
+    "host": "stun.l.google.com",
+    "url": "stun:stun.l.google.com:19302",
+    "kind": "stun",
+    "purpose": "STUN: finds this machine's public address for direct connections",
+    "operator": "Google",
+    "sees": "IP and port"
+  }
+]
