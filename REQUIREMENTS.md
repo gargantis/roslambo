@@ -168,6 +168,32 @@ A returning player collects a result they missed from the peers, without any ser
 - Desktop and mobile browsers: current Chrome, Edge, Firefox and Safari
 - Mobile and touch are in scope. The on-screen buttons below the arena serve as touch controls
 
+## Performance
+
+- 60 fps on mid-range hardware: a mid-range phone, and a recent laptop with integrated graphics
+- A round supports at least 8 players and 4 spectators
+
+## Quality
+
+- Readable, modular code with a short README covering how to run, build and deploy
+- Automated tests for the non-rendering core: physics, scoring, consensus, round IDs and missed results
+- A cross-browser determinism test: the same inputs produce bit-identical states in Chromium, Firefox and WebKit
+- No secrets, API keys or tracking
+
+## Out of scope for MVP
+
+- Accounts, login, or any central identity
+- An in-game lobby or round discovery
+- Server-side storage of balances or results
+- Cheat prevention beyond the honor system
+- A built-in TURN server
+- IPFS
+- WebGPU
+- Audio beyond optional simple effects
+- Chat
+- Leaderboards
+- Bots or computer-controlled planets
+
 ## Configuration (TBD)
 
 | Setting | Notes |
@@ -184,7 +210,7 @@ A returning player collects a result they missed from the peers, without any ser
 
 In priority order:
 
-1. **Sections that amorfus's requirements have and roslambo's don't yet:** performance targets, quality (tests, README), how many players and spectators a round must support, what's out of scope, acceptance criteria, and whether the first deliverable is a plan
+1. **Sections that amorfus's requirements have and roslambo's don't yet:** acceptance criteria, and whether the first deliverable is a plan
 2. **Labels:** how are players identified in the arena and on the results screen: planet number, color, a chosen name?
 3. **Flow between rounds** after the results screen
 4. **Spectator voting** is provisional
