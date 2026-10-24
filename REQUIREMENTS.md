@@ -40,12 +40,16 @@ Status: draft from the requirements discussion of 2026-10-24. **TBD** marks a va
 ### Controls
 
 - Three controls: **thrust forward** (`W`), **rotate left** (`A`), **rotate right** (`D`)
+- Each planet's rotation is conserved: it keeps turning at its current rate. Holding rotate left or rotate right changes the rotation rate steadily, not the direction directly
+- The rotation rate has a maximum (see *Configuration*)
+- Thrust pushes the planet the way it faces at that moment
 - The same three controls are available as on-screen buttons below the arena
 
 ### Physics
 
 - Mutual gravity between all planets acts at all times: before, during and after the countdown
 - Planets bounce off each other elastically (MVP)
+- Bounces, off planets or walls, don't change a planet's rotation (MVP; likely to be revisited)
 - Planets bounce off the walls and lose a fraction of their energy (**TBD**), so speeds can't grow without limit
 
 ### Scoring
@@ -82,7 +86,8 @@ Status: draft from the requirements discussion of 2026-10-24. **TBD** marks a va
 - Each player signals they are ready with a **Ready** button
 - A Ready expires after about a minute (**TBD**), but not during the countdown
 - A **10-second countdown** begins when every joined player is ready and at least the minimum number of players have joined
-- Players can't control their planets until the countdown reaches 0, which starts the round
+- From the moment they join, before and during the countdown, players can change their planet's rotation rate but can't thrust
+- Thrust becomes available when the countdown reaches 0, which starts the round
 
 ### Pre-start ring
 
@@ -92,6 +97,9 @@ Status: draft from the requirements discussion of 2026-10-24. **TBD** marks a va
 - Planets are evenly spaced and numbered in the direction of rotation, so each planet trails its quarry
 - The orbital speed is recalculated for the number of planets so the ring stays circular. It rises as players join (see *Appendix: physics checks*)
 - The ring is unstable on its own, so a **correction factor** holds it in shape until the countdown reaches 0
+- Each planet starts with a default rotation that keeps it pointed at its quarry: it faces its quarry and turns at the ring's rate. After the start, the planet keeps that rate unless its player changes it, so it no longer tracks the quarry
+- A lone planet has no quarry, so it starts with no rotation
+- Each time a player joins or leaves, every planet's rotation resets to the default
 - The largest number of players is the most planets that fit on the ring with a clearance between neighbors (**TBD**)
 
 ### End of round
@@ -211,23 +219,27 @@ A returning player collects a result they missed from the peers, without any ser
 
 A written plan, approved before any code is written, covering rendering, the deterministic simulation, networking and consensus, persistence, build tooling and milestones. It should take *Notes for the plan* into account, and flag any requirement that conflicts with another or looks unrealistic.
 
-## Configuration (TBD)
+## Configuration
 
-| Setting | Notes |
-|---|---|
-| Ready expiry | About 1 minute |
-| Ring margin | Gap between the ring and the walls; the ring should almost fill the arena |
-| Ring clearance | Minimum gap between neighbors on the ring; sets the largest number of players |
-| Wall energy loss | Fraction of energy lost per wall bounce |
-| Arena size, planet size and mass, gravitational constant | Together these set the ring's speed and period |
-| Correction factor | Strength of the pre-start correction |
-| Result retention | How long witnesses keep a result for absent players |
+Every setting should be easy to change.
+
+| Setting | Value | Notes |
+|---|---|---|
+| Ready expiry | **TBD**, about 1 minute | |
+| Ring margin | **TBD** | Gap between the ring and the walls; the ring should almost fill the arena |
+| Ring clearance | **TBD** | Minimum gap between neighbors on the ring; sets the largest number of players |
+| Wall energy loss | **TBD** | Fraction of energy lost per wall bounce |
+| Arena size, planet size and mass, gravitational constant | **TBD** | Together these set the ring's speed and period |
+| Correction factor | **TBD** | Strength of the pre-start correction |
+| Maximum rotation rate | 1 turn per second | Must stay above the ring's rotation rate with the most players, so the default rotation fits under it |
+| Rotation acceleration | 2 turns per second² | Holding a rotate button reaches the maximum from rest in half a second |
+| Result retention | **TBD** | How long witnesses keep a result for absent players |
 
 ## Notes for the plan
 
 These aren't requirements. They're findings the implementation plan should account for.
 
-- **Determinism.** Majority voting only works if honest peers compute bit-identical states, and peers will run on different JavaScript engines (V8 in Chrome and Edge, SpiderMonkey in Firefox, JavaScriptCore in Safari). The ECMAScript spec lets `Math.sin`, `Math.cos`, `Math.hypot` and `Math.atan2` differ between engines, while `+ − × ÷` and `Math.sqrt` are exact. The simulation, including the pre-start correction, should use only exact operations, a fixed timestep and a fixed iteration order. Orientation can be a whole number of fixed steps, with a direction table stored as constants
+- **Determinism.** Majority voting only works if honest peers compute bit-identical states, and peers will run on different JavaScript engines (V8 in Chrome and Edge, SpiderMonkey in Firefox, JavaScriptCore in Safari). The ECMAScript spec lets `Math.sin`, `Math.cos`, `Math.hypot` and `Math.atan2` differ between engines, while `+ − × ÷` and `Math.sqrt` are exact. The simulation, including the pre-start correction, should use only exact operations, a fixed timestep and a fixed iteration order. Orientation and rotation rate can be whole numbers of fixed steps, with a direction table stored as constants
 - **Shared timeline.** Peers can see joins and Readys in different orders, and see the countdown start at different moments. Join order sets planet numbers, so the pre-start phase needs the same agreement as the round itself, and peers need a common tick 0. Likewise, two Play again presses at the same moment must resolve to a single new round
 - **Inputs in time.** Every peer needs every player's input for a tick before computing that tick. A small input delay (**TBD**) gives inputs time to arrive. A player whose inputs stop arriving drifts, which matches the disconnect rule
 - **One contact, one point.** With discrete ticks, two planets can overlap for more than one tick. Count a collision when planets touch while moving toward each other, so one bounce scores once
