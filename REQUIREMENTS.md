@@ -2,7 +2,7 @@
 
 Bumper planet rock, paper, scissors: a browser-based, peer-to-peer multiplayer game.
 
-Status: draft from the requirements discussion of 2026-10-24. **TBD** marks a value not yet chosen. *Proposed* marks a suggestion that still needs a decision. After the requirements come the open questions, notes for the implementation plan, and the physics checks behind the formulas.
+Status: draft from the requirements discussion of 2026-10-24. **TBD** marks a value not yet chosen. After the requirements come the open questions, notes for the implementation plan, and the physics checks behind the formulas.
 
 ## Concept
 
@@ -24,7 +24,7 @@ Status: draft from the requirements discussion of 2026-10-24. **TBD** marks a va
 - **Ante**: the points each player brings into a round, paid from their balance
 - **Balance**: a player's running point total across rounds
 - **Round ID**: the secret that identifies a round and lets people join it
-- **Witness** (*proposed*): a peer that was present when a round ended and keeps its result
+- **Witness**: a peer that was present when a round ended and keeps its result
 
 ## Gameplay (MVP)
 
@@ -42,7 +42,7 @@ Status: draft from the requirements discussion of 2026-10-24. **TBD** marks a va
 ### Physics
 
 - Mutual gravity between all planets acts at all times: before, during and after the countdown
-- Planets bounce off each other, and these bounces may lose energy (amount **TBD**)
+- Planets bounce off each other elastically (MVP)
 - Planets bounce off the walls and lose a fraction of their energy (**TBD**), so speeds can't grow without limit
 
 ### Scoring
@@ -52,7 +52,7 @@ Status: draft from the requirements discussion of 2026-10-24. **TBD** marks a va
 - Any other collision changes no points, including collisions between planets that aren't neighbors in the cycle (such as 1 and 3 of 4)
 - Every collision is a bounce, whether or not points change hands
 - Points are zero-sum within a round
-- What counts as one collision is still open (see *Open questions*)
+- Every collision counts, including repeated collisions between the same pair (MVP)
 
 ## Rounds
 
@@ -63,13 +63,16 @@ Status: draft from the requirements discussion of 2026-10-24. **TBD** marks a va
   - the **minimum players**: at least 3
   - the **maximum players**: at least the minimum, and no more than the ring can hold (see *Pre-start ring*)
 - Creating a round produces a round ID
+- The round ID alone is enough to join. The proposer's browser stays in the round's room and gives the settings to the first peer who arrives. From then on every peer holds them as part of the shared state, and the proposer can leave
+- If the proposer leaves before anyone joins, the round is gone
 - The proposer shares the round ID by any means outside the game. There is no in-game lobby or discovery
 
 ### Joining
 
 - Anyone with the round ID can join as a **player** or as a **spectator**
 - Players are numbered in the order they join
-- A player's join is refused once the round has its maximum number of players, or once the countdown has started
+- A player who leaves or disconnects before the countdown is removed from the ring. The remaining players keep their join order and are renumbered 1…N. If the player comes back, they join again at the end
+- A new player's join is refused once the round has its maximum number of players, or once the countdown has started. A returning player is not a new join (see *Disconnects*)
 - Spectators can join at any time, including after the round has started
 
 ### Ready and countdown
@@ -121,18 +124,21 @@ The same format as amorfus's join secret:
 - Every peer, players and spectators alike, runs the same simulation
 - Each peer broadcasts its state for the previous tick and its own control inputs to every other peer
 - When states conflict, the state held by the **majority** of peers wins
+- The majority is counted among the votes received for that tick
+- On a tie, the state with the smallest hash wins: an arbitrary choice, but every peer makes the same one
 - Spectators vote (*provisional*)
 - Cheating is left to the honor system in the MVP
 
 ### Disconnects
 
 - A disconnected player's planet keeps drifting under physics, and it can still win and lose points
+- A player who comes back while the round is still running, from the same browser with the same round ID, takes control of their planet again. Peers recognize them by their player ID
 - Round results live only on the peers that took part. There is no central record
 - A player who misses the end of a round has paid the ante but hasn't received their final points. Their balance is short by those points until they get the result from a peer that has it
 
-### Missed results (*proposed*)
+### Missed results
 
-A simple way for a returning player to collect a result, using only peers:
+A returning player collects a result they missed from the peers, without any server:
 
 - Each peer present at the end of a round becomes a **witness**. It keeps the result (round ID, each player's ID, the ante and final points) and notes which players were disconnected
 - A player's browser marks a round **unsettled** when it pays the ante, and settled when it has the result
@@ -141,7 +147,7 @@ A simple way for a returning player to collect a result, using only peers:
 - When a returning player settles, it tells the witnesses present, and they stop waiting for that player. A witness drops a result once every player has settled, or after a retention period (**TBD**)
 - The common case needs nothing extra: a player who reloads while others are still on the results screen gets the result immediately
 - Limitation: the returning player and at least one witness must have the game open at the same time
-- Not proposed: publishing results to Nostr relays would remove that limitation, but it would store results outside the peers. Trystero's own signaling uses ephemeral Nostr events (kinds 20000–29999), which relays don't store
+- Ruled out: publishing results to Nostr relays would remove that limitation, but it would store results outside the peers. Trystero's own signaling uses ephemeral Nostr events (kinds 20000–29999), which relays don't store
 
 ## Persistence
 
@@ -152,6 +158,16 @@ A simple way for a returning player to collect a result, using only peers:
 - A balance may go negative, so anyone can join any round
 - Editing your own balance is left to the honor system in the MVP
 
+## Platform
+
+- JavaScript (TypeScript allowed)
+- A fully static site: no backend, no server-side code
+- Hosted with Cloudflare Workers static assets for the MVP, like amorfus. Domain **TBD**
+- IPFS is not required
+- No WebGPU until it's more widely supported
+- Desktop and mobile browsers: current Chrome, Edge, Firefox and Safari
+- Mobile and touch are in scope. The on-screen buttons below the arena serve as touch controls
+
 ## Configuration (TBD)
 
 | Setting | Notes |
@@ -160,31 +176,27 @@ A simple way for a returning player to collect a result, using only peers:
 | Ring margin | Gap between the ring and the walls; the ring should almost fill the arena |
 | Ring clearance | Minimum gap between neighbors on the ring; sets the largest number of players |
 | Wall energy loss | Fraction of energy lost per wall bounce |
-| Planet energy loss | Energy lost per planet–planet bounce |
 | Arena size, planet size and mass, gravitational constant | Together these set the ring's speed and period |
 | Correction factor | Strength of the pre-start correction |
-| Result retention (*proposed*) | How long witnesses keep a result for absent players |
+| Result retention | How long witnesses keep a result for absent players |
 
 ## Open questions
 
-1. **What counts as one collision for scoring?** Gravity keeps pulling two planets back together after they bounce. In the physics check, two planets released near each other bounce at a steady rate forever when bounces are elastic. When bounces lose energy, the pair bounces faster and faster until it rests in contact, and a simple contact check then scores a point every tick. Possible rules: score only above a minimum impact speed; score a pair at most once until they separate by some distance or a cooldown passes; or both
-2. **Where do a round's settings live?** Joiners need the ante, minimum and maximum. A typed code carries only the round ID, so either the proposer stays connected until someone else holds the settings, or the settings travel in the link
-3. **Returning mid-round:** can a disconnected player who comes back while the round is still running take control of their planet again?
-4. **Leaving before the countdown:** is the player removed from the ring, and do later players' numbers shift down to close the gap?
-5. **No majority:** what happens when no state has a majority, such as 2 against 2 or three different states? Is the majority counted among all peers in the round, or only those heard from for that tick?
-6. **Labels:** how are players identified in the arena and on the results screen: planet number, color, a chosen name?
-7. **Missed results:** accept, change or replace the proposal above
-8. **Flow between rounds** after the results screen
-9. **Spectator voting** is provisional
-10. **Sections that amorfus's requirements have and roslambo's don't yet:** platform (language, static hosting, IPFS, supported browsers, touch devices), performance targets, quality (tests, README), how many players and spectators a round must support, what's out of scope, acceptance criteria, and whether the first deliverable is a plan
+In priority order:
+
+1. **Sections that amorfus's requirements have and roslambo's don't yet:** performance targets, quality (tests, README), how many players and spectators a round must support, what's out of scope, acceptance criteria, and whether the first deliverable is a plan
+2. **Labels:** how are players identified in the arena and on the results screen: planet number, color, a chosen name?
+3. **Flow between rounds** after the results screen
+4. **Spectator voting** is provisional
 
 ## Notes for the plan
 
 These aren't requirements. They're findings the implementation plan should account for.
 
-- **Determinism.** Majority voting only works if honest peers compute bit-identical states. The ECMAScript spec lets `Math.sin`, `Math.cos`, `Math.hypot` and `Math.atan2` differ between engines, while `+ − × ÷` and `Math.sqrt` are exact. The simulation, including the pre-start correction, should use only exact operations, a fixed timestep and a fixed iteration order. Orientation can be a whole number of fixed steps, with a direction table stored as constants
+- **Determinism.** Majority voting only works if honest peers compute bit-identical states, and peers will run on different JavaScript engines (V8 in Chrome and Edge, SpiderMonkey in Firefox, JavaScriptCore in Safari). The ECMAScript spec lets `Math.sin`, `Math.cos`, `Math.hypot` and `Math.atan2` differ between engines, while `+ − × ÷` and `Math.sqrt` are exact. The simulation, including the pre-start correction, should use only exact operations, a fixed timestep and a fixed iteration order. Orientation can be a whole number of fixed steps, with a direction table stored as constants
 - **Shared timeline.** Peers can see joins and Readys in different orders, and see the countdown start at different moments. Join order sets planet numbers, so the pre-start phase needs the same agreement as the round itself, and peers need a common tick 0
 - **Inputs in time.** Every peer needs every player's input for a tick before computing that tick. A small input delay (**TBD**) gives inputs time to arrive. A player whose inputs stop arriving drifts, which matches the disconnect rule
+- **One contact, one point.** With discrete ticks, two planets can overlap for more than one tick. Count a collision when planets touch while moving toward each other, so one bounce scores once
 - **Traffic.** Sending the full state from every peer to every peer each tick grows with the square of the number of peers. Voting needs only a hash of the state. Only peers on the losing side of a vote need the full state
 - **Full mesh.** Trystero connects every peer to every other peer. A pair that can't connect directly (strict NAT, no TURN) leaves a gap in the mesh, and Trystero has no fix yet (issue #161, peer-assisted signaling, still open). Peers could forward inputs for such a pair. Spectators add load to every player, so a spectator cap may be needed
 - **Trystero version.** amorfus pins 0.25.4 and patches it to cap message reassembly memory. 0.26.0 (2026-10-04) adds built-in receive limits, and the rejoin and slow-join issues amorfus was waiting on (#195, #196) were closed with that release. roslambo can probably start on 0.26.0 without the patch
@@ -225,5 +237,5 @@ For N planets of mass m, evenly spaced on a circle of radius R, with gravitation
 
 Two planets released at rest, with a gap of one planet diameter, in simulation units:
 
-- Elastic bounces: the planets fall together and bounce apart at a steady rate, indefinitely (30 contacts in 3 time units)
-- Bounces that lose energy (restitution 0.5 to 0.9): each bounce is smaller and quicker until the pair rests in contact. A simple contact check then registers a collision every tick (about 25,000 to 29,000 in the same 3 time units at 10,000 ticks per unit)
+- Elastic bounces (the MVP rule): the planets fall together and bounce apart at a steady rate, indefinitely (30 contacts in 3 time units). A hunter and quarry held together by gravity keep bouncing, and the hunter gains a point at every bounce until one of them breaks away
+- Bounces that lose energy (restitution 0.5 to 0.9): each bounce is smaller and quicker until the pair rests in contact. A simple contact check then registers a collision every tick (about 25,000 to 29,000 in the same 3 time units at 10,000 ticks per unit). Elastic bounces avoid this
