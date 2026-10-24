@@ -2,7 +2,7 @@
 
 Bumper planet rock, paper, scissors: a browser-based, peer-to-peer multiplayer game.
 
-Status: draft from the requirements discussion of 2026-10-24. **TBD** marks a value not yet chosen. After the requirements come notes for the implementation plan and the physics checks behind the formulas.
+Status: draft from the requirements discussion of 2026-10-24. **TBD** marks a value not yet chosen. After the requirements come open questions, notes for the implementation plan, and the physics checks behind the formulas.
 
 ## Concept
 
@@ -109,6 +109,17 @@ Status: draft from the requirements discussion of 2026-10-24. **TBD** marks a va
 - Everyone, players and spectators alike, sees a **results screen** with final points and balance changes
 - The results screen has a **Play again** button. The first press proposes a new round with the same settings and a new round ID, and everyone still on the results screen can join it with one click
 - Players in the new round are numbered in the order they join, as usual
+
+## Screens
+
+- **Home**: the player's balance and display name (editable), with **Propose a round** and **Join** (enter a code). Opening a `#join=` link skips Home
+- **Propose**: set the ante, minimum and maximum. Shows the link and code to share, and asks the proposer to keep the page open until someone joins. The proposer can then play, watch or leave
+- **Join**: choose **Play** or **Watch**
+- **Pre-start**: the arena with the orbiting ring; a list of players with number, color, name and ready status; the **Ready** button and the rotation buttons; the countdown over the arena
+- **Round**: the arena, every player's current points, and the three buttons below the arena for players. Spectators see the arena without buttons
+- **Results**: final points and balance changes, with **Play again** and **Home**
+- **Settings**: extra relays and the player's own TURN server
+- On a phone held upright, the square arena fills the width with the buttons below it. On a desktop, the arena is centered
 
 ## Multiplayer
 
@@ -226,6 +237,8 @@ Every setting should be easy to change.
 | Setting | Value | Notes |
 |---|---|---|
 | Ready expiry | **TBD**, about 1 minute | |
+| Countdown | 10 seconds | |
+| Thrust | **TBD** | Acceleration while thrust is held |
 | Ring margin | **TBD** | Gap between the ring and the walls; the ring should almost fill the arena |
 | Ring clearance | **TBD** | Minimum gap between neighbors on the ring; sets the largest number of players |
 | Wall energy loss | **TBD** | Fraction of energy lost per wall bounce |
@@ -234,6 +247,11 @@ Every setting should be easy to change.
 | Maximum rotation rate | 1 turn per second | Must stay above the ring's rotation rate with the most players, so the default rotation fits under it |
 | Rotation acceleration | 2 turns per second² | Holding a rotate button reaches the maximum from rest in half a second |
 | Result retention | **TBD** | How long witnesses keep a result for absent players |
+
+## Open questions
+
+1. **Rounds that never end:** nothing ends a round unless someone reaches 0. Players could avoid each other indefinitely, and if every peer leaves, the round is lost with no witness. Is there a time limit, or another way a round ends?
+2. **Multi-touch:** should players be able to hold two on-screen buttons at once, to thrust while rotating?
 
 ## Notes for the plan
 
