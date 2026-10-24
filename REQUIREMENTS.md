@@ -2,7 +2,7 @@
 
 Bumper planet rock, paper, scissors: a browser-based, peer-to-peer multiplayer game.
 
-Status: draft from the requirements discussion of 2026-10-24. **TBD** marks a value not yet chosen. After the requirements come notes for the implementation plan and the physics checks behind the formulas.
+Status: draft from the requirements discussion of 2026-10-24, amended the same day by the approved [PLAN.md](PLAN.md); Q-numbers cite its questions. **TBD** marks a value not yet chosen. After the requirements come notes for the implementation plan and the physics checks behind the formulas.
 
 ## Concept
 
@@ -51,7 +51,7 @@ Status: draft from the requirements discussion of 2026-10-24. **TBD** marks a va
 - Mutual gravity between all planets acts at all times: before, during and after the countdown
 - Planets bounce off each other elastically (MVP)
 - Bounces, off planets or walls, don't change a planet's rotation (MVP; likely to be revisited)
-- Planets bounce off the walls and lose a fraction of their energy (**TBD**), so speeds can't grow without limit
+- Planets bounce off the walls and lose a fraction of their kinetic energy (**TBD**), so speeds can't grow without limit (Q-14)
 
 ### Scoring
 
@@ -60,6 +60,7 @@ Status: draft from the requirements discussion of 2026-10-24. **TBD** marks a va
 - Any other collision changes no points, including collisions between planets that aren't neighbors in the cycle (such as 1 and 3 of 4)
 - Every collision is a bounce, whether or not points change hands
 - Points are zero-sum within a round
+- Point changes within one tick apply together, so several players can reach 0 in the same tick (Q-13)
 
 ## Rounds
 
@@ -68,7 +69,7 @@ Status: draft from the requirements discussion of 2026-10-24. **TBD** marks a va
 - A proposer creates a round and sets:
   - the **ante**: a whole number, at least 1; it can differ from round to round
   - the **minimum players**: at least 3
-  - the **maximum players**: at least the minimum, and no more than the ring can hold (see *Pre-start ring*)
+  - the **maximum players**: at least the minimum, no more than the ring can hold (see *Pre-start ring*), and no more than the mesh cap, 8 for now (Q-3)
 - Creating a round produces a round ID
 - The proposer shares the round ID by any means outside the game. There is no in-game lobby or discovery
 - The round ID alone is enough to join. The proposer's browser stays in the round's room and gives the settings to the first peer who arrives. From then on every peer holds them as part of the shared state, and the proposer can leave
@@ -79,8 +80,9 @@ Status: draft from the requirements discussion of 2026-10-24. **TBD** marks a va
 - Anyone with the round ID can join as a **player** or as a **spectator**
 - Players are numbered in the order they join
 - A player who leaves or disconnects before the countdown is removed from the ring. The remaining players keep their join order and are renumbered 1…N. If the player comes back, they join again at the end
+- A player who leaves or disconnects during the countdown keeps their planet, which drifts. The countdown goes on (Q-5)
 - A new player's join is refused once the round has its maximum number of players, or once the countdown has started. A returning player is not a new join (see *Disconnects*)
-- Spectators can join at any time, including after the round has started
+- Spectators can join at any time, including after the round has started, up to 4 per round (Q-3)
 
 ### Ready and countdown
 
@@ -114,7 +116,7 @@ Status: draft from the requirements discussion of 2026-10-24. **TBD** marks a va
 
 ## Screens
 
-- **Home**: the player's balance and display name (editable), with **Propose a round** and **Join** (enter a code). Opening a `#join=` link skips Home
+- **Home**: the player's balance and display name (editable), with **Propose a round** and **Join** (enter a code), and the player's unsettled rounds, each with **Rejoin** (still running) or **Resume** (paused) (Q-6). Opening a `#join=` link skips Home
 - **Propose**: set the ante, minimum and maximum. Shows the link and code to share, and asks the proposer to keep the page open until someone joins. The proposer can then play, watch or leave
 - **Join**: choose **Play** or **Watch**
 - **Pre-start**: the arena with the orbiting ring; a list of players with number, color, name and ready status; the **Ready** button and the rotation buttons; the countdown over the arena
@@ -138,7 +140,7 @@ The same approach as amorfus:
 
 The same format as amorfus's join secret:
 
-- 100 random bits, written as 20 Crockford base32 characters plus a check character: 21 characters in all
+- 100 random bits; for Play again, 100 bits derived from the previous round ID, so presses at the same moment lead to the same round (Q-8). Written as 20 Crockford base32 characters plus a check character: 21 characters in all
 - It is the Trystero room ID
 - Shared as a link carrying the ID in the URL fragment (`#join=<round ID>`), which never reaches a server, or typed as the 21-character code
 - Displayed in groups of four (`K7QM-2XDP-4TR8-WHZN-3VBC-7`). Typing accepts lowercase, dashes, spaces and Crockford look-alikes (O for 0, I and L for 1)
@@ -146,7 +148,7 @@ The same format as amorfus's join secret:
 ### Simulation and consensus
 
 - Every peer, players and spectators alike, runs the same simulation
-- Each player broadcasts its state for the previous tick and its own control inputs to every other peer
+- Each player broadcasts its control inputs, and a hash of its state for its newest final tick, to every other peer. A peer sends its full state only to a peer that asks for it (Q-4)
 - When states conflict, the state held by the **majority** of players wins
 - The majority is counted among the votes received for that tick
 - On a tie, the state with the smallest hash wins: an arbitrary choice, but every peer makes the same one
@@ -158,6 +160,7 @@ The same format as amorfus's join secret:
 - A disconnected player's planet keeps drifting under physics, and it can still win and lose points
 - A player who comes back while the round is still running, from the same browser with the same round ID, takes control of their planet again. Peers recognize them by their player ID
 - Each browser saves the latest state of any round it's in. If every peer leaves, the round pauses at that state. When a player of the round returns, their browser restores it and play resumes, even if they're alone
+- If peers hold different histories of a round, a running round wins over a saved state, and between saved states the later tick wins (Q-7)
 - Round results live only on the peers that took part. There is no central record
 - A player who misses the end of a round has paid the ante but hasn't received their final points. Their balance is short by those points until they get the result from a peer that has it
 
@@ -167,9 +170,9 @@ A returning player collects a result they missed from the peers, without any ser
 
 - Each peer present at the end of a round becomes a **witness**. It keeps the result (round ID, each player's ID, the ante and final points) and notes which players were disconnected
 - A player's browser marks a round **unsettled** when it pays the ante, and settled when it has the result
-- While the game is open, the browser rejoins the room of each unsettled round and asks for the result. The first answer settles it (honor system)
+- While the game is open, the browser rejoins the room of each unsettled round and asks for the result. The first answer settles it (honor system). This doesn't take part in a round that is still running or paused; Home offers **Rejoin** or **Resume** instead (Q-6)
 - While the game is open, a witness stays in the room of each round that still has unsettled players, using Trystero's `passive` room mode (0.25.0 and later). A passive room stays dormant until an active peer arrives, and passive peers don't connect to each other, so waiting costs little
-- When a returning player settles, it tells the witnesses present, and they stop waiting for that player. A witness drops a result once every player has settled, or after a retention period (**TBD**)
+- When a returning player settles, it tells the witnesses present, and they stop waiting for that player. A witness drops a result once every player has settled, or after a retention period (30 days, Q-10)
 - The common case needs nothing extra: a player who reloads while others are still on the results screen gets the result immediately
 - Limitation: the returning player and at least one witness must have the game open at the same time
 - Ruled out: publishing results to Nostr relays would remove that limitation, but it would store results outside the peers. Trystero's own signaling uses ephemeral Nostr events (kinds 20000–29999), which relays don't store
@@ -183,6 +186,7 @@ A returning player collects a result they missed from the peers, without any ser
 - New players start with a balance of 0
 - A balance may go negative, so anyone can join any round
 - Editing your own balance is left to the honor system in the MVP
+- One game tab per browser (Q-16)
 
 ## Platform
 
@@ -250,7 +254,7 @@ Every setting should be easy to change.
 | Correction factor | **TBD** | Strength of the pre-start correction |
 | Maximum rotation rate | 1 turn per second | Must stay above the ring's rotation rate with the most players, so the default rotation fits under it |
 | Rotation acceleration | 2 turns per second² | Holding a rotate button reaches the maximum from rest in half a second |
-| Result retention | **TBD** | How long witnesses keep a result for absent players |
+| Result retention | 30 days (Q-10) | How long witnesses keep a result for absent players |
 
 ## Notes for the plan
 
