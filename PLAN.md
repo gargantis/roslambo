@@ -4,6 +4,7 @@
 - The owner left the open questions to Claude's judgement for the MVP, so every question is settled at its proposal except four. Q-1, Q-2, Q-9 and Q-19 need facts or choices only the owner has.
 - Q-19 was settled on 2026-10-24: no license. The owner keeps all rights.
 - Manual runs are deferred for now (§15).
+- M2 finished on 2026-10-24: the tuning is in [research/tuning/REPORT.md](research/tuning/REPORT.md). Its amendments are marked "M2".
 - M0 finished on 2026-10-24: see [research/lockstep/REPORT.md](research/lockstep/REPORT.md). Its amendments are marked "M0" in §3, §4, §9 and A.4.
 
 **Date:** 2026-10-24; approved 2026-10-24.
@@ -97,7 +98,7 @@ Approval needs only §0–§4. Once the plan is approved, a Q, C, D or M number 
 | Q-9 | Which domain? | — | M6 |
 | Q-10 | How long do witnesses keep results, and how many rooms may a browser watch at once? | 30 days. At most 20 witnessed rounds and 10 unsettled rounds at a time, to limit load on the public relays (C-6). | M5 |
 | Q-11 | Accept Safari's storage limit (C-5)? | Accept it, like clearing browser data, and say so in the README. Alternative: export and import of identity and balance, which would be a new requirement. | M5 |
-| Q-12 | How to settle the physics **TBD**s: thrust, ring margin and clearance, wall energy loss, arena size, planet size, mass and G, the correction factor, and the Ready expiry? | On M2's tuning page, together, starting from Appendix A.5. Mass and G only ever appear as their product Gm. I propose setting Gm through a more intuitive value, the period of a 3-planet ring. | M2 |
+| Q-12 | How to settle the physics **TBD**s: thrust, ring margin and clearance, wall energy loss, arena size, planet size, mass and G, the correction factor, and the Ready expiry? | On M2's tuning page, together, starting from Appendix A.5. Mass and G only ever appear as their product Gm. I propose setting Gm through a more intuitive value, the period of a 3-planet ring. **Settled at M2** by measurement (research/tuning/REPORT.md), and recorded in REQUIREMENTS.md's Configuration table. | M2 |
 
 ### Group B — proposal ready; confirm or override
 
@@ -214,7 +215,11 @@ REQUIREMENTS.md is yours. These edits went in on 2026-10-24, in one commit that 
 | C-13 | "A distinct color" per planet works up to about 10–12 planets. | The Q-3 cap. Numbers are always drawn. |
 | C-14 | Player IDs are broadcast in the room, so any peer can take over an absent player's planet, or collect their result. | Q-17: honor system. |
 | C-15 | Two tabs in one browser are one player, and would send conflicting inputs. | Q-16 |
-| C-16 | **A caught quarry probably can't escape.** Gravity at contact is R²/(4r²·S₃) times the acceleration that holds a 3-planet ring: about 90 for r = 0.07R, regardless of G and m. Once a hunter and its quarry touch at low speed, thrust on the scale of the ring's forces can't separate them, and every elastic bounce scores (the appendix shows 30 contacts in 3 time units). Rounds may end soon after the first capture. This is as specified for the MVP. | **M0 measured worse** (REPORT §3.4): with gravity alone, planets come to rest touching and register about 170 approach-gated contacts a second. M2 scores once per contact episode: a pair scores again only after separating by a gap chosen on the tuning page. That changes "Every collision counts" in REQUIREMENTS.md, recorded when M2 settles it. |
+| C-16 | **A caught quarry probably can't escape.** Gravity at contact is R²/(4r²·S₃) times the acceleration that holds a 3-planet ring: about 90 for r = 0.07R, regardless of G and m. Once a hunter and its quarry touch at low speed, thrust on the scale of the ring's forces can't separate them, and every elastic bounce scores (the appendix shows 30 contacts in 3 time units). Rounds may end soon after the first capture. This is as specified for the MVP. | **M0 measured worse** (REPORT §3.4): with gravity alone, planets come to rest touching and register about 170 approach-gated contacts a second. **Settled at M2** (research/tuning/REPORT.md):
+  - gravity is softened (ε = 0.25), so a touching quarry can thrust free when thrust beats twice the peak pull (1.4 against about 0.84);
+  - a pair scores once per contact episode, re-arming after separating by 0.015.
+
+  Both are now in REQUIREMENTS.md. |
 | C-17 | `W`, `A`, `D` are awkward on AZERTY and other layouts. | Q-18 |
 | C-18 | It's unknown whether Playwright's WebKit on Linux has working WebRTC. | **Settled by M0:** it does, with Trystero's mDNS-to-loopback test option (REPORT §2). |
 | C-19 | With two voters, any disagreement is a tie, and the smallest hash wins whether right or wrong. This happens before the countdown, and when only 2 of a round's players are connected. | Accepted. Honest peers rarely disagree (D-7). |
@@ -274,6 +279,9 @@ Each decision gives the choice, the options rejected, and the cost if it's wrong
   - An iterative impulse solver: equal-mass circles don't need one.
   - Velocity Verlet: fine too, but Euler is simpler when contacts change velocities mid-step.
 - **Cost if wrong:** feel and energy drift. The tuning page shows it, and the integrator is one module.
+- **M2, amended** (C-16; research/tuning/REPORT.md):
+  - Gravity is softened: a = Gm·d/(d² + ε²)^{3/2}, still with d ≥ 2r.
+  - A hunter's `engaged` flag (A.1) makes a pair score once per contact episode, until it separates past 2r + gap.
 
 **D-5 — Pre-start ring: ideal slots, plus a spring.**
 - **Choice:**
@@ -285,6 +293,7 @@ Each decision gives the choice, the options rejected, and the cost if it's wrong
   - Placing planets on their slots every tick: gravity would then do nothing, but the requirements say gravity holds the ring.
   - Gliding planets to their new slots: slower, and neighbours can touch on the way.
 - **Cost if wrong:** looks only.
+- **M2, amended:** with softening, the ring's speed comes from a direct sum of the softened pulls on one planet, using exact operations. A test checks it against the appendix formula at ε = 0. Gm is set from the 3-planet ring period.
 
 **D-6 — The arena is a convex polygon.**
 - **Choice:** walls are a list of half-planes. The ring radius uses the inscribed radius, R = inradius − r − margin, which is L/2 − r − margin for the square.
@@ -425,6 +434,7 @@ Each decision gives the choice, the options rejected, and the cost if it's wrong
   - On a mismatch, the page says the browser computes differently and offers no round. Spectators simulate too, so watching wouldn't work either.
 - **Rejected:** nothing; it's cheap insurance (C-7).
 - **Cost if wrong:** none.
+- **M2, amended:** the canary runs 400 ticks with a 1-second countdown (the arithmetic is the same; the 10-second wait taught nothing). It takes about 5 ms on a desktop, and its hash lives in `src/core/sim/goldens.json`.
 
 **D-18 — localStorage, and one game tab.**
 - **Choice:**
@@ -600,7 +610,7 @@ Everything below is in the canonical state (A.1) and so in the hash. Spectators 
 
 ### 7.3 Physics details
 
-- **Gravity:** a_i += Gm · (x_j − x_i) / d³, with d = max(|x_j − x_i|, 2r). Both planets of a pair are updated in the same pass.
+- **Gravity** (softened at M2): a_i += Gm · (x_j − x_i) / s³, with s² = max(d², (2r)²) + ε². Both planets of a pair are updated in the same pass.
 - **Thrust:** a += thrust · (dcos(angle), dsin(angle)).
 - **Planet contact:** when |x_j − x_i| < 2r and (v_j − v_i) · n < 0, with n the unit vector from i to j:
   - exchange the normal components of the two velocities;
@@ -614,7 +624,7 @@ Everything below is in the canonical state (A.1) and so in the hash. Spectators 
 
 ### 7.4 The ring
 
-- **Radius and speed:** R = inradius − r − margin; v_N = √(Gm · S_N / R) with S_N = ¼ · Σ_{k=1}^{N−1} 1/sin(πk/N), computed with `dsin`. Angular rate ω_N = v_N / R, held as an integer number of binary-angle units per tick.
+- **Radius and speed:** R = inradius − r − margin. The inward pull on one planet is summed directly over the softened pulls of the others, computed with `dir()`: a = Gm·Σ R(1 − cos θ_k)/s_k³. Then v_N = √(a·R). At ε = 0 this is the appendix's √(Gm · S_N / R), and a test checks it. Angular rate ω_N = v_N / R, held as an integer number of binary-angle units per tick.
 - **Slots:** planet i (from 0) sits at ring phase + i/N of a turn, counter-clockwise, so each planet trails its quarry.
 - **Correction:** D-5, strength c.
 - **Default rotation:** facing the quarry, at angle slot + ¼ + 1/(2N) of a turn, turning at ω_N. With N = 2 this points each planet at the other. A lone planet has rate 0.
@@ -1314,21 +1324,23 @@ n × { u8[16] player ID, u8+n display name, u32 final points }
 | Display name | 20 characters, 32 bytes (Q-22) |
 | Witnessed rounds kept, unsettled rounds watched | 20, 10 (Q-10) |
 
-### A.5 Starting values for the M2 tuning page (not decisions)
+### A.5 Gameplay values (chosen at M2; the starting values in brackets)
 
-| Setting | Start | Derived |
+| Setting | Value | Derived |
 |---|---|---|
 | Arena side L | 1 (the unit) | |
 | Planet radius r | 0.03 L | |
 | Ring margin | 0.03 L | R = 0.44 L |
-| 3-planet ring period | 8 s | Gm ≈ 0.091 L³/s²; 8-planet period ≈ 3.6 s |
+| 3-planet ring period | 10 s (8 s) | Gm ≈ 0.068 L³/s²; the 8-planet ring turns at 0.20 turn/s |
+| Gravity softening ε | 0.25 L (added at M2) | peak pull ≈ 0.42 L/s² |
 | Ring clearance | 0.03 L | ring capacity 30 |
-| Thrust | 0.6 L/s² | |
+| Thrust | 1.4 L/s² (0.6) | escape margin 1.67 |
 | Wall energy loss | 0.2 | |
-| Correction factor | 1.0 | |
+| Correction factor | 1 | |
+| Re-arm gap | 0.015 L (added at M2) | |
 | Ready expiry | 60 s | |
 | Countdown | 10 s | (set in the requirements) |
-| Maximum rotation rate | 1 turn/s | (set) ring rate at 8 planets ≈ 0.28 turn/s |
+| Maximum rotation rate | 1 turn/s | (set) |
 | Rotation acceleration | 2 turns/s² | (set) |
 | Result retention | 30 days | (Q-10) |
 

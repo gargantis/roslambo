@@ -1,0 +1,214 @@
+{
+ "F1 e.2 t1.8": {
+  "settings": {
+   "softening": 0.2,
+   "thrust": 1.8,
+   "ringPeriod3Seconds": 10,
+   "correctionFactor": 2
+  },
+  "gm": 0.0644,
+  "contactPull": 0.42,
+  "escapeMargin": 1.45,
+  "ring8TurnsPerSec": 0.204,
+  "hold8": 0.0048,
+  "hold3": 0.0024,
+  "break3": 49.3,
+  "break8": 27.4,
+  "escape": 0.8,
+  "n3": {
+   "medianSeconds": 22.8,
+   "unfinished": 0,
+   "pointsPerMin": 45.5,
+   "maxSpeed": 2.58
+  },
+  "n5": {
+   "medianSeconds": 9.2,
+   "unfinished": 0,
+   "pointsPerMin": 82.6,
+   "maxSpeed": 2.78
+  },
+  "n8": {
+   "medianSeconds": 22.9,
+   "unfinished": 0,
+   "pointsPerMin": 142.4,
+   "maxSpeed": 3.22
+  }
+ },
+ "F2 e.25 t1.2": {
+  "settings": {
+   "softening": 0.25,
+   "thrust": 1.2,
+   "ringPeriod3Seconds": 10,
+   "correctionFactor": 2
+  },
+  "gm": 0.0679,
+  "contactPull": 0.24,
+  "escapeMargin": 1.43,
+  "ring8TurnsPerSec": 0.198,
+  "hold8": 0.0046,
+  "hold3": 0.0024,
+  "break3": 52.8,
+  "break8": 41.4,
+  "escape": 0.93,
+  "n3": {
+   "medianSeconds": 46.7,
+   "unfinished": 0,
+   "pointsPerMin": 37.2,
+   "maxSpeed": 2.33
+  },
+  "n5": {
+   "medianSeconds": 20.7,
+   "unfinished": 0,
+   "pointsPerMin": 67.8,
+   "maxSpeed": 2.55
+  },
+  "n8": {
+   "medianSeconds": 17.3,
+   "unfinished": 0,
+   "pointsPerMin": 124.8,
+   "maxSpeed": 2.61
+  }
+ },
+ "F3 e.25 t1.4": {
+  "settings": {
+   "softening": 0.25,
+   "thrust": 1.4,
+   "ringPeriod3Seconds": 10,
+   "correctionFactor": 2
+  },
+  "gm": 0.0679,
+  "contactPull": 0.24,
+  "escapeMargin": 1.67,
+  "ring8TurnsPerSec": 0.198,
+  "hold8": 0.0046,
+  "hold3": 0.0024,
+  "break3": 52.8,
+  "break8": 41.4,
+  "escape": 0.8,
+  "n3": {
+   "medianSeconds": 46.2,
+   "unfinished": 0,
+   "pointsPerMin": 39.9,
+   "maxSpeed": 2.36
+  },
+  "n5": {
+   "medianSeconds": 19.9,
+   "unfinished": 0,
+   "pointsPerMin": 74.6,
+   "maxSpeed": 2.42
+  },
+  "n8": {
+   "medianSeconds": 12.8,
+   "unfinished": 0,
+   "pointsPerMin": 128.3,
+   "maxSpeed": 2.72
+  }
+ },
+ "F2 gap.03": {
+  "settings": {
+   "softening": 0.25,
+   "thrust": 1.2,
+   "ringPeriod3Seconds": 10,
+   "correctionFactor": 2,
+   "separationGap": 0.03
+  },
+  "gm": 0.0679,
+  "contactPull": 0.24,
+  "escapeMargin": 1.43,
+  "ring8TurnsPerSec": 0.198,
+  "hold8": 0.0046,
+  "hold3": 0.0024,
+  "break3": 52.8,
+  "break8": 41.4,
+  "escape": 0.93,
+  "n3": {
+   "medianSeconds": 45.1,
+   "unfinished": 0,
+   "pointsPerMin": 37.2,
+   "maxSpeed": 2.33
+  },
+  "n5": {
+   "medianSeconds": 20.7,
+   "unfinished": 0,
+   "pointsPerMin": 72.5,
+   "maxSpeed": 2.55
+  },
+  "n8": {
+   "medianSeconds": 17.3,
+   "unfinished": 0,
+   "pointsPerMin": 124.6,
+   "maxSpeed": 2.61
+  }
+ },
+ "F2 wall.3": {
+  "settings": {
+   "softening": 0.25,
+   "thrust": 1.2,
+   "ringPeriod3Seconds": 10,
+   "correctionFactor": 2,
+   "wallEnergyLoss": 0.3
+  },
+  "gm": 0.0679,
+  "contactPull": 0.24,
+  "escapeMargin": 1.43,
+  "ring8TurnsPerSec": 0.198,
+  "hold8": 0.0046,
+  "hold3": 0.0024,
+  "break3": 52.7,
+  "break8": 41.4,
+  "escape": 0.93,
+  "n3": {
+   "medianSeconds": 27.1,
+   "unfinished": 0,
+   "pointsPerMin": 37.2,
+   "maxSpeed": 1.98
+  },
+  "n5": {
+   "medianSeconds": 20,
+   "unfinished": 0,
+   "pointsPerMin": 73,
+   "maxSpeed": 2.13
+  },
+  "n8": {
+   "medianSeconds": 22.2,
+   "unfinished": 0,
+   "pointsPerMin": 117.4,
+   "maxSpeed": 2.54
+  }
+ },
+ "F2 c1": {
+  "settings": {
+   "softening": 0.25,
+   "thrust": 1.2,
+   "ringPeriod3Seconds": 10,
+   "correctionFactor": 1
+  },
+  "gm": 0.0679,
+  "contactPull": 0.24,
+  "escapeMargin": 1.43,
+  "ring8TurnsPerSec": 0.198,
+  "hold8": 0.0042,
+  "hold3": 0.0022,
+  "break3": 52.4,
+  "break8": 38.2,
+  "escape": 0.93,
+  "n3": {
+   "medianSeconds": 33.2,
+   "unfinished": 0,
+   "pointsPerMin": 40.7,
+   "maxSpeed": 2.19
+  },
+  "n5": {
+   "medianSeconds": 27.6,
+   "unfinished": 0,
+   "pointsPerMin": 71.1,
+   "maxSpeed": 2.4
+  },
+  "n8": {
+   "medianSeconds": 18,
+   "unfinished": 0,
+   "pointsPerMin": 111.7,
+   "maxSpeed": 2.8
+  }
+ }
+}

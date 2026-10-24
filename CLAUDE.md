@@ -14,7 +14,7 @@ That is lint, public-scan, typecheck, unit tests, build with the dist audit, and
 
 - PLAN.md is the implementation contract. A Q, C or D number is never reused; a settled item records what settled it. Check it before reopening a decision.
 - REQUIREMENTS.md belongs to the owner. Change it only as the plan records, citing the Q-number.
-- `src/core/sim/**` may use only exact operations (D-1), enforced by the `exact-ops` lint rule. Goldens pin the simulation's bits in every engine.
+- `src/core/sim/**` may use only exact operations (D-1), enforced by the `exact-ops` lint rule. `src/core/sim/goldens.json` pins the simulation's bits in Node and every engine. Any change to the simulation or its settings changes them: re-emit them on purpose (`ROSLAMBO_EMIT_GOLDENS=1 npx vitest run src/core/sim/golden.test.ts`) and say so in the commit. That's allowed until the first release, never after.
 - `src/core/**` is pure: no DOM, timers, clocks or storage. The caller passes time in.
 - Only `src/net/trystero.ts` imports Trystero (D-13). Build its room config as a literal typed against `JoinRoomConfig`: an untyped spread made amorfus silently fall back to the library's own relays.
 - Only `src/storage/**` touches browser storage (D-18).

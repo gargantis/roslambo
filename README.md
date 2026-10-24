@@ -2,7 +2,12 @@
 
 Bumper planet rock, paper, scissors: a browser-based, peer-to-peer multiplayer game. Each player flies a planet; each planet beats the next one in a cycle. No game server: browsers connect directly over WebRTC.
 
-**Status:** in development. [REQUIREMENTS.md](REQUIREMENTS.md) says what it must do; [PLAN.md](PLAN.md) says how, and lists the milestones. M0, the lockstep spike, is done ([research/lockstep/REPORT.md](research/lockstep/REPORT.md)). M1, this skeleton and its test gate, is next to finish.
+**Status:** in development. [REQUIREMENTS.md](REQUIREMENTS.md) says what it must do; [PLAN.md](PLAN.md) says how, and lists the milestones. Done so far:
+- M0, the lockstep spike ([research/lockstep/REPORT.md](research/lockstep/REPORT.md));
+- M1, the skeleton and its test gate;
+- M2, the deterministic simulation, with its tuning ([research/tuning/REPORT.md](research/tuning/REPORT.md)).
+
+Next is M3: networking and consensus.
 
 ## Run
 
@@ -12,6 +17,8 @@ Needs Node 22.12 or later (`.nvmrc`).
 npm install
 npm run dev        # http://localhost:5173
 ```
+
+The simulation's tuning page, with a slider for every gameplay setting, is at http://localhost:5173/dev/tuning.html. It's dev-only and never built.
 
 ## Test
 

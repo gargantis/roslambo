@@ -1,0 +1,124 @@
+{
+ "baseline": {
+  "settings": {},
+  "gm": 0.091,
+  "contactPull": 25.28,
+  "ring8TurnsPerSec": 0.276,
+  "hold8": 0.2159,
+  "hold3": 0.003,
+  "break3": 35,
+  "break8": 6.8,
+  "escape": null,
+  "n3": {
+   "medianSeconds": 8.1,
+   "unfinished": 0,
+   "pointsPerMin": 117.9,
+   "maxSpeed": 2.41
+  },
+  "n5": {
+   "medianSeconds": 5.2,
+   "unfinished": 0,
+   "pointsPerMin": 172.5,
+   "maxSpeed": 2.93
+  },
+  "n8": {
+   "medianSeconds": 3.8,
+   "unfinished": 0,
+   "pointsPerMin": 304.2,
+   "maxSpeed": 4.04
+  }
+ },
+ "soft0.1": {
+  "settings": {
+   "softening": 0.1
+  },
+  "gm": 0.0934,
+  "contactPull": 3.53,
+  "ring8TurnsPerSec": 0.269,
+  "hold8": 0.1917,
+  "hold3": 0.003,
+  "break3": 36.4,
+  "break8": 9.4,
+  "escape": null,
+  "n3": {
+   "medianSeconds": 17.6,
+   "unfinished": 0,
+   "pointsPerMin": 68.1,
+   "maxSpeed": 2.02
+  },
+  "n5": {
+   "medianSeconds": 13,
+   "unfinished": 0,
+   "pointsPerMin": 112.5,
+   "maxSpeed": 2.38
+  },
+  "n8": {
+   "medianSeconds": 9.3,
+   "unfinished": 0,
+   "pointsPerMin": 189.2,
+   "maxSpeed": 2.8
+  }
+ },
+ "soft0.15": {
+  "settings": {
+   "softening": 0.15
+  },
+  "gm": 0.0964,
+  "contactPull": 1.37,
+  "ring8TurnsPerSec": 0.262,
+  "hold8": 0.1984,
+  "hold3": 0.0029,
+  "break3": 37.3,
+  "break8": 13.3,
+  "escape": null,
+  "n3": {
+   "medianSeconds": 25.9,
+   "unfinished": 0,
+   "pointsPerMin": 46.5,
+   "maxSpeed": 1.94
+  },
+  "n5": {
+   "medianSeconds": 15.3,
+   "unfinished": 0,
+   "pointsPerMin": 98.4,
+   "maxSpeed": 2.51
+  },
+  "n8": {
+   "medianSeconds": 11.8,
+   "unfinished": 0,
+   "pointsPerMin": 164.7,
+   "maxSpeed": 2.72
+  }
+ },
+ "soft0.2": {
+  "settings": {
+   "softening": 0.2
+  },
+  "gm": 0.1006,
+  "contactPull": 0.66,
+  "ring8TurnsPerSec": 0.255,
+  "hold8": 0.0055,
+  "hold3": 0.0029,
+  "break3": 39.4,
+  "break8": 20.2,
+  "escape": null,
+  "n3": {
+   "medianSeconds": 32.4,
+   "unfinished": 0,
+   "pointsPerMin": 48.1,
+   "maxSpeed": 1.98
+  },
+  "n5": {
+   "medianSeconds": 32.5,
+   "unfinished": 0,
+   "pointsPerMin": 81.6,
+   "maxSpeed": 2.38
+  },
+  "n8": {
+   "medianSeconds": 13.3,
+   "unfinished": 0,
+   "pointsPerMin": 166.9,
+   "maxSpeed": 2.84
+  }
+ }
+}

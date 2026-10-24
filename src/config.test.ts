@@ -1,8 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import {
-  config, countdownTicks, gm, maxRateUnits, playersCap, rateAccelUnits, ringCapacity, ringRadius,
-  ringSum, ringTurnsPerSecond,
-} from './config';
+import { config, countdownTicks, maxRateUnits, playersCap, rateAccelUnits, ringCapacity, ringRadius, ringSum } from './config';
+import { makeParams } from './core/sim/params';
 
 // PLAN §7.5: the settings must stay consistent with each other.
 describe('config', () => {
@@ -15,7 +13,9 @@ describe('config', () => {
   });
 
   it('keeps the maximum rotation above the ring rate at the most players', () => {
-    expect(config.maxRotationTurnsPerSecond).toBeGreaterThan(ringTurnsPerSecond(playersCap));
+    const P = makeParams();
+    expect(config.maxRotationTurnsPerSecond).toBeGreaterThan(P.ringOmega(playersCap) / (2 * Math.PI));
+    expect(P.ringRate(playersCap)).toBeLessThan(P.maxRate);
   });
 
   it('fits the mesh cap on the ring, and at least the minimum', () => {
@@ -28,7 +28,7 @@ describe('config', () => {
   it('keeps the ring inside the arena with a positive Gm', () => {
     expect(ringRadius).toBeGreaterThan(0);
     expect(ringRadius + config.planetRadius).toBeLessThan(config.arenaSide / 2);
-    expect(gm).toBeGreaterThan(0);
+    expect(makeParams().gm).toBeGreaterThan(0);
   });
 
   it('cannot tunnel at 5 arena sides per second (D-4)', () => {

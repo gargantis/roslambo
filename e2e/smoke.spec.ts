@@ -1,5 +1,6 @@
-// The M1 skeleton loads in every engine: the module runs, nothing logs an
-// error, and no request leaves the local server (PLAN §14 "Everywhere").
+// The page loads in every engine: the module runs, the determinism canary
+// passes (D-17), nothing logs an error, and no request leaves the local
+// server (PLAN §14 "Everywhere").
 
 import { expect, test } from '@playwright/test';
 
@@ -15,6 +16,7 @@ test('the page loads without errors or outside requests', async ({ page, baseURL
   });
   await page.goto('./');
   await expect(page.locator('html')).toHaveAttribute('data-ready', '1');
+  await expect(page.locator('html')).toHaveAttribute('data-canary', 'ok');
   await expect(page).toHaveTitle('roslambo');
   await expect(page.locator('#status')).toHaveText('In development.');
   expect(errors).toEqual([]);

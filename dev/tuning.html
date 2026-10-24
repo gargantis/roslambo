@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>roslambo tuning</title>
+    <style>
+      :root { color-scheme: dark; }
+      body { margin: 0; background: #0b0d12; color: #cfd6e4; font: 13px/1.4 system-ui, sans-serif; }
+      main { display: grid; grid-template-columns: minmax(0, 560px) 300px; gap: 16px; padding: 16px; max-width: 900px; margin: 0 auto; }
+      @media (max-width: 760px) { main { grid-template-columns: minmax(0, 1fr); } }
+      canvas { width: 100%; aspect-ratio: 1; display: block; background: #10131a; border: 1px solid #2a3040; touch-action: none; }
+      label { display: grid; grid-template-columns: 1fr 64px; gap: 4px 8px; margin: 6px 0; }
+      label input[type=range] { grid-column: 1 / 3; width: 100%; }
+      output { text-align: right; font-variant-numeric: tabular-nums; }
+      button { margin: 4px 4px 0 0; padding: 6px 10px; background: #1c2230; color: inherit; border: 1px solid #2a3040; border-radius: 4px; }
+      #hud { margin-top: 8px; white-space: pre; font-variant-numeric: tabular-nums; }
+      h1 { font-size: 16px; margin: 0 0 8px; }
+      p { margin: 4px 0; color: #8b95a8; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div>
+        <canvas id="arena"></canvas>
+        <div id="hud"></div>
+      </div>
+      <div>
+        <h1>roslambo tuning (dev only)</h1>
+        <p>Planet 1 is yours: W thrust, A/D rotate, or let the bot fly it. The others are steering bots. Changing a setting restarts.</p>
+        <div id="controls"></div>
+        <div>
+          <button id="ring">Re-form ring</button>
+          <button id="start">Everyone ready</button>
+          <button id="bot">Planet 1: keyboard</button>
+          <button id="pause">Pause</button>
+        </div>
+      </div>
+    </main>
+    <script type="module" src="./tuning.ts"></script>
+  </body>
+</html>

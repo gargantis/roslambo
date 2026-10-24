@@ -1,0 +1,273 @@
+{
+ "codec": 1,
+ "canary": "2d03f03d66ecf64d",
+ "runs": [
+  {
+   "name": "lone planet",
+   "checkpoints": [
+    "12ab92543e254f05",
+    "7e8b7c19c4cb829f",
+    "a49f11527bc64a0f",
+    "0b30e6e83cfff137",
+    "00fa8b251dc5e163",
+    "c0b0c53e102e7c47"
+   ],
+   "final": "c0b0c53e102e7c47",
+   "phase": 0,
+   "freezeTick": 4294967295,
+   "planets": 1
+  },
+  {
+   "name": "binary pair",
+   "checkpoints": [
+    "00d15eb85617bdfc",
+    "9e047668fab658e5",
+    "d278b118c99f7e58",
+    "a6cb556e06570241",
+    "eb97a49a64370bca",
+    "5f44f9d0af9af74a"
+   ],
+   "final": "5f44f9d0af9af74a",
+   "phase": 0,
+   "freezeTick": 4294967295,
+   "planets": 2
+  },
+  {
+   "name": "three",
+   "checkpoints": [
+    "d7dded59f4467db3",
+    "decbb0ec4f5bf385",
+    "0f3104e2643b5d77",
+    "34bd284d2a6f9955",
+    "8b15daf81ceed56d",
+    "b02d70727e810df7",
+    "5276f94b6e66fde3",
+    "81da07b9296d9e36",
+    "a23464b1a68295d4",
+    "0009d5b26fddb75e",
+    "ee7658ddacc9ef49",
+    "4d72adedb84195f3"
+   ],
+   "final": "4d72adedb84195f3",
+   "phase": 3,
+   "freezeTick": 1651,
+   "planets": 3
+  },
+  {
+   "name": "three, leave and rejoin",
+   "checkpoints": [
+    "a74d68e9081f31a5",
+    "6898fb6ae84bc836",
+    "17b0fd24588cd3bd",
+    "b8d8791bef081183",
+    "63765953a0089685",
+    "d13294f5e8689649",
+    "4a90c55b9816eef2",
+    "57dc2501ad6df159",
+    "6939fcf072c44c15",
+    "85fda8186ed00d9b",
+    "0eba8d9b48bfdc7f",
+    "97d72c9ee9832f10"
+   ],
+   "final": "97d72c9ee9832f10",
+   "phase": 3,
+   "freezeTick": 2470,
+   "planets": 3
+  },
+  {
+   "name": "four",
+   "checkpoints": [
+    "e15a530f80d74f02",
+    "e6afe5cc6319b2a2",
+    "efc2b26ac3568f96",
+    "5f4a891d38892564",
+    "8a332e7172c1cd9d",
+    "8ba3671bad367707",
+    "9b704d4ed2e668f9",
+    "7ea15f597282ec13",
+    "9217069a54fec06a",
+    "8b9e311f1956c4a7",
+    "8da4803a389d8438",
+    "c06384ce56897c85"
+   ],
+   "final": "c06384ce56897c85",
+   "phase": 3,
+   "freezeTick": 1329,
+   "planets": 4
+  },
+  {
+   "name": "five",
+   "checkpoints": [
+    "c01e9de6ec1a05d5",
+    "a93df91fd986814d",
+    "61b0b0d7d75e61b4",
+    "6fac1a36ffa2d133",
+    "ba48ba221a93c23e",
+    "3f4a4c8937ecd9cc",
+    "b79f4c1c88c6363d",
+    "683c0182db8aa1a3",
+    "3830fa3d489562e8",
+    "27e459ca2d8a8bb6",
+    "6fa15a1679091303",
+    "b8cddda12368aec4"
+   ],
+   "final": "b8cddda12368aec4",
+   "phase": 3,
+   "freezeTick": 2140,
+   "planets": 5
+  },
+  {
+   "name": "six",
+   "checkpoints": [
+    "eeb0788134c82984",
+    "c084772cb9bbcdca",
+    "05a16cfe43aade90",
+    "3620d30b0032de33",
+    "48096aeaed4c8754",
+    "49696c6565bc79e3",
+    "a5891351f2d2ff9a",
+    "f0006229d7d291b2",
+    "6c9d94dfde5faa1c",
+    "6280a3459a33a3e1",
+    "8f7c6bd201bb33be",
+    "6f92b5ca296db8c0"
+   ],
+   "final": "6f92b5ca296db8c0",
+   "phase": 3,
+   "freezeTick": 1356,
+   "planets": 6
+  },
+  {
+   "name": "eight",
+   "checkpoints": [
+    "b2cc85a6a21f2a8a",
+    "c30b406c5fb700a6",
+    "9c3855e534947af5",
+    "81b81968f410be74",
+    "cad2227dd25b4746",
+    "1e197b6490dbb3e2",
+    "845871fb113ad48e",
+    "61caaf246037c65d",
+    "f825b7cba36256d4",
+    "e52d3e1d9b3b0fce",
+    "5f3f7a726175bc99",
+    "188b3f9f8a3ae434",
+    "d688cca3d4227040",
+    "742ca3338358870d",
+    "8cec98566166818e",
+    "ab9835b11aae76be"
+   ],
+   "final": "ab9835b11aae76be",
+   "phase": 3,
+   "freezeTick": 2258,
+   "planets": 8
+  },
+  {
+   "name": "eight, one silent while running",
+   "checkpoints": [
+    "c219053152947618",
+    "f7662754df08bb23",
+    "881a861e6030c9e0",
+    "d05ca12e0f875da4",
+    "63e8f57c6843fec1",
+    "8dec012ffb940f01",
+    "d5880b7142c19567",
+    "0d3f9e83d7072e5e",
+    "1a3d1724d8b276d2",
+    "f58f1e2fb8f21759",
+    "eb8ca1b30d5e986c",
+    "45e0507b867799a1",
+    "718e5adad690e241",
+    "4ff93729c6e8b454",
+    "11fac97b4d402496",
+    "6464bb5319f6ebdb"
+   ],
+   "final": "6464bb5319f6ebdb",
+   "phase": 3,
+   "freezeTick": 3275,
+   "planets": 8
+  },
+  {
+   "name": "ten",
+   "checkpoints": [
+    "8f3f0f2f6b89f218",
+    "d27ba55c61675675",
+    "730fc573aa37ff67",
+    "95aac2684d922478",
+    "f1221525a70468c6",
+    "363bf6e72cf90ebf",
+    "28fb5085cccf8d48",
+    "11f971aefe33c8e5",
+    "8b1d865a461c7ac2",
+    "c4464a10bd2b9bf4",
+    "14c3e99c02812c51",
+    "26c2928c5c7a5b5e"
+   ],
+   "final": "26c2928c5c7a5b5e",
+   "phase": 3,
+   "freezeTick": 1933,
+   "planets": 10
+  },
+  {
+   "name": "twelve",
+   "checkpoints": [
+    "c788a6a4377c81bd",
+    "c277c6efaa51f85a",
+    "7697f25a813af359",
+    "35d4f2ee9a908c7b",
+    "e86978e99bbb0556",
+    "4e6d09b3e63365fe",
+    "2fad1c9b40fb6df7",
+    "a6e5c2c5d82a4704",
+    "c2c76a53a0de0099",
+    "95997da98c545701"
+   ],
+   "final": "95997da98c545701",
+   "phase": 3,
+   "freezeTick": 2012,
+   "planets": 12
+  },
+  {
+   "name": "ready expires",
+   "checkpoints": [
+    "4436f95c0b95ee69",
+    "79eb6f9fef2ea0c9",
+    "859566dab1e25828",
+    "938e6a0b8fa0cc72",
+    "b01506a34c8fd8bd",
+    "57cdc0c4539e3c36",
+    "0b547ebb3f46c139",
+    "9a21a413a6b415f3",
+    "2a704688f70e0f4d",
+    "eba5649d7fc66cc1",
+    "9671e2b967a9d6fe",
+    "6671c6ab1be6e6ed",
+    "16b8bfbb155b856f",
+    "6c2c4b887250724d",
+    "b4c05f5e0fff3d62",
+    "60866e3d5f5edeaa"
+   ],
+   "final": "60866e3d5f5edeaa",
+   "phase": 3,
+   "freezeTick": 5511,
+   "planets": 3
+  },
+  {
+   "name": "full round refuses joins",
+   "checkpoints": [
+    "aa47c1b60c3fa337",
+    "838f52b6a1af56b6",
+    "85df0cf66878a277",
+    "279aa56951017c34",
+    "b291d68d32c0a8de",
+    "4752397054381e6a",
+    "d58b6a170ea08087",
+    "b8d87adc97af8d1e"
+   ],
+   "final": "b8d87adc97af8d1e",
+   "phase": 3,
+   "freezeTick": 1172,
+   "planets": 3
+  }
+ ]
+}
