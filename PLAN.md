@@ -3,6 +3,7 @@
 **Status:** approved by the owner on 2026-10-24.
 - The owner left the open questions to Claude's judgement for the MVP, so every question is settled at its proposal except four. Q-1, Q-2, Q-9 and Q-19 need facts or choices only the owner has.
 - Manual runs are deferred for now (§15).
+- M0 finished on 2026-10-24: see [research/lockstep/REPORT.md](research/lockstep/REPORT.md). Its amendments are marked "M0" in §3, §4, §9 and A.4.
 
 **Date:** 2026-10-24; approved 2026-10-24.
 **Answers:** the "First deliverable" section of [REQUIREMENTS.md](REQUIREMENTS.md) (branch `mvp`, commit 859b87b).
@@ -213,9 +214,9 @@ REQUIREMENTS.md is yours. These edits went in on 2026-10-24, in one commit that 
 | C-13 | "A distinct color" per planet works up to about 10–12 planets. | The Q-3 cap. Numbers are always drawn. |
 | C-14 | Player IDs are broadcast in the room, so any peer can take over an absent player's planet, or collect their result. | Q-17: honor system. |
 | C-15 | Two tabs in one browser are one player, and would send conflicting inputs. | Q-16 |
-| C-16 | **A caught quarry probably can't escape.** Gravity at contact is R²/(4r²·S₃) times the acceleration that holds a 3-planet ring: about 90 for r = 0.07R, regardless of G and m. Once a hunter and its quarry touch at low speed, thrust on the scale of the ring's forces can't separate them, and every elastic bounce scores (the appendix shows 30 contacts in 3 time units). Rounds may end soon after the first capture. This is as specified for the MVP. | You judge it on M2's tuning page, where planet size and thrust can change it. |
+| C-16 | **A caught quarry probably can't escape.** Gravity at contact is R²/(4r²·S₃) times the acceleration that holds a 3-planet ring: about 90 for r = 0.07R, regardless of G and m. Once a hunter and its quarry touch at low speed, thrust on the scale of the ring's forces can't separate them, and every elastic bounce scores (the appendix shows 30 contacts in 3 time units). Rounds may end soon after the first capture. This is as specified for the MVP. | **M0 measured worse** (REPORT §3.4): with gravity alone, planets come to rest touching and register about 170 approach-gated contacts a second. M2 scores once per contact episode: a pair scores again only after separating by a gap chosen on the tuning page. That changes "Every collision counts" in REQUIREMENTS.md, recorded when M2 settles it. |
 | C-17 | `W`, `A`, `D` are awkward on AZERTY and other layouts. | Q-18 |
-| C-18 | It's unknown whether Playwright's WebKit on Linux has working WebRTC. | M0 finds out. If not, WebKit's networked end-to-end test runs by hand; the determinism test needs no network. |
+| C-18 | It's unknown whether Playwright's WebKit on Linux has working WebRTC. | **Settled by M0:** it does, with Trystero's mDNS-to-loopback test option (REPORT §2). |
 | C-19 | With two voters, any disagreement is a tie, and the smallest hash wins whether right or wrong. This happens before the countdown, and when only 2 of a round's players are connected. | Accepted. Honest peers rarely disagree (D-7). |
 | C-20 | Browsers throttle timers in background tabs, and iOS suspends them. | A hidden player stops sending, so their planet drifts, as for a disconnect. On return the browser resyncs (D-23). Before the countdown, 3 s away removes them (Q-15). |
 | C-21 | "No tracking" vs what P2P exposes: peers see each other's IP addresses; relays and STUN servers see IP addresses and timing; Cloudflare can keep request logs. | Logs off (D-25). §18 lists what each party sees. No analytics. |
@@ -238,6 +239,7 @@ Each decision gives the choice, the options rejected, and the cost if it's wrong
   - BigInt: slow, and allocates on every operation.
   - WebAssembly: a second toolchain, and it needs the same discipline anyway.
 - **Cost if wrong:** some browser's JIT bends IEEE rules. The goldens and the canary catch it. The fallback is fixed point inside `src/core/sim/math`, a few hundred lines, plus re-tuning.
+- **M0, confirmed:** Node, Chromium 156, Firefox 157 and WebKit 27.2 matched at all 220 checkpoints over 220,000 ticks and about 2.2 million contacts (REPORT §2). The polynomial `dir()` is within 7×10⁻¹⁶ of `Math.cos` and `Math.sin`.
 
 **D-2 — Angles are 32-bit binary angles, with our own sine and cosine.**
 - **Choice:**
@@ -256,6 +258,7 @@ Each decision gives the choice, the options rejected, and the cost if it's wrong
   - 120 Hz: twice the messages.
   - A variable timestep: not deterministic.
 - **Cost if wrong:** message counts scale with the tick rate. If M0 finds 60 messages per second per peer too many for a phone, each message can carry 2 ticks of input, without touching the simulation.
+- **M0, confirmed on desktop:** with 8 players and 4 spectators, a player tick costs 0.8 ms on average (p95 about 2.3 ms), mostly sending (REPORT §2). The phone is unmeasured until the deferred manual run.
 
 **D-4 — Integration and contacts.**
 - **Choice:** each substep runs:
@@ -302,6 +305,11 @@ Each decision gives the choice, the options rejected, and the cost if it's wrong
   - An input delay without rollback: the same tolerance would need d ≈ w, which means 200 ms of lag on every key.
   - A host peer that decides: that isn't majority voting, and the host could leave.
 - **Cost if wrong:** if remote planets visibly jump too often, raise d. Plain delay lockstep is the special case w = d, in the same code.
+- **M0, amended** (REPORT §3.1): a joiner lost inputs that were in flight when its STATE was built, and diverged once each time.
+  - Every TICK now repeats the sender's previous 16 inputs (§9.3).
+  - A joiner holds finalisation until it has heard from every player active in the STATE, at most 500 ms.
+  - A joiner votes only once a tally agrees with it, or after a resync.
+  - With these, joiner divergences fell to zero in every run.
 
 **D-8 — Every roster change is an input on the timeline.**
 - **Choice:**
@@ -327,6 +335,9 @@ Each decision gives the choice, the options rejected, and the cost if it's wrong
   - A vote every few ticks: an input message goes every tick anyway, and the vote adds 12 bytes.
   - Full states: C-3.
 - **Cost if wrong:** a deliberately crafted hash collision counts as cheating, which is out of scope. Changing the hash means one function plus the goldens.
+- **M0, amended** (REPORT §3.2): a peer more than about 200 ms away heard only its own vote by tally time, and stayed diverged.
+  - A vote now counts whenever it arrives, while its tick is still in the 256-tick history, and a changed outcome triggers the resync.
+  - Confirmed: a corrupted peer is caught at the first tally of the corrupted tick (0.4 s) and repaired one round trip later.
 
 **D-10 — Resync, and only confirmed results count.**
 - **Choice:**
@@ -346,6 +357,13 @@ Each decision gives the choice, the options rejected, and the cost if it's wrong
   - `Date.now()`: machine clocks can be seconds apart.
   - NTP or HTTP time: contacts a third party.
 - **Cost if wrong:** more late inputs and resyncs, which M0's telemetry shows.
+- **M0, amended** (REPORT §3.3), replacing the ±1% rule above. Jitter biased every peer's estimate the same way, and with two peers the "median" was the larger offset, so one joiner moved everyone. Now:
+  - proportional correction (0.5% per tick of offset, at most 2%) with a 1-tick deadband;
+  - beyond w/2, a jump forward or a pause;
+  - the true median;
+  - a player's offset counts only after 2 s.
+
+  The 120 s three-engine run then had no jumps and no late inputs.
 
 **D-12 — Timeline identity and merging.**
 - **Choice:**
@@ -368,6 +386,7 @@ Each decision gives the choice, the options rejected, and the cost if it's wrong
   - 0.25.4 with amorfus's patch: 0.26.0 has the limits, and #195 and #196 were closed with it.
   - PeerJS, simple-peer, libp2p and the others: amorfus PLAN §10.1.
 - **Cost if wrong:** re-apply amorfus's patch, which already exists.
+- **M0, confirmed** (REPORT §2): 80 attack sends were refused, both 2 MiB payloads and an unregistered action type, and the victim's heap stayed at 4–5 MiB. Reliable actions had zero late inputs locally. The unordered channel stays unbuilt until a real lossy network shows it's needed.
 
 **D-14 — Forwarding for pairs that can't connect.**
 - **Choice:**
@@ -506,7 +525,9 @@ Each decision gives the choice, the options rejected, and the cost if it's wrong
 - GitHub, on 2026-10-24: issue #161 is open; #195 and #196 were closed on 2026-10-04.
 - The npm registry, on 2026-10-24: the versions in A.6.
 
-**Not measured:** everything else.
+**Measured since approval:** M0, in [research/lockstep/REPORT.md](research/lockstep/REPORT.md).
+
+**Not measured** when the plan was written: everything else.
 - No JavaScript was run for this plan; the environment it was written in has no Node.js.
 - Every message rate, CPU cost and latency here is an estimate, labelled as one.
 - M0 measures the networking and determinism unknowns, and M3 and M4 the rest.
@@ -728,8 +749,8 @@ joinRoom(
 |---|---|---|---|---|
 | 0x01 | HELLO | everyone ↔ everyone | inside the Trystero handshake | ~60 B |
 | 0x02 | REFUSE | refusing peer → joiner | instead of completing the handshake | 2 B |
-| 0x10 | TICK | players and candidates → all peers | every tick | ~21 B |
-| 0x11 | FWD | forwarder → peer lacking the origin | for each TICK of a missing pair | ~38 B |
+| 0x10 | TICK | players and candidates → all peers | every tick | 29 B |
+| 0x11 | FWD | forwarder → peer lacking the origin | for each TICK of a missing pair | ~46 B |
 | 0x12 | PEERS | everyone → all peers | on change and every 5 s | 1 + 16n B |
 | 0x13 | AGAIN | presser → old room | Play again pressed (UI hint only) | 1 B |
 | 0x20 | STATE_REQ | any → one peer | on arrival, or after losing a vote | 13 B |
@@ -781,8 +802,10 @@ joinRoom(
 | 6 | 4 | vote tick (0xFFFFFFFF: none yet) |
 | 10 | 8 | vote hash |
 | 18 | 2 | clock phase: the sender's fraction of its current tick × 65,536, at send time |
-| 20 | 1 | event count |
-| 21 | … | events |
+| 20 | 2 | history mask: bit k set if the sender's input for tick t − 1 − k is included (M0) |
+| 22 | 6 | history: 16 × 3 bits, tick t − 1 first (M0) |
+| 28 | 1 | event count |
+| 29 | … | events |
 
 Events:
 
@@ -795,6 +818,7 @@ Events:
 
 Rules:
 - One TICK per tick per player. A duplicate t is ignored.
+- The history fills any of the sender's inputs the receiver doesn't have yet (M0). It carries buttons only. An event is repeated in each of the sender's TICKs until its tick is final, so a joiner can't miss one; M3 fixes that encoding.
 - A t that is already final at the receiver is dropped.
 - A t more than 2w ahead of the receiver is dropped.
 - More than 3 TICKs per tick from one sender for 2 s closes the connection.
@@ -1274,7 +1298,10 @@ n × { u8[16] player ID, u8+n display name, u32 final points }
 | Vote window v | 12 ticks |
 | Absence before removal k | 180 ticks (Q-15) |
 | State history | 64 ticks |
-| Clock adjustment | at most ±1% |
+| Clock correction | 0.5% per tick of offset, at most 2%, 1-tick deadband (M0) |
+| Clock settle time | 2 s before a player's offset counts (M0) |
+| Joiner warm-up | at most 500 ms (M0) |
+| Input history per TICK | 16 ticks (M0) |
 | PEERS interval | 5 s |
 | Handshake timeout | 10 s |
 | Connection-failure message | after 20 s |
