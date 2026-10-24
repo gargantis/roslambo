@@ -2,7 +2,7 @@
 
 Bumper planet rock, paper, scissors: a browser-based, peer-to-peer multiplayer game.
 
-Status: draft from the requirements discussion of 2026-10-24. **TBD** marks a value not yet chosen. After the requirements come the open questions, notes for the implementation plan, and the physics checks behind the formulas.
+Status: draft from the requirements discussion of 2026-10-24. **TBD** marks a value not yet chosen. After the requirements come notes for the implementation plan and the physics checks behind the formulas.
 
 ## Concept
 
@@ -32,6 +32,9 @@ Status: draft from the requirements discussion of 2026-10-24. **TBD** marks a va
 
 - All planets have the same fixed mass and the same fixed size
 - Each planet shows its orientation
+- Each planet shows its number in a distinct color
+- Each player can choose an optional display name, shown on the results screen. Names don't have to be unique
+- Each player sees their own hunter and quarry highlighted
 - The arena is a fixed-size square. The design should not depend on the square shape, so the shape can change later
 
 ### Controls
@@ -48,11 +51,10 @@ Status: draft from the requirements discussion of 2026-10-24. **TBD** marks a va
 ### Scoring
 
 - At the start of a round, each player pays the ante from their balance. The ante is their starting points
-- When a planet collides with its quarry, the planet gains 1 point and the quarry loses 1 point
+- When a planet collides with its quarry, the planet gains 1 point and the quarry loses 1 point. Every collision counts, including repeated collisions between the same pair (MVP)
 - Any other collision changes no points, including collisions between planets that aren't neighbors in the cycle (such as 1 and 3 of 4)
 - Every collision is a bounce, whether or not points change hands
 - Points are zero-sum within a round
-- Every collision counts, including repeated collisions between the same pair (MVP)
 
 ## Rounds
 
@@ -63,9 +65,9 @@ Status: draft from the requirements discussion of 2026-10-24. **TBD** marks a va
   - the **minimum players**: at least 3
   - the **maximum players**: at least the minimum, and no more than the ring can hold (see *Pre-start ring*)
 - Creating a round produces a round ID
+- The proposer shares the round ID by any means outside the game. There is no in-game lobby or discovery
 - The round ID alone is enough to join. The proposer's browser stays in the round's room and gives the settings to the first peer who arrives. From then on every peer holds them as part of the shared state, and the proposer can leave
 - If the proposer leaves before anyone joins, the round is gone
-- The proposer shares the round ID by any means outside the game. There is no in-game lobby or discovery
 
 ### Joining
 
@@ -97,7 +99,8 @@ Status: draft from the requirements discussion of 2026-10-24. **TBD** marks a va
 - The round **freezes** the moment any player reaches 0 points
 - Each player's final points are credited to their balance. Their net change is final points minus ante
 - Everyone, players and spectators alike, sees a **results screen** with final points and balance changes
-- The flow between rounds is **TBD**
+- The results screen has a **Play again** button. The first press proposes a new round with the same settings and a new round ID, and everyone still on the results screen can join it with one click
+- Players in the new round are numbered in the order they join, as usual
 
 ## Multiplayer
 
@@ -122,11 +125,11 @@ The same format as amorfus's join secret:
 ### Simulation and consensus
 
 - Every peer, players and spectators alike, runs the same simulation
-- Each peer broadcasts its state for the previous tick and its own control inputs to every other peer
-- When states conflict, the state held by the **majority** of peers wins
+- Each player broadcasts its state for the previous tick and its own control inputs to every other peer
+- When states conflict, the state held by the **majority** of players wins
 - The majority is counted among the votes received for that tick
 - On a tie, the state with the smallest hash wins: an arbitrary choice, but every peer makes the same one
-- Spectators vote (*provisional*)
+- Only players vote. Spectators follow the majority state
 - Cheating is left to the honor system in the MVP
 
 ### Disconnects
@@ -152,7 +155,7 @@ A returning player collects a result they missed from the peers, without any ser
 ## Persistence
 
 - A player's ID is randomly generated, for example a GUID. No accounts, no login
-- The ID and balance are stored in the player's browser and persist across visits
+- The ID, display name and balance are stored in the player's browser and persist across visits
 - Clearing browser data, or playing from another browser or device, means a new identity with a balance of 0
 - New players start with a balance of 0
 - A balance may go negative, so anyone can join any round
@@ -194,6 +197,20 @@ A returning player collects a result they missed from the peers, without any ser
 - Leaderboards
 - Bots or computer-controlled planets
 
+## Acceptance
+
+- `npm install && npm run build` produces a static folder that deploys to Cloudflare Workers static assets
+- Three browsers on different machines, at least one of them a phone, can join a round by link and by typed code, mark themselves ready, play to the end, and all see the same results screen with balances updated
+- A spectator who joins mid-round sees the same game
+- A player who reloads mid-round takes back their planet
+- A player who reloads after the end collects the result from a witness
+- The determinism test passes in Chromium, Firefox and WebKit
+- 60 fps on the reference devices (**TBD**)
+
+## First deliverable
+
+A written plan, approved before any code is written, covering rendering, the deterministic simulation, networking and consensus, persistence, build tooling and milestones. It should take *Notes for the plan* into account, and flag any requirement that conflicts with another or looks unrealistic.
+
 ## Configuration (TBD)
 
 | Setting | Notes |
@@ -206,24 +223,15 @@ A returning player collects a result they missed from the peers, without any ser
 | Correction factor | Strength of the pre-start correction |
 | Result retention | How long witnesses keep a result for absent players |
 
-## Open questions
-
-In priority order:
-
-1. **Sections that amorfus's requirements have and roslambo's don't yet:** acceptance criteria, and whether the first deliverable is a plan
-2. **Labels:** how are players identified in the arena and on the results screen: planet number, color, a chosen name?
-3. **Flow between rounds** after the results screen
-4. **Spectator voting** is provisional
-
 ## Notes for the plan
 
 These aren't requirements. They're findings the implementation plan should account for.
 
 - **Determinism.** Majority voting only works if honest peers compute bit-identical states, and peers will run on different JavaScript engines (V8 in Chrome and Edge, SpiderMonkey in Firefox, JavaScriptCore in Safari). The ECMAScript spec lets `Math.sin`, `Math.cos`, `Math.hypot` and `Math.atan2` differ between engines, while `+ − × ÷` and `Math.sqrt` are exact. The simulation, including the pre-start correction, should use only exact operations, a fixed timestep and a fixed iteration order. Orientation can be a whole number of fixed steps, with a direction table stored as constants
-- **Shared timeline.** Peers can see joins and Readys in different orders, and see the countdown start at different moments. Join order sets planet numbers, so the pre-start phase needs the same agreement as the round itself, and peers need a common tick 0
+- **Shared timeline.** Peers can see joins and Readys in different orders, and see the countdown start at different moments. Join order sets planet numbers, so the pre-start phase needs the same agreement as the round itself, and peers need a common tick 0. Likewise, two Play again presses at the same moment must resolve to a single new round
 - **Inputs in time.** Every peer needs every player's input for a tick before computing that tick. A small input delay (**TBD**) gives inputs time to arrive. A player whose inputs stop arriving drifts, which matches the disconnect rule
 - **One contact, one point.** With discrete ticks, two planets can overlap for more than one tick. Count a collision when planets touch while moving toward each other, so one bounce scores once
-- **Traffic.** Sending the full state from every peer to every peer each tick grows with the square of the number of peers. Voting needs only a hash of the state. Only peers on the losing side of a vote need the full state
+- **Traffic.** Sending the full state from every player to every peer each tick grows with players × peers. Voting needs only a hash of the state. Only peers that disagree with the majority, and spectators joining mid-round, need the full state
 - **Full mesh.** Trystero connects every peer to every other peer. A pair that can't connect directly (strict NAT, no TURN) leaves a gap in the mesh, and Trystero has no fix yet (issue #161, peer-assisted signaling, still open). Peers could forward inputs for such a pair. Spectators add load to every player, so a spectator cap may be needed
 - **Trystero version.** amorfus pins 0.25.4 and patches it to cap message reassembly memory. 0.26.0 (2026-10-04) adds built-in receive limits, and the rejoin and slow-join issues amorfus was waiting on (#195, #196) were closed with that release. roslambo can probably start on 0.26.0 without the patch
 - **Player ID.** Trystero's `selfId` changes on every page load, so the persistent player ID is a separate value, announced in the room
