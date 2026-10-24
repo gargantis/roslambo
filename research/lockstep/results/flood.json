@@ -1,0 +1,263 @@
+{
+ "before": {
+  "ua": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.8078.4 Safari/537.36",
+  "me": 0,
+  "localTick": 914,
+  "finalTick": 902,
+  "contacts": 632,
+  "sent": 914,
+  "recv": 1689,
+  "late": 0,
+  "missingAtFinal": [
+   2,
+   68,
+   75
+  ],
+  "agree": 890,
+  "disagree": 0,
+  "split": 0,
+  "resyncs": 0,
+  "resyncMs": [],
+  "resyncFailed": 0,
+  "lateVoteFlips": 0,
+  "statesSent": 1,
+  "stateBytesSent": 191,
+  "rateAdj": 0,
+  "jumps": 0,
+  "medianOffset": -0.0856969771911951,
+  "checkpoints": {
+   "0": "b02b01f81c28e13d"
+  },
+  "joinedAt": 0,
+  "warmMs": 0,
+  "log": [],
+  "lateByHistogram": {},
+  "firstPeerMs": 170,
+  "startedMs": 0,
+  "peers": 2,
+  "hellos": [
+   1,
+   2
+  ],
+  "net": {
+   "sent": 905,
+   "recv": 1690,
+   "bytesOut": 26407,
+   "bytesIn": 48994,
+   "floodErrors": 0
+  },
+  "relays": {
+   "open": 1,
+   "total": 1
+  },
+  "cpu": {
+   "n": 914,
+   "mean": 0.15864332401778558,
+   "p95": 0.29999999701976776,
+   "max": 1
+  },
+  "heap": 5000654
+ },
+ "after": {
+  "ua": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.8078.4 Safari/537.36",
+  "me": 0,
+  "localTick": 9320,
+  "finalTick": 9308,
+  "contacts": 24596,
+  "sent": 9320,
+  "recv": 18501,
+  "late": 0,
+  "missingAtFinal": [
+   2,
+   68,
+   75
+  ],
+  "agree": 9296,
+  "disagree": 0,
+  "split": 0,
+  "resyncs": 0,
+  "resyncMs": [],
+  "resyncFailed": 0,
+  "lateVoteFlips": 0,
+  "statesSent": 1,
+  "stateBytesSent": 191,
+  "rateAdj": 0,
+  "jumps": 0,
+  "medianOffset": -0.09708420684257049,
+  "checkpoints": {
+   "0": "b02b01f81c28e13d",
+   "1000": "315e6e2370653bfc",
+   "2000": "d181cad67fc9248b",
+   "3000": "ebede2e7764901de",
+   "4000": "57a927d256b69fc0",
+   "5000": "5d61d9ca9def739a",
+   "6000": "4c15cf48fc2bb32d",
+   "7000": "34eccd5786ab4636",
+   "8000": "eb155cc2513097bd",
+   "9000": "7062467313551525"
+  },
+  "joinedAt": 0,
+  "warmMs": 0,
+  "log": [],
+  "lateByHistogram": {},
+  "firstPeerMs": 170,
+  "startedMs": 0,
+  "peers": 2,
+  "hellos": [
+   1,
+   2
+  ],
+  "net": {
+   "sent": 9311,
+   "recv": 18502,
+   "bytesOut": 270181,
+   "bytesIn": 536542,
+   "floodErrors": 0
+  },
+  "relays": {
+   "open": 1,
+   "total": 1
+  },
+  "cpu": {
+   "n": 9319,
+   "mean": 0.13822298424926255,
+   "p95": 0.29999999701976776,
+   "max": 1.5999999940395355
+  },
+  "heap": 4079110
+ },
+ "attacker": {
+  "ua": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.8078.4 Safari/537.36",
+  "me": 2,
+  "localTick": 9320,
+  "finalTick": 9308,
+  "contacts": 24596,
+  "sent": 9247,
+  "recv": 18558,
+  "late": 0,
+  "missingAtFinal": [
+   0,
+   7,
+   14
+  ],
+  "agree": 9235,
+  "disagree": 0,
+  "split": 0,
+  "resyncs": 0,
+  "resyncMs": [],
+  "resyncFailed": 0,
+  "lateVoteFlips": 0,
+  "statesSent": 0,
+  "stateBytesSent": 0,
+  "rateAdj": 0,
+  "jumps": 0,
+  "medianOffset": 0.0693429127293098,
+  "checkpoints": {
+   "1000": "315e6e2370653bfc",
+   "2000": "d181cad67fc9248b",
+   "3000": "ebede2e7764901de",
+   "4000": "57a927d256b69fc0",
+   "5000": "5d61d9ca9def739a",
+   "6000": "4c15cf48fc2bb32d",
+   "7000": "34eccd5786ab4636",
+   "8000": "eb155cc2513097bd",
+   "9000": "7062467313551525"
+  },
+  "joinedAt": 73,
+  "warmMs": 10.699999988079071,
+  "log": [],
+  "lateByHistogram": {},
+  "firstPeerMs": 56.400000005960464,
+  "startedMs": 1005.5,
+  "peers": 2,
+  "hellos": [
+   1,
+   0
+  ],
+  "net": {
+   "sent": 9248,
+   "recv": 18559,
+   "bytesOut": 268176,
+   "bytesIn": 538373,
+   "floodErrors": 80
+  },
+  "relays": {
+   "open": 1,
+   "total": 1
+  },
+  "cpu": {
+   "n": 9243,
+   "mean": 0.12572757870097523,
+   "p95": 0.29999999701976776,
+   "max": 11.399999991059303
+  },
+  "heap": 4140242
+ },
+ "honest": {
+  "ua": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.8078.4 Safari/537.36",
+  "me": 1,
+  "localTick": 9321,
+  "finalTick": 9309,
+  "contacts": 24596,
+  "sent": 9255,
+  "recv": 18559,
+  "late": 0,
+  "missingAtFinal": [
+   0,
+   15,
+   22
+  ],
+  "agree": 9244,
+  "disagree": 0,
+  "split": 0,
+  "resyncs": 0,
+  "resyncMs": [],
+  "resyncFailed": 0,
+  "lateVoteFlips": 0,
+  "statesSent": 1,
+  "stateBytesSent": 191,
+  "rateAdj": 0,
+  "jumps": 0,
+  "medianOffset": 0.02917721718782719,
+  "checkpoints": {
+   "1000": "315e6e2370653bfc",
+   "2000": "d181cad67fc9248b",
+   "3000": "ebede2e7764901de",
+   "4000": "57a927d256b69fc0",
+   "5000": "5d61d9ca9def739a",
+   "6000": "4c15cf48fc2bb32d",
+   "7000": "34eccd5786ab4636",
+   "8000": "eb155cc2513097bd",
+   "9000": "7062467313551525"
+  },
+  "joinedAt": 66,
+  "warmMs": 1.2000000029802322,
+  "log": [],
+  "lateByHistogram": {},
+  "firstPeerMs": 71.79999999701977,
+  "startedMs": 1004.7000000029802,
+  "peers": 2,
+  "hellos": [
+   0,
+   2
+  ],
+  "net": {
+   "sent": 9257,
+   "recv": 18561,
+   "bytesOut": 268599,
+   "bytesIn": 538415,
+   "floodErrors": 0
+  },
+  "relays": {
+   "open": 1,
+   "total": 1
+  },
+  "cpu": {
+   "n": 9254,
+   "mean": 0.13202939172536424,
+   "p95": 0.29999999701976776,
+   "max": 1.2999999970197678
+  },
+  "heap": 4029915
+ }
+}

@@ -1,0 +1,27 @@
+{
+  "name": "roslambo-lockstep-spike",
+  "private": true,
+  "description": "Throwaway M0 spike: deterministic rollback lockstep with majority voting over Trystero (PLAN.md §15)",
+  "type": "module",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit",
+    "golden": "node src/golden-cli.ts",
+    "test": "node --test test/",
+    "e2e": "playwright test"
+  },
+  "dependencies": {
+    "@trystero-p2p/nostr": "0.26.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1",
+    "@types/node": "^22.10.0",
+    "typescript": "~6.0.3",
+    "vite": "^8.3.5",
+    "ws": "^8.18.3"
+  }
+}

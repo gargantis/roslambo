@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>roslambo lockstep spike</title>
+    <style>
+      body { margin: 0; background: #0b0d12; color: #cfd6e4; font: 13px/1.4 system-ui, sans-serif; }
+      main { max-width: 480px; margin: 0 auto; padding: 16px; }
+      canvas { width: 100%; aspect-ratio: 1; display: block; border: 1px solid #2a3040; }
+      #status { margin-top: 8px; font-variant-numeric: tabular-nums; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <canvas id="arena" width="480" height="480"></canvas>
+      <div id="status">loading…</div>
+    </main>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>
