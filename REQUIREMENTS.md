@@ -267,7 +267,7 @@ These aren't requirements. They're findings the implementation plan should accou
 
 ## Appendix: physics checks
 
-Checked numerically with direct force sums and an N-body simulation in double precision.
+Checked numerically with direct force sums and an N-body simulation in double precision. To reproduce, run `python3 research/2026-10-24/ring_check.py`.
 
 ### Ring speed
 
