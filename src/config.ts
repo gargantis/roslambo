@@ -36,7 +36,7 @@ export const config = {
   thrust: 1.4, // was TBD, arena sides per second²: 1.67 × twice the peak pull
   wallEnergyLoss: 0.2, // was TBD, fraction of kinetic energy per wall bounce (Q-14)
   correctionFactor: 1, // was TBD
-  separationGap: 0.015, // C-16: a pair scores again only after separating this far
+  rearmGapDiameters: 1, // C-16, owner 2026-10-24: a pair scores again only once its surfaces are a planet diameter apart
   maxRotationTurnsPerSecond: 1,
   rotationAccelTurnsPerSecond2: 2,
 

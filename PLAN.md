@@ -217,7 +217,7 @@ REQUIREMENTS.md is yours. These edits went in on 2026-10-24, in one commit that 
 | C-15 | Two tabs in one browser are one player, and would send conflicting inputs. | Q-16 |
 | C-16 | **A caught quarry probably can't escape.** Gravity at contact is R²/(4r²·S₃) times the acceleration that holds a 3-planet ring: about 90 for r = 0.07R, regardless of G and m. Once a hunter and its quarry touch at low speed, thrust on the scale of the ring's forces can't separate them, and every elastic bounce scores (the appendix shows 30 contacts in 3 time units). Rounds may end soon after the first capture. This is as specified for the MVP. | **M0 measured worse** (REPORT §3.4): with gravity alone, planets come to rest touching and register about 170 approach-gated contacts a second. **Settled at M2** (research/tuning/REPORT.md):
   - gravity is softened (ε = 0.25), so a touching quarry can thrust free when thrust beats twice the peak pull (1.4 against about 0.84);
-  - a pair scores once per contact episode, re-arming after separating by 0.015.
+  - a pair scores once per contact episode, re-arming once the surfaces are a full planet diameter apart (the owner's change on 2026-10-24; M2 had used a quarter diameter).
 
   Both are now in REQUIREMENTS.md. |
 | C-17 | `W`, `A`, `D` are awkward on AZERTY and other layouts. | Q-18 |
@@ -1337,7 +1337,7 @@ n × { u8[16] player ID, u8+n display name, u32 final points }
 | Thrust | 1.4 L/s² (0.6) | escape margin 1.67 |
 | Wall energy loss | 0.2 | |
 | Correction factor | 1 | |
-| Re-arm gap | 0.015 L (added at M2) | |
+| Re-arm gap | 1 planet diameter (the owner, 2026-10-24; M2 chose 0.015 L) | |
 | Ready expiry | 60 s | |
 | Countdown | 10 s | (set in the requirements) |
 | Maximum rotation rate | 1 turn/s | (set) |

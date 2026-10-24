@@ -173,6 +173,22 @@ describe('scoring (C-16, Q-13)', () => {
     expect(s.planets.map((p) => p.points)).toEqual([7, 3, 5]);
   });
 
+  it('re-arms only once the surfaces are a full planet diameter apart', () => {
+    // Both held still; the quarry is moved to set the gap between their surfaces.
+    const s = running([{ x: 0.3, y: 0.5 }, { x: 0.3 + 2 * r, y: 0.5, vx: -0.1 }, { x: 0.5, y: 0.9 }]);
+    step(s, [], Pc);
+    expect(s.planets[0]!.engaged).toBe(1);
+    const at = (gap: number): number => {
+      s.planets[1]!.x = s.planets[0]!.x + 2 * r + gap;
+      s.planets[1]!.y = s.planets[0]!.y;
+      for (const p of s.planets) p.vx = p.vy = 0;
+      step(s, [], Pc);
+      return s.planets[0]!.engaged;
+    };
+    expect(at(2 * r * 0.99)).toBe(1); // just under a diameter: still the same episode
+    expect(at(2 * r * 1.01)).toBe(0); // just over: re-armed
+  });
+
   it('applies all of a tick’s changes together: losing and gaining in one tick nets zero (Q-13)', () => {
     // 1 has a single point. In one tick 1 hits its quarry 2, then 0 hits 1.
     const x0 = 0.3;

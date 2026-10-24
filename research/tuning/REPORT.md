@@ -2,7 +2,7 @@
 
 **Date:** 2026-10-24.
 **Answers:** PLAN.md Q-12 (the physics values the requirements left **TBD**) and C-16 (what happens when a hunter catches its quarry). The owner left the choice to Claude's judgement for the MVP.
-**Method:** `dev/tune.metrics.ts` measures each candidate. The raw passes are `pass-1.json` to `pass-4.json`. `dev/tuning.html` runs the same simulation live, with a slider per setting.
+**Method:** `dev/tune.metrics.ts` measures each candidate. The raw passes are `pass-1.json` to `pass-5.json`. `dev/tuning.html` runs the same simulation live, with a slider per setting.
 
 ## 1. What was measured
 
@@ -49,7 +49,20 @@ Three more things show up:
 
 ### 2.3 Scoring per contact episode (C-16)
 
-A pair scores once per contact episode. The hunter's flag stays set until the pair separates past 2r + gap. Planets resting in contact, or pushed together by thrust, chatter without scoring again. A real bounce apart, then a new hit, scores again. Tests: `src/core/sim/rules.test.ts`, "scores once per contact episode".
+A pair scores once per contact episode. The hunter's flag stays set until the surfaces are a full planet diameter apart: centres 4r apart. The owner set that on 2026-10-24, replacing the quarter diameter first chosen. Planets resting in contact, or pushed together by thrust, chatter without scoring again. A real bounce apart, then a new hit, scores again. Tests: `src/core/sim/rules.test.ts`, "scores once per contact episode".
+
+### 2.4 The final settings, measured together (pass 5)
+
+Passes 2–4 ran with correction factor 2. Pass 5 measured the settings as chosen, with correction factor 1, against the earlier gap:
+
+| Re-arm gap | Round length, 3 / 5 / 8 players | Points per min, 3 / 5 / 8 | Top speed |
+|---|---|---|---|
+| **1 diameter** | **19 / 22 / 22 s** | **39 / 70 / 118** | **2.8** |
+| 0.25 diameter (0.015) | 18 / 22 / 18 s | 41 / 70 / 118 | 2.8 |
+
+The gap barely matters to steering bots: they rarely bounce apart by between a quarter and a full diameter.
+
+Round lengths are medians of 12 bot rounds, so they're noisy. Against pass 4, the change from 46 / 20 / 13 s comes mostly from the correction factor and from sampling. Points per minute are the steadier measure.
 
 ## 3. Chosen values
 
@@ -63,7 +76,7 @@ A pair scores once per contact episode. The hunter's flag stays set until the pa
 | Thrust | 1.4 arena sides/s² (escape margin 1.67) |
 | Wall energy loss | 0.2 |
 | Correction factor | 1 |
-| Re-arm gap | 0.015 (half a planet radius) |
+| Re-arm gap | one planet diameter between the surfaces (the owner's change on 2026-10-24, replacing 0.015) |
 | Ready expiry | 60 s |
 
 **Checks that hold at these values** (the gate tests them):

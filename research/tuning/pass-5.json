@@ -1,0 +1,64 @@
+{
+ "gap 1 diameter (chosen)": {
+  "settings": {},
+  "gm": 0.0679,
+  "contactPull": 0.24,
+  "escapeMargin": 1.67,
+  "ring8TurnsPerSec": 0.198,
+  "hold8": 0.0042,
+  "hold3": 0.0022,
+  "break3": 52.4,
+  "break8": 38.2,
+  "escape": 0.8,
+  "n3": {
+   "medianSeconds": 18.9,
+   "unfinished": 0,
+   "pointsPerMin": 38.7,
+   "maxSpeed": 2.34
+  },
+  "n5": {
+   "medianSeconds": 22.4,
+   "unfinished": 0,
+   "pointsPerMin": 69.5,
+   "maxSpeed": 2.69
+  },
+  "n8": {
+   "medianSeconds": 21.6,
+   "unfinished": 0,
+   "pointsPerMin": 118.1,
+   "maxSpeed": 2.79
+  }
+ },
+ "gap 0.25 diameter (M2)": {
+  "settings": {
+   "rearmGapDiameters": 0.25
+  },
+  "gm": 0.0679,
+  "contactPull": 0.24,
+  "escapeMargin": 1.67,
+  "ring8TurnsPerSec": 0.198,
+  "hold8": 0.0042,
+  "hold3": 0.0022,
+  "break3": 52.4,
+  "break8": 38.2,
+  "escape": 0.8,
+  "n3": {
+   "medianSeconds": 18,
+   "unfinished": 0,
+   "pointsPerMin": 40.8,
+   "maxSpeed": 2.34
+  },
+  "n5": {
+   "medianSeconds": 22.4,
+   "unfinished": 0,
+   "pointsPerMin": 69.5,
+   "maxSpeed": 2.69
+  },
+  "n8": {
+   "medianSeconds": 18.1,
+   "unfinished": 0,
+   "pointsPerMin": 118.1,
+   "maxSpeed": 2.79
+  }
+ }
+}

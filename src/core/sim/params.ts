@@ -15,7 +15,7 @@ export interface SimSettings {
   thrust: number;
   wallEnergyLoss: number;
   correctionFactor: number;
-  separationGap: number;
+  rearmGapDiameters: number;
   countdownSeconds: number;
   readyExpirySeconds: number;
   absenceTicks: number;
@@ -33,7 +33,7 @@ export const DEFAULT_SETTINGS: SimSettings = {
   thrust: config.thrust,
   wallEnergyLoss: config.wallEnergyLoss,
   correctionFactor: config.correctionFactor,
-  separationGap: config.separationGap,
+  rearmGapDiameters: config.rearmGapDiameters,
   countdownSeconds: config.countdownSeconds,
   readyExpirySeconds: config.readyExpirySeconds,
   absenceTicks: config.absenceTicks,
@@ -72,7 +72,7 @@ export interface SimParams {
   readonly twoR: number;
   readonly minD2: number; // (2r)², the closest gravity ever acts from
   readonly eps2: number; // softening²
-  readonly releaseD2: number; // (2r + gap)²: a scoring pair re-arms beyond this
+  readonly releaseD2: number; // a scoring pair re-arms when its centres are farther apart than this, squared
   readonly wallK: number; // speed factor per wall bounce
   readonly walls: readonly Wall[];
   readonly cx: number;
@@ -125,7 +125,9 @@ export function makeParams(settings: SimSettings = DEFAULT_SETTINGS): SimParams 
     return rate[n]!;
   };
   const twoR = 2 * r;
-  const release = twoR + settings.separationGap;
+  // Touching centres are 2r apart; the surfaces must open a further gap,
+  // counted in planet diameters (C-16).
+  const release = twoR + settings.rearmGapDiameters * twoR;
   return {
     settings,
     dt: 1 / (settings.tickRate * settings.substeps),

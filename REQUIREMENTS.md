@@ -58,7 +58,7 @@ Status: draft from the requirements discussion of 2026-10-24, amended the same d
 
 - At the start of a round, each player pays the ante from their balance. The ante is their starting points
 - When a planet collides with its quarry, the planet gains 1 point and the quarry loses 1 point. Every collision counts, including repeated collisions between the same pair (MVP)
-- A collision is one contact episode: planets that stay touching, or bounce within a small gap of each other, score once. The pair scores again only after separating past the gap (C-16)
+- A collision is one contact episode: planets that stay touching, or bounce within a small gap of each other, score once. The pair scores again only once their surfaces are a full planet diameter apart (C-16)
 - Any other collision changes no points, including collisions between planets that aren't neighbors in the cycle (such as 1 and 3 of 4)
 - Every collision is a bounce, whether or not points change hands
 - Points are zero-sum within a round
@@ -255,7 +255,7 @@ Every setting should be easy to change.
 | Arena size, planet size and mass, gravitational constant | Arena side 1 (the unit of length); planet radius 0.03; G·m set by a 3-planet ring period of 10 seconds (G·m ≈ 0.068) | Together these set the ring's speed and period. All masses are equal, so only G·m matters |
 | Correction factor | 1 | Strength of the pre-start correction |
 | Gravity softening ε | 0.25 arena sides | Weakens gravity at short range (C-16) |
-| Re-arm gap | 0.015 arena sides | How far a scoring pair must separate before it can score again (C-16) |
+| Re-arm gap | 1 planet diameter | How far apart a scoring pair's surfaces must get before it can score again (C-16) |
 | Maximum rotation rate | 1 turn per second | Must stay above the ring's rotation rate with the most players, so the default rotation fits under it |
 | Rotation acceleration | 2 turns per second² | Holding a rotate button reaches the maximum from rest in half a second |
 | Result retention | 30 days (Q-10) | How long witnesses keep a result for absent players |

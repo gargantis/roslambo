@@ -15,7 +15,7 @@ const SLIDERS: [Key, string, number, number, number][] = [
   ['thrust', 'Thrust (sides/s²)', 0.2, 4, 0.1],
   ['wallEnergyLoss', 'Wall energy loss', 0, 0.8, 0.05],
   ['correctionFactor', 'Correction factor', 0, 4, 0.1],
-  ['separationGap', 'Re-arm gap (sides)', 0, 0.1, 0.005],
+  ['rearmGapDiameters', 'Re-arm gap (planet diameters)', 0, 3, 0.25],
   ['countdownSeconds', 'Countdown (s)', 1, 10, 1],
 ];
 
