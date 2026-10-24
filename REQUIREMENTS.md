@@ -2,7 +2,7 @@
 
 Bumper planet rock, paper, scissors: a browser-based, peer-to-peer multiplayer game.
 
-Status: draft from the requirements discussion of 2026-10-24. **TBD** marks a value not yet chosen. After the requirements come open questions, notes for the implementation plan, and the physics checks behind the formulas.
+Status: draft from the requirements discussion of 2026-10-24. **TBD** marks a value not yet chosen. After the requirements come notes for the implementation plan and the physics checks behind the formulas.
 
 ## Concept
 
@@ -44,6 +44,7 @@ Status: draft from the requirements discussion of 2026-10-24. **TBD** marks a va
 - The rotation rate has a maximum (see *Configuration*)
 - Thrust pushes the planet the way it faces at that moment
 - The same three controls are available as on-screen buttons below the arena
+- Controls can be held together, such as thrust while rotating, on a keyboard and with multi-touch on the on-screen buttons
 
 ### Physics
 
@@ -105,6 +106,7 @@ Status: draft from the requirements discussion of 2026-10-24. **TBD** marks a va
 ### End of round
 
 - The round **freezes** the moment any player reaches 0 points
+- There is no time limit. A round runs until a player reaches 0, however long that takes. Any player of the round can rejoin and hunt its drifting quarry down to 0 to end it
 - Each player's final points are credited to their balance. Their net change is final points minus ante
 - Everyone, players and spectators alike, sees a **results screen** with final points and balance changes
 - The results screen has a **Play again** button. The first press proposes a new round with the same settings and a new round ID, and everyone still on the results screen can join it with one click
@@ -155,6 +157,7 @@ The same format as amorfus's join secret:
 
 - A disconnected player's planet keeps drifting under physics, and it can still win and lose points
 - A player who comes back while the round is still running, from the same browser with the same round ID, takes control of their planet again. Peers recognize them by their player ID
+- Each browser saves the latest state of any round it's in. If every peer leaves, the round pauses at that state. When a player of the round returns, their browser restores it and play resumes, even if they're alone
 - Round results live only on the peers that took part. There is no central record
 - A player who misses the end of a round has paid the ante but hasn't received their final points. Their balance is short by those points until they get the result from a peer that has it
 
@@ -175,6 +178,7 @@ A returning player collects a result they missed from the peers, without any ser
 
 - A player's ID is randomly generated, for example a GUID. No accounts, no login
 - The ID, display name and balance are stored in the player's browser and persist across visits
+- The browser also saves the latest state of any round it's in, so a paused round can resume (see *Disconnects*)
 - Clearing browser data, or playing from another browser or device, means a new identity with a balance of 0
 - New players start with a balance of 0
 - A balance may go negative, so anyone can join any round
@@ -248,17 +252,12 @@ Every setting should be easy to change.
 | Rotation acceleration | 2 turns per second² | Holding a rotate button reaches the maximum from rest in half a second |
 | Result retention | **TBD** | How long witnesses keep a result for absent players |
 
-## Open questions
-
-1. **Rounds that never end:** nothing ends a round unless someone reaches 0. Players could avoid each other indefinitely, and if every peer leaves, the round is lost with no witness. Is there a time limit, or another way a round ends?
-2. **Multi-touch:** should players be able to hold two on-screen buttons at once, to thrust while rotating?
-
 ## Notes for the plan
 
 These aren't requirements. They're findings the implementation plan should account for.
 
 - **Determinism.** Majority voting only works if honest peers compute bit-identical states, and peers will run on different JavaScript engines (V8 in Chrome and Edge, SpiderMonkey in Firefox, JavaScriptCore in Safari). The ECMAScript spec lets `Math.sin`, `Math.cos`, `Math.hypot` and `Math.atan2` differ between engines, while `+ − × ÷` and `Math.sqrt` are exact. The simulation, including the pre-start correction, should use only exact operations, a fixed timestep and a fixed iteration order. Orientation and rotation rate can be whole numbers of fixed steps, with a direction table stored as constants
-- **Shared timeline.** Peers can see joins and Readys in different orders, and see the countdown start at different moments. Join order sets planet numbers, so the pre-start phase needs the same agreement as the round itself, and peers need a common tick 0. Likewise, two Play again presses at the same moment must resolve to a single new round
+- **Shared timeline.** Peers can see joins and Readys in different orders, and see the countdown start at different moments. Join order sets planet numbers, so the pre-start phase needs the same agreement as the round itself, and peers need a common tick 0. Likewise, two Play again presses at the same moment must resolve to a single new round, and players returning to a paused round may hold saved states from different ticks
 - **Inputs in time.** Every peer needs every player's input for a tick before computing that tick. A small input delay (**TBD**) gives inputs time to arrive. A player whose inputs stop arriving drifts, which matches the disconnect rule
 - **One contact, one point.** With discrete ticks, two planets can overlap for more than one tick. Count a collision when planets touch while moving toward each other, so one bounce scores once
 - **Traffic.** Sending the full state from every player to every peer each tick grows with players × peers. Voting needs only a hash of the state. Only peers that disagree with the majority, and spectators joining mid-round, need the full state
