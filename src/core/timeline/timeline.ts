@@ -99,6 +99,9 @@ export class Timeline {
   sending = false;
   /** This browser's buttons, sampled once per tick when sending. */
   controls: () => number = () => 0;
+  /** The newest tick whose tally agreed with this browser's state, or that
+   *  had no other votes (D-10: only confirmed results count). */
+  agreedTo = 0;
 
   private readonly out: TimelineOut;
   private readonly P: SimParams;
@@ -315,6 +318,11 @@ export class Timeline {
     if (t % CHECKPOINT_EVERY === 0) this.stats.checkpoints[t] = h;
   }
 
+  /** Whether tick t is final and confirmed by the vote, with no repair under way. */
+  isConfirmed(t: number): boolean {
+    return this.started && this.agreedTo >= t && this.resync === null;
+  }
+
   hashAt(t: number): string {
     const s = t % STATE_RING;
     return this.ringTick[s] === t ? this.ringHash[s]! : '';
@@ -340,13 +348,17 @@ export class Timeline {
       this.votes.delete(g - STATE_RING);
       const r = this.tally(g);
       if (r === null) {
-        if (this.hashAt(g)) this.confirmed = true; // nobody else to agree with
+        if (this.hashAt(g)) {
+          this.confirmed = true; // nobody else to agree with
+          this.agreedTo = g;
+        }
         continue;
       }
       if (r.split) this.stats.split++;
       if (r.agree) {
         this.stats.agree++;
         this.confirmed = true;
+        this.agreedTo = g;
       } else {
         this.stats.disagree++;
         this.note(`disagree ${g}`);
@@ -561,6 +573,7 @@ export class Timeline {
     this.predict();
     this.repairedFrom = m.g;
     this.confirmed = true;
+    this.agreedTo = Math.max(this.agreedTo, m.g);
     this.stats.resyncs++;
     this.note(`resync ${m.g} in ${Math.round(now - r.divergedAt)} ms`);
     this.stats.resyncMs.push(now - r.divergedAt);

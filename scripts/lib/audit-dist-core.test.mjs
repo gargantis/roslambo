@@ -51,6 +51,12 @@ describe('audit-dist', () => {
     expect((await auditDist(dir, opts())).findings).toEqual([]);
   });
 
+  it('reads a scheme only where a word starts, so minified CSS is not a URL', async () => {
+    await writeFile(join(dir, 'assets', 's.css'), '.a{grid-template-rows:auto auto;grid-template-columns:1fr}.b{background:url(wss://evil.example.com)}');
+    const r = await auditDist(dir, opts());
+    expect(r.findings.filter((f) => f.why === 'host not in third-party.json').map((f) => f.detail)).toEqual(['evil.example.com']);
+  });
+
   it('fails on dotfiles, markdown and source maps', async () => {
     await writeFile(join(dir, '.hidden'), '');
     await writeFile(join(dir, 'CLAUDE.md'), '');

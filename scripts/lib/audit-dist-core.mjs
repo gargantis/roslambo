@@ -17,7 +17,9 @@ const SECRET_PATTERNS = [
   /eyJ[A-Za-z0-9_-]{20,}\.eyJ[A-Za-z0-9_-]{20,}/, // JWT
 ];
 
-const URL_RE = /(?:https?|wss?|stun|turn):\/?\/?([A-Za-z0-9.-]+)(?::\d+)?/g;
+// The scheme starts a word: minified CSS such as `grid-template-rows:auto`
+// holds "ws:auto", which is not a WebSocket URL.
+const URL_RE = /\b(?:https?|wss?|stun|turn):\/?\/?([A-Za-z0-9.-]+)(?::\d+)?/g;
 const LOOPBACK = new Set(['127.0.0.1', 'localhost', '::1', '[::1]', '0.0.0.0']);
 
 export async function auditDist(dir, { allowedHosts, expectedLicensePackages, ignoredHosts = [] }) {

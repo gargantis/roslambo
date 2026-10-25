@@ -3,7 +3,9 @@
 **Status:** approved by the owner on 2026-10-24.
 - The owner left the open questions to Claude's judgement for the MVP, so every question is settled at its proposal except four. Q-1, Q-2, Q-9 and Q-19 need facts or choices only the owner has.
 - Q-19 was settled on 2026-10-24: no license. The owner keeps all rights.
+- Q-1 was settled on 2026-10-24: the owner's Pixel 8a is the reference phone, and there is no laptop.
 - Manual runs are deferred for now (§15).
+- M4 finished on 2026-10-24, except its runs on the phone, which wait with the other manual runs. The devices and criteria are in [docs/acceptance.md](docs/acceptance.md). Its amendments are marked "M4".
 - M3 finished on 2026-10-24: the load run is in [research/load/REPORT.md](research/load/REPORT.md). Its amendments are marked "M3".
 - M2 finished on 2026-10-24, and was revised the same day at the owner's request: Newtonian gravity with a smaller ring, and energy-conserving bounces. The tuning is in [research/tuning/REPORT.md](research/tuning/REPORT.md), §4. Its amendments are marked "M2".
 - M0 finished on 2026-10-24: see [research/lockstep/REPORT.md](research/lockstep/REPORT.md). Its amendments are marked "M0" in §3, §4, §9 and A.4.
@@ -45,7 +47,7 @@ Approval needs only §0–§4. Once the plan is approved, a Q, C, D or M number 
 | Build | Vite 8, TypeScript 6.0, ESLint 10, vitest, Playwright with Chromium, Firefox and WebKit. |
 | Hosting | Cloudflare Workers static assets: assets only, request logs off. |
 
-**Approval changed these requirements** (exact wording in §2; applied to REQUIREMENTS.md on 2026-10-24, except the acceptance lines, which wait for Q-1 and Q-2):
+**Approval changed these requirements** (exact wording in §2; applied to REQUIREMENTS.md on 2026-10-24, the Q-1 lines at M4; the Q-2 acceptance line waits):
 - Votes carry a hash of the newest final tick, not "the state for the previous tick" (Q-4).
 - Players and spectators get a mesh cap, not only the ring limit (Q-3).
 - A disconnect during the countdown keeps the planet (Q-5).
@@ -80,7 +82,6 @@ Approval needs only §0–§4. Once the plan is approved, a Q, C, D or M number 
 
 | # | Needed by |
 |---|---|
-| Q-1 (reference devices) | M4 |
 | Q-2 (machines, people and networks for the deferred manual runs) | M6 |
 | Q-9 (domain) | M6 |
 
@@ -88,7 +89,7 @@ Approval needs only §0–§4. Once the plan is approved, a Q, C, D or M number 
 
 | # | Question | Proposal | Needed by |
 |---|---|---|---|
-| Q-1 | Which reference devices for "60 fps on mid-range hardware"? | You name one phone (model and browser) and one laptop with integrated graphics. A run passes if the frame interval stays at p95 ≤ 18 ms and max ≤ 50 ms through a scripted 2-minute round with 8 planets, at 60 Hz. | M4 |
+| Q-1 | Which reference devices for "60 fps on mid-range hardware"? | You name one phone (model and browser) and one laptop with integrated graphics. A run passes if the frame interval stays at p95 ≤ 18 ms and max ≤ 50 ms through a scripted 2-minute round with 8 planets, at 60 Hz. **Settled 2026-10-24 by the owner:** a Pixel 8a; there is no laptop. **M4:** the Pixel 8a, in Chrome, is the only reference device. The phone is the weaker of the two the requirement named, and a dozen circles on Canvas 2D cost an integrated GPU little, so desktops are checked in development only: the gate's three engines, and the frame-time bench in desktop Chromium. The criteria stand, judged with the display at 60 Hz (docs/acceptance.md). | M4 |
 | Q-2 | Which networks and people for the acceptance test, and for M0's manual run? | **Must pass:** three machines on at least two home broadband networks, the phone on Wi-Fi. **Best effort:** the phone on mobile data. Who provides the machines? Is one of them a Mac or an iPhone, so that real Safari is tested? | M6 (was M0, before the manual runs were deferred) |
 | Q-3 | Should the number of players be capped by what a full mesh can carry, as well as by the ring (C-2)? | Yes: maximum players ≤ the lesser of the ring limit and 8, and at most 4 spectators, which is exactly the performance requirement. Raised later if M3's load test allows. **M3:** kept at 8 and 4; the load run was desktop-only (research/load/REPORT.md). | M1 |
 | Q-4 | Can votes use a hash of the newest final tick, instead of each player broadcasting "its state for the previous tick" (C-3)? | Yes. The input message carries the hash; the full state goes only to a peer that lost a vote or just arrived. The voted tick trails the live tick by about 0.2 s. | M0 |
@@ -120,7 +121,7 @@ Approval needs only §0–§4. Once the plan is approved, a Q, C, D or M number 
 
 ## 2. Requirement changes your answers would make
 
-REQUIREMENTS.md is yours. These edits went in on 2026-10-24, in one commit that cites the Q-numbers, except three rows that wait: Q-1 and Q-2 (the acceptance lines) and Q-12 (the values, from M2).
+REQUIREMENTS.md is yours. These edits went in on 2026-10-24, in one commit that cites the Q-numbers, except three rows that waited: Q-12 (the values, applied at M2), Q-1 (applied at M4) and Q-2 (the networks, still waiting).
 
 | Requirement (current) | Amended wording | From |
 |---|---|---|
@@ -134,7 +135,7 @@ REQUIREMENTS.md is yours. These edits went in on 2026-10-24, in one commit that 
 | Physics: "lose a fraction of their energy" | "lose a fraction of their kinetic energy" | Q-14 |
 | *Persistence* | Add: "One game tab per browser" | Q-16 |
 | Acceptance: "Three browsers on different machines …" | "… on the networks named in `docs/acceptance.md` …" | Q-2 |
-| Acceptance: "60 fps on the reference devices (**TBD**)" | "… on the devices and by the frame-time criteria in `docs/acceptance.md`" | Q-1 |
+| Acceptance: "60 fps on the reference devices (**TBD**)" | "… on the devices and by the frame-time criteria in `docs/acceptance.md`". **Applied at M4** as "60 fps on the reference phone, a Pixel 8a in Chrome, by the frame-time criteria in `docs/acceptance.md`". Performance, "a mid-range phone, and a recent laptop with integrated graphics", now names the Pixel 8a and says there is no laptop to test on | Q-1 |
 | Configuration table | The values you sign off at M2 | Q-12 |
 
 ---
@@ -179,6 +180,7 @@ REQUIREMENTS.md is yours. These edits went in on 2026-10-24, in one commit that 
 **C-4 — 60 fps can't be tested until the devices are named.**
 - **Problem:** no device, scenario or metric.
 - **Proposed resolution:** Q-1, recorded in `docs/acceptance.md` at M4.
+- **Settled at M4:** the Pixel 8a, the frame-time bench, and the Q-1 criteria (docs/acceptance.md). The laptop half of the requirement has no device, so it is checked in development only.
 
 **C-5 — Safari may not keep the identity and balance "across visits".**
 - **Status:** accepted limitation, unless you choose the Q-11 alternative.
@@ -362,6 +364,7 @@ Each decision gives the choice, the options rejected, and the cost if it's wrong
   - The freeze is acted on only after the vote for the freeze tick confirms it. That covers the results screen, balances and the witness record.
 - **Rejected:** acting on the local freeze, because a peer in the minority could credit a round that didn't end.
 - **Cost if wrong:** about 0.4 s between the freeze and the results screen.
+- **M4, implemented:** the timeline records the newest tick whose tally agreed with it, or had no other votes (`agreedTo`). A tick counts as confirmed once that has reached it and no repair is under way. The ante is paid when the start tick is confirmed, and the freeze is credited when the freeze tick is (`src/net/network.test.ts`: never at the moment of the freeze, on every peer soon after).
 
 **D-11 — The tick clock.**
 - **Choice:**
@@ -493,6 +496,7 @@ Each decision gives the choice, the options rejected, and the cost if it's wrong
   - While the page is hidden, the browser stops sending inputs and votes, so the planet drifts, as for a disconnect.
   - When the page is visible again, it resyncs from a peer.
 - **Cost if wrong:** none.
+- **M4, implemented:** back after more than 2 s, the session drops its timeline and takes a peer's, as a reload would (`Session.rejoin`). With no peer it keeps its own, so a lone proposer's round survives. Before the countdown, a player hidden for 3 s or more has been removed (Q-15) and joins again at the end.
 
 ### Build
 
@@ -576,12 +580,14 @@ src/core/timeline/     input buffers, prediction, finalisation, rollback, votes,
 src/core/protocol/     message codecs (§9)
 src/core/round-id.ts   generate, format, normalise, derive (from amorfus src/net/secret.ts)
 src/core/ledger/       ante, credit, settlement, witness records, retention
+src/core/names.ts      display-name limits (Q-22)
 src/net/               Transport interface; loopback with latency, jitter, loss and partitions;
                        trystero.ts (the only Trystero import); forwarding; peer gossip
 src/storage/           profile, saved rounds, witness records, tab lock
 src/render/            canvas renderer, interpolation, palette
-src/ui/                screens, buttons, keyboard and touch input
-src/main.ts            wiring
+src/ui/                screens, buttons, keyboard and touch input; game.ts, one round's controller
+src/bench/             the frame-time bench's virtual players (M4, Q-1)
+src/main.ts            wiring; the #test= pages (determinism, net, frames)
 dev/tuning.html        dev-only tuning page, served by `npm run dev`, never in dist/
 third-party.json       relays and STUN: drives the runtime, the dist audit and §18
 e2e/                   Playwright specs; local Nostr relay (from amorfus)
@@ -932,6 +938,16 @@ Rules:
 - Desktop: the arena is centered, with the buttons below.
 - Phone sideways: Q-20.
 
+**M4, as built:**
+- Settings and Home's list of unsettled rounds ship with M5, which builds what they show. Home has no Settings link until then, and the connection-failure message mentions Settings ahead of it.
+- Before the countdown the middle button is **Ready**. From the countdown it is **Thrust**, dimmed until 0, so a player can already be holding it when the round starts.
+- The pre-start screen also offers the link and code ("Invite more players"), so anyone in the round can invite.
+- The forms check their own values and say what's wrong, instead of the browser's validation bubbles.
+- A player who presses Play after the round filled or started sees "This round is full or has already started, so you're watching it" over the arena.
+- The proposer sees **Play** and **Watch** only once someone has arrived, as the requirements say. **Leave** is always there.
+- **Play again** (Q-8) goes to the derived room. If an AGAIN arrived, the next round already exists, so the browser joins it. Otherwise it proposes the round with the same settings. Two proposals at once merge (D-12).
+- A returning player of an unsettled round (from the ledger) goes straight back to its planet. Everyone else gets Join.
+
 ---
 
 ## 12. Rendering
@@ -948,6 +964,15 @@ Rules:
 - **Colours:** a fixed palette of 12, distinct in light and dark surroundings and checked for common colour blindness. Numbers are always drawn.
 - **Budget (estimate):** under 2 ms per frame on the reference phone. M4 measures it.
 - **Render-only maths** may use `Math.sin` and the rest; lint applies the exact-ops rule only to `src/core/sim`.
+
+**M4, as built:**
+- **One dark theme.** The arena is space, and the planet colours appear only on it and on the lists' dark chips. So "distinct in light and dark surroundings" reduces to the dark arena.
+- **The palette** came from a search: 12 colours, each carrying a dark number at 7:1 contrast or more. Every pair is at least 0.12 apart in OKLab. Every pair that is hunter and quarry for some N ≤ 12 is at least 0.1 apart under simulated protanopia, deuteranopia and tritanopia (Machado 2009). `src/render/palette.test.ts` checks all of it.
+- **Orientation** is a nose on the planet's outline, so it doesn't cross the number.
+- **The marks are shapes, not colours:** your planet a solid ring, your quarry a ring with target ticks, your hunter a dashed ring. The lists also name them ("your quarry", "your hunter").
+- **The walls** are the canvas border, drawn by CSS.
+- **Corrections:** not yet judged by eye. Nobody has played over a real network, and in the gate's rounds resyncs are rare. That waits for the Q-2 runs.
+- **Budget:** frame work in desktop Chromium averages 0.3 ms with 8 planets. The phone's figure waits for the Pixel 8a run; the throttled proxy is in docs/acceptance.md.
 
 ---
 
@@ -980,6 +1005,7 @@ Rules:
 - Every external host in the built JavaScript and HTML is listed in `third-party.json`.
   - One documented exception (M3): Trystero's built-in STUN list is a template literal, `stun:stun${i}.l.google.com:19302`, which the scan reads as a host named "stun". roslambo always passes its own `iceServers`, so those defaults are never used (`src/net/room-config.test.ts`).
 - No source maps, no `.md` files, nothing matching a secret pattern.
+- *M4:* a URL's scheme must start a word. Minified CSS such as `grid-template-rows:auto` contains `ws:auto`, which the scan had read as a WebSocket URL to a host named "auto". The self-test now includes that case.
 - A self-test with planted failures.
 
 **wrangler.jsonc:** assets only, `./dist`, `observability.enabled: false`, the domain once Q-9 is answered (A.7).
@@ -1055,9 +1081,19 @@ Rules:
 - A build mismatch is refused with its message.
 - **Everywhere:** no request to a host outside `third-party.json`, and no console errors.
 
+**M4, as built:**
+- `smoke.spec.ts`: Home in every engine, the Propose checks, and a typed code reaching Join, all without a network.
+- `frames.spec.ts`: the frame-time bench runs in every engine. Timing isn't judged in the gate.
+- `touch.spec.ts`, Chromium only (its DevTools protocol presses several fingers): two fingers hold two buttons; a finger that slides off still lets go; keys by position.
+- `play.spec.ts`: the round through the screens, one player per engine.
+  - Chromium proposes, Firefox joins by link and WebKit by typed code.
+  - All three press Ready, play to the freeze, and show the same results.
+  - Each balance equals that player's change.
+  - The buttons are scripted through `window.roslamboTest`, which a test sets before the page loads. It also points the page at the local relay. Production pages never set it.
+
 **Outside the gate** (logged in `docs/acceptance.md`):
 - the 12-peer load run;
-- the Q-1 frame-time runs;
+- the Q-1 frame-time runs: the bench on the Pixel 8a, and a proxy in Chromium slowed by DevTools throttling (`playwright.bench.config.ts`);
 - the Q-2 network matrix;
 - the determinism page on real Safari (macOS and iOS).
 
@@ -1141,9 +1177,11 @@ Rules:
   - The load run is logged in research/load/REPORT.md; the cap stays.
 
 **M4 — Rendering, input and screens**
-- *Prerequisite:* Q-1's devices named.
+- *Prerequisite:* Q-1's devices named (2026-10-24: a Pixel 8a, no laptop).
 - *Build:*
   - the renderer (§12); keyboard and multi-touch input;
+  - *M4:* the profile and ledger, moved here from M5, because Home and Results show the balance. They cover the player ID, name and balance, the ante at the confirmed start and the credit at the confirmed freeze. The P6 tests come with them;
+  - *M4:* the frame-time bench, `#test=frames`, with virtual players, so the phone is measured without a network or other devices;
   - every screen and message (§11), with the phone and desktop layouts;
   - Play again (Q-8);
   - `docs/acceptance.md`.
@@ -1151,11 +1189,16 @@ Rules:
   - a full round is playable by link and by code over the local relay;
   - the Q-1 frame-time criteria pass on the reference devices;
   - multi-touch holds work on the phone.
+- *Done 2026-10-24, except the two phone runs:*
+  - A full round by link and by code over the local relay: `e2e/play.spec.ts`, one player per engine, in the gate.
+  - The Q-1 criteria on the Pixel 8a: **not yet run**, deferred with the other manual runs. The bench and how to run it on the phone are in docs/acceptance.md. The proxy at the Pixel 8a's size in throttled Chromium: every 2-minute run passed at 1×, 4× and 6× CPU slowdown. p95 was 16.7–16.8 ms; the worst frame, at 4× and 6×, was one dropped frame (33 ms); a tick averaged 1.2 ms at 6×.
+  - Multi-touch: two fingers on two buttons, and a finger sliding off, pass in Chromium's touch emulation (`e2e/touch.spec.ts`). **Not yet tried on the phone.**
+  - Found on the way: the dist audit read minified CSS as a URL (§13).
 
 **M5 — Persistence, disconnects and missed results**
 - *Build:*
   - start with a probe of `passive` rooms: wake-up time, and one active room plus several passive ones in one tab;
-  - the profile and ledger; the tab lock; saved rounds; pause and resume;
+  - the tab lock; saved rounds; pause and resume (the profile and ledger came with M4);
   - returning players; witnesses and settlers (§8.7) with the Q-10 caps;
   - the Home list (Q-6); Settings (relays, TURN, relay health).
 - *Exit:*
@@ -1194,10 +1237,10 @@ Rules:
 | Requirement | Where | Verified by |
 |---|---|---|
 | Planets: same mass and size, orientation, number, colour, names | §7, §11, §12 | M2 tests; M4 |
-| Own hunter and quarry highlighted | §12 | M4 |
+| Own hunter and quarry highlighted | §12 | marks by shape (§12, M4); palette tests |
 | Arena not tied to the square | D-6 | ring radius test with a non-square polygon |
 | W, A, D; conserved rotation; maximum rate; thrust direction | D-2, §7.2, §11 | rotation and thrust tests |
-| On-screen buttons; held together; multi-touch | §11 | M4 on the phone |
+| On-screen buttons; held together; multi-touch | §11 | `touch.spec.ts` (Chromium touch emulation); by hand on the phone |
 | Gravity at all times; elastic bounces; rotation unchanged by bounces; wall loss | D-4, §7.3 | physics tests |
 | Scoring and zero-sum | §7.2 | scoring tests and property |
 | Proposing, settings, keeper hand-off | §8.2 | end-to-end tests |
@@ -1206,7 +1249,7 @@ Rules:
 | Ready, expiry, countdown, rotation-only before 0 | §7.2 | rules tests |
 | Pre-start ring, correction, default rotation, capacity | D-5, §7.4 | ring tests; tuning sign-off |
 | Freeze, no time limit, results, Play again | §7.2, §8.2, Q-8 | end-to-end tests |
-| Screens | §11 | M4 |
+| Screens | §11 | `smoke.spec.ts`, `play.spec.ts`; Settings and the Home list at M5 |
 | Trystero, relays, STUN, user TURN | D-13, §8.8 | room-config test; dist audit |
 | Round ID format, link, code | §6 (`round-id.ts`) | ported tests |
 | Same simulation everywhere; majority voting; tie-break; spectators follow | D-7, D-9, D-10 | P1–P3 |
@@ -1215,7 +1258,7 @@ Rules:
 | Persistence of ID, name, balance; negative balances | §10 | storage tests |
 | JavaScript or TypeScript, static, Workers hosting, no WebGPU | D-24, D-25 | build; wrangler config test |
 | Chrome, Edge, Firefox, Safari; mobile | §13, C-7 | three-engine gate; M6 manual |
-| 60 fps; 8 players and 4 spectators | Q-1, Q-3 | M3 load run; M4 frame-time runs |
+| 60 fps; 8 players and 4 spectators | Q-1, Q-3 | M3 load run; the frame-time bench on the Pixel 8a (docs/acceptance.md) |
 | Readable code; README | §6, §13 | review; README |
 | Automated tests of the non-rendering core | §14 | gate |
 | Cross-browser determinism test | §14 | `determinism.spec.ts` in three engines |

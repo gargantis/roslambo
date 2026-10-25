@@ -58,6 +58,8 @@ export class Session {
   wantsToPlay = false;
   /** A JOIN became final without a planet: the round was full or had started. */
   refused = false;
+  /** A peer pressed Play again (AGAIN, §9.3): the next round exists. */
+  againSeen = false;
   /** Per-message counts of malformed input, by peer (§9.4). */
   readonly invalid = new Map<string, number>();
 
@@ -115,6 +117,25 @@ export class Session {
   leave(): void {
     this.wantsToPlay = false;
     if (this.inRoster()) this.timeline.queueEvent(LEAVE);
+  }
+
+  /** Results screen: tell the room the next round exists (a UI hint). */
+  announceAgain(): void {
+    if (this.peers.size > 0) this.link.broadcast(M.encodeAgain());
+  }
+
+  /** Drop the timeline and take a peer's again, as on a reload: after the
+   *  page was hidden (D-23). Only with a peer to take it from. */
+  rejoin(): boolean {
+    if (this.peers.size === 0) return false;
+    this.timeline = this.newTimeline();
+    this.joinSentAt = -1;
+    this.joinAsk = { next: 0, at: -Infinity };
+    return true;
+  }
+
+  peerCount(): number {
+    return this.peers.size;
   }
 
   inRoster(): boolean {
@@ -214,8 +235,11 @@ export class Session {
         if (this.timeline.started && m.timeline !== this.timeline.id) break; // another timeline's: merging goes through HELLO
         this.timeline.onState(m, info.oneWayMs, now);
         break;
+      case M.T.AGAIN:
+        this.againSeen = true;
+        break;
       default:
-        break; // AGAIN, RESULT_REQ, RESULT, SETTLED: later milestones
+        break; // RESULT_REQ, RESULT, SETTLED: M5
     }
   }
 

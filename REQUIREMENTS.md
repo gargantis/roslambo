@@ -201,7 +201,7 @@ A returning player collects a result they missed from the peers, without any ser
 
 ## Performance
 
-- 60 fps on mid-range hardware: a mid-range phone, and a recent laptop with integrated graphics
+- 60 fps on mid-range hardware: a mid-range phone, whose reference is a Pixel 8a in Chrome. There is no laptop to test on, so the phone is the only reference device, and desktop browsers are checked in development only (Q-1)
 - A round supports at least 8 players and 4 spectators
 
 ## Quality
@@ -233,7 +233,7 @@ A returning player collects a result they missed from the peers, without any ser
 - A player who reloads mid-round takes back their planet
 - A player who reloads after the end collects the result from a witness
 - The determinism test passes in Chromium, Firefox and WebKit
-- 60 fps on the reference devices (**TBD**)
+- 60 fps on the reference phone, a Pixel 8a in Chrome, by the frame-time criteria in `docs/acceptance.md` (Q-1)
 
 ## First deliverable
 

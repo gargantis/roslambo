@@ -20,6 +20,7 @@ That is lint, public-scan, typecheck, unit tests, build with the dist audit, and
 - Only `src/storage/**` touches browser storage (D-18).
 - Every external host is listed in `third-party.json`; the dist audit fails on any other.
 - `research/lockstep/` is the throwaway M0 spike (D-26), with its own toolchain. Product code never imports it.
+- The test pages (`#test=determinism`, `net`, `frames`) and `window.roslamboTest` (set by end-to-end tests before load) must never change what a normal page does.
 
 ## Owner-only steps
 

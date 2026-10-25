@@ -227,4 +227,40 @@ describe('rounds over the network (PLAN §8.9)', () => {
     expect(late.session.timeline.sending).toBe(false);
     agreeNow([...nodes, late]);
   });
+
+  it('confirms the freeze by vote on every peer before results count, and AGAIN reaches the room (D-10)', () => {
+    const net = new LoopbackNet(11, uniform(21, 30, 60, 20));
+    const nodes = lobby(net, [1, 2, 3], 2000);
+    const confirmed = (n: LoopNode): boolean => finalOf(n).phase === FROZEN && n.session.timeline.isConfirmed(finalOf(n).freezeTick);
+    const atFreeze = new Map<string, boolean>(); // confirmed the moment it froze?
+    const watch = (): void => {
+      for (const n of nodes) if (finalOf(n).phase === FROZEN && !atFreeze.has(n.id)) atFreeze.set(n.id, confirmed(n));
+      if (atFreeze.size < nodes.length) net.at(net.now + 4, watch);
+    };
+    net.at(0, watch);
+    net.run(240_000, () => atFreeze.size === nodes.length);
+    expect([...atFreeze.values()], 'the vote trails the freeze').toEqual(nodes.map(() => false));
+    net.run(net.now + 2000, () => nodes.every(confirmed));
+    for (const n of nodes) expect(confirmed(n), n.id).toBe(true);
+    nodes[1]!.session.announceAgain();
+    net.run(net.now + 1000);
+    for (const n of [nodes[0]!, nodes[2]!, nodes[3]!]) expect(n.session.againSeen, n.id).toBe(true);
+    expect(nodes[1]!.session.againSeen).toBe(false);
+  });
+
+  it('takes the timeline from a peer again after the page was hidden (D-23)', () => {
+    const net = new LoopbackNet(12, uniform(22, 30, 60, 20));
+    const nodes = lobby(net, [1, 2, 3], 2000);
+    const hidden = nodes[2]!;
+    net.at(20_000, () => { hidden.session.timeline.sending = false; });
+    net.at(23_000, () => {
+      expect(hidden.session.rejoin()).toBe(true);
+      hidden.session.timeline.sending = true;
+    });
+    net.run(40_000);
+    agreeNow(nodes);
+    expect(hidden.session.inRoster()).toBe(true);
+    const me = finalOf(nodes[0]!).planets.find((p) => p.id === id(2))!;
+    expect(finalOf(nodes[0]!).tick - me.lastInputTick).toBeLessThan(30);
+  });
 });

@@ -19,10 +19,10 @@ export default defineConfig({
   },
   use: { baseURL: 'http://127.0.0.1:4318/', headless: true },
   projects: [
-    { name: 'chromium', testMatch: /(smoke|determinism)\.spec\.ts/, use: { browserName: 'chromium' } },
-    { name: 'firefox', testMatch: /(smoke|determinism)\.spec\.ts/, use: { browserName: 'firefox' } },
-    { name: 'webkit', testMatch: /(smoke|determinism)\.spec\.ts/, use: { browserName: 'webkit' } },
-    // Launches one browser per engine itself.
-    { name: 'net', testMatch: /round\.spec\.ts/ },
+    { name: 'chromium', testMatch: /(smoke|determinism|frames|touch)\.spec\.ts/, use: { browserName: 'chromium' } },
+    { name: 'firefox', testMatch: /(smoke|determinism|frames)\.spec\.ts/, use: { browserName: 'firefox' } },
+    { name: 'webkit', testMatch: /(smoke|determinism|frames)\.spec\.ts/, use: { browserName: 'webkit' } },
+    // These launch one browser per engine themselves.
+    { name: 'net', testMatch: /(round|play)\.spec\.ts/ },
   ],
 });
