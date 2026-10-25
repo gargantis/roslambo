@@ -31,5 +31,8 @@
     "vitest": "^4.1.0",
     "wrangler": "^4.152.0",
     "ws": "^8.18.3"
+  },
+  "dependencies": {
+    "@trystero-p2p/nostr": "0.26.0"
   }
 }

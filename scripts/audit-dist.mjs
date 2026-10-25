@@ -12,6 +12,11 @@ const expected = JSON.parse(await readFile(join(root, 'scripts/expected-licenses
 const { findings } = await auditDist(join(root, 'dist'), {
   allowedHosts: thirdParty.map((e) => e.host),
   expectedLicensePackages: expected,
+  // Trystero's built-in STUN list is a template literal,
+  // `stun:stun${i}.l.google.com:19302`, whose prefix the scan reads as a
+  // host named "stun". roslambo always passes its own iceServers, so the
+  // defaults are never used (src/net/room-config.test.ts).
+  ignoredHosts: ['stun'],
 });
 
 if (findings.length > 0) {

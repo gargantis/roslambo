@@ -46,13 +46,14 @@ export default tseslint.config(
     languageOptions: { globals: NODE_GLOBALS },
   },
   {
-    // Only src/net/trystero.ts imports Trystero (D-13).
+    // Only src/net/trystero.ts imports Trystero at runtime (D-13); types
+    // may be imported anywhere.
     files: ['src/**/*.ts'],
     ignores: ['src/net/trystero.ts'],
     rules: {
-      'no-restricted-imports': [
+      '@typescript-eslint/no-restricted-imports': [
         'error',
-        { patterns: [{ group: ['@trystero-p2p/*'], message: 'Only src/net/trystero.ts imports Trystero (PLAN D-13).' }] },
+        { patterns: [{ group: ['@trystero-p2p/*'], allowTypeImports: true, message: 'Only src/net/trystero.ts imports Trystero (PLAN D-13).' }] },
       ],
     },
   },

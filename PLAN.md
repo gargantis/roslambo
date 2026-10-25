@@ -4,6 +4,7 @@
 - The owner left the open questions to Claude's judgement for the MVP, so every question is settled at its proposal except four. Q-1, Q-2, Q-9 and Q-19 need facts or choices only the owner has.
 - Q-19 was settled on 2026-10-24: no license. The owner keeps all rights.
 - Manual runs are deferred for now (§15).
+- M3 finished on 2026-10-24: the load run is in [research/load/REPORT.md](research/load/REPORT.md). Its amendments are marked "M3".
 - M2 finished on 2026-10-24, and was revised the same day at the owner's request: Newtonian gravity with a smaller ring, and energy-conserving bounces. The tuning is in [research/tuning/REPORT.md](research/tuning/REPORT.md), §4. Its amendments are marked "M2".
 - M0 finished on 2026-10-24: see [research/lockstep/REPORT.md](research/lockstep/REPORT.md). Its amendments are marked "M0" in §3, §4, §9 and A.4.
 
@@ -89,7 +90,7 @@ Approval needs only §0–§4. Once the plan is approved, a Q, C, D or M number 
 |---|---|---|---|
 | Q-1 | Which reference devices for "60 fps on mid-range hardware"? | You name one phone (model and browser) and one laptop with integrated graphics. A run passes if the frame interval stays at p95 ≤ 18 ms and max ≤ 50 ms through a scripted 2-minute round with 8 planets, at 60 Hz. | M4 |
 | Q-2 | Which networks and people for the acceptance test, and for M0's manual run? | **Must pass:** three machines on at least two home broadband networks, the phone on Wi-Fi. **Best effort:** the phone on mobile data. Who provides the machines? Is one of them a Mac or an iPhone, so that real Safari is tested? | M6 (was M0, before the manual runs were deferred) |
-| Q-3 | Should the number of players be capped by what a full mesh can carry, as well as by the ring (C-2)? | Yes: maximum players ≤ the lesser of the ring limit and 8, and at most 4 spectators, which is exactly the performance requirement. Raised later if M3's load test allows. | M1 |
+| Q-3 | Should the number of players be capped by what a full mesh can carry, as well as by the ring (C-2)? | Yes: maximum players ≤ the lesser of the ring limit and 8, and at most 4 spectators, which is exactly the performance requirement. Raised later if M3's load test allows. **M3:** kept at 8 and 4; the load run was desktop-only (research/load/REPORT.md). | M1 |
 | Q-4 | Can votes use a hash of the newest final tick, instead of each player broadcasting "its state for the previous tick" (C-3)? | Yes. The input message carries the hash; the full state goes only to a peer that lost a vote or just arrived. The voted tick trails the live tick by about 0.2 s. | M0 |
 | Q-5 | What happens to a player who disconnects, or presses Leave, during the countdown? | The roster locks when the countdown starts. Their planet stays and drifts, they pay the ante, and the countdown goes on. Alternative: they're removed, and the countdown is cancelled if fewer than the minimum remain. | M2 |
 | Q-6 | Does opening the game count as "returning" to an unsettled round that is still running, or paused? (C-6) | No. In the background the browser only asks for results. Home lists your unsettled rounds with **Rejoin** (running) or **Resume** (paused), and a round resumes only when you open it. This adds a list to Home. | M5 |
@@ -349,6 +350,7 @@ Each decision gives the choice, the options rejected, and the cost if it's wrong
   - A vote every few ticks: an input message goes every tick anyway, and the vote adds 12 bytes.
   - Full states: C-3.
 - **Cost if wrong:** a deliberately crafted hash collision counts as cheating, which is out of scope. Changing the hash means one function plus the goldens.
+- **M3:** a tally counts only the votes of players in this peer's own roster at tick g, so a candidate or a spectator can't vote.
 - **M0, amended** (REPORT §3.2): a peer more than about 200 ms away heard only its own vote by tally time, and stayed diverged.
   - A vote now counts whenever it arrives, while its tick is still in the 256-tick history, and a changed outcome triggers the resync.
   - Confirmed: a corrupted peer is caught at the first tally of the corrupted tick (0.4 s) and repaired one round trip later.
@@ -386,6 +388,7 @@ Each decision gives the choice, the options rejected, and the cost if it's wrong
   - The losing peer drops its timeline and takes the winner's STATE. Its player re-sends JOIN if the winner hasn't reached the countdown yet.
 - **Rejected:** asking the user to choose, because peers could choose differently.
 - **Cost if wrong:** a history is lost in a rare case. Q-7 decides which one.
+- **M3:** both sides compare the same pair of HELLOs, the one each sent and the one it received, so they always agree on the winner (`beats` in `src/core/session/session.ts`; test P7).
 
 ### Networking
 
@@ -795,7 +798,7 @@ joinRoom(
 | 51 | 1 + n | display name |
 
 - Both sides send HELLO and read the other's.
-- **Refusal:** if the protocol version, build hash or role allowance fails, send REFUSE and throw, which makes Trystero drop the peer.
+- **Refusal (M3):** the handshake has two rounds. Both sides send HELLO, then both send a verdict: REFUSE with reason 0 for "accepted", or the reason. A side whose check fails sends its reason and throws, which makes Trystero drop the peer. The other side learns why from the verdict.
 - **Two sessions with one player ID:** the second is refused.
 - **Two timelines:** apply D-12.
 
@@ -823,7 +826,7 @@ joinRoom(
 | 28 | 1 | event count |
 | 29 | … | events |
 
-Events:
+Events (M3): each is `u8 back`, `u8 kind`, then its payload. It belongs to the sender's input for tick t − back, so one TICK can carry the sender's events still waiting to be final.
 
 | Kind | Name | Payload |
 |---|---|---|
@@ -834,10 +837,10 @@ Events:
 
 Rules:
 - One TICK per tick per player. A duplicate t is ignored.
-- The history fills any of the sender's inputs the receiver doesn't have yet (M0). It carries buttons only. An event is repeated in each of the sender's TICKs until its tick is final, so a joiner can't miss one; M3 fixes that encoding.
+- The history fills any of the sender's inputs the receiver doesn't have yet (M0). It carries buttons only. An event is repeated in each of the sender's TICKs until its tick is final, so a joiner can't miss one.
 - A t that is already final at the receiver is dropped.
 - A t more than 2w ahead of the receiver is dropped.
-- More than 3 TICKs per tick from one sender for 2 s closes the connection.
+- More than 3 TICKs per tick from one sender for 2 s closes the connection. *Not yet enforced (M3):* closing one connection needs a per-peer drop in the transport. Planned for M5, with §9.4's 20-invalid-messages rule; the session already counts invalid messages.
 
 **FWD (0x11):** `u8[16] origin player ID`, then a complete TICK message, type byte included. The receiver treats it as the origin's TICK and drops duplicates by (origin, t). FWD is never forwarded again.
 
@@ -975,6 +978,7 @@ Rules:
 
 **Dist audit:**
 - Every external host in the built JavaScript and HTML is listed in `third-party.json`.
+  - One documented exception (M3): Trystero's built-in STUN list is a template literal, `stun:stun${i}.l.google.com:19302`, which the scan reads as a host named "stun". roslambo always passes its own `iceServers`, so those defaults are never used (`src/net/room-config.test.ts`).
 - No source maps, no `.md` files, nothing matching a secret pattern.
 - A self-test with planted failures.
 
@@ -1131,6 +1135,10 @@ Rules:
   - P1–P5 and P7 are green;
   - the end-to-end test is green;
   - the 12-peer load run is within budget and logged, which decides whether Q-3's cap can rise.
+- *Done 2026-10-24:*
+  - 10 network properties pass in simulated time (`src/net/network.test.ts`): P1–P5 and P7, plus reload, a proposer leaving, a slow peer, refusals and late joiners.
+  - The three-engine round (`e2e/round.spec.ts`) passes in the gate.
+  - The load run is logged in research/load/REPORT.md; the cap stays.
 
 **M4 — Rendering, input and screens**
 - *Prerequisite:* Q-1's devices named.

@@ -7,6 +7,7 @@ export default defineConfig({
   testDir: './e2e',
   testMatch: /.*\.spec\.ts/,
   timeout: 60_000,
+  testIgnore: /load\.spec\.ts/, // the 12-peer load run: playwright.load.config.ts
   workers: 1,
   fullyParallel: false,
   reporter: [['list']],
@@ -18,8 +19,10 @@ export default defineConfig({
   },
   use: { baseURL: 'http://127.0.0.1:4318/', headless: true },
   projects: [
-    { name: 'chromium', use: { browserName: 'chromium' } },
-    { name: 'firefox', use: { browserName: 'firefox' } },
-    { name: 'webkit', use: { browserName: 'webkit' } },
+    { name: 'chromium', testMatch: /(smoke|determinism)\.spec\.ts/, use: { browserName: 'chromium' } },
+    { name: 'firefox', testMatch: /(smoke|determinism)\.spec\.ts/, use: { browserName: 'firefox' } },
+    { name: 'webkit', testMatch: /(smoke|determinism)\.spec\.ts/, use: { browserName: 'webkit' } },
+    // Launches one browser per engine itself.
+    { name: 'net', testMatch: /round\.spec\.ts/ },
   ],
 });

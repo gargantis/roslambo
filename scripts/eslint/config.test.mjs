@@ -36,6 +36,8 @@ describe('eslint project config', () => {
     const code = 'import { joinRoom } from "@trystero-p2p/nostr";\nexport const j = joinRoom;\n';
     expect((await lint(code, 'src/ui/bad.ts')).errorCount).toBeGreaterThanOrEqual(1);
     expect((await lint(code, 'src/net/trystero.ts')).errorCount).toBe(0);
+    const types = 'import type { JoinRoomConfig } from "@trystero-p2p/nostr";\nexport type C = JoinRoomConfig;\n';
+    expect((await lint(types, 'src/net/room-config.ts')).errorCount).toBe(0);
   });
 
   it('allows localStorage only in src/storage', async () => {

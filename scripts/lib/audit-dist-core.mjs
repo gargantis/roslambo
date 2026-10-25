@@ -20,7 +20,7 @@ const SECRET_PATTERNS = [
 const URL_RE = /(?:https?|wss?|stun|turn):\/?\/?([A-Za-z0-9.-]+)(?::\d+)?/g;
 const LOOPBACK = new Set(['127.0.0.1', 'localhost', '::1', '[::1]', '0.0.0.0']);
 
-export async function auditDist(dir, { allowedHosts, expectedLicensePackages }) {
+export async function auditDist(dir, { allowedHosts, expectedLicensePackages, ignoredHosts = [] }) {
   const findings = [];
   const files = await walk(dir);
   const relFiles = new Set(files.map((f) => toPosix(relative(dir, f))));
@@ -55,6 +55,7 @@ export async function auditDist(dir, { allowedHosts, expectedLicensePackages }) 
     for (const m of hostScanText.matchAll(URL_RE)) {
       const host = m[1].toLowerCase();
       if (host === 'www.w3.org') continue; // namespace URLs never produce requests
+      if (ignoredHosts.includes(host)) continue;
       if (LOOPBACK.has(host) || !allowedHosts.includes(host)) {
         findings.push({ file: rel, why: 'host not in third-party.json', detail: host });
       }

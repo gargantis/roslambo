@@ -5,9 +5,10 @@ Bumper planet rock, paper, scissors: a browser-based, peer-to-peer multiplayer g
 **Status:** in development. [REQUIREMENTS.md](REQUIREMENTS.md) says what it must do; [PLAN.md](PLAN.md) says how, and lists the milestones. Done so far:
 - M0, the lockstep spike ([research/lockstep/REPORT.md](research/lockstep/REPORT.md));
 - M1, the skeleton and its test gate;
-- M2, the deterministic simulation, with its tuning ([research/tuning/REPORT.md](research/tuning/REPORT.md)).
+- M2, the deterministic simulation, with its tuning ([research/tuning/REPORT.md](research/tuning/REPORT.md));
+- M3, networking and consensus: the wire protocol, the rollback timeline, sessions over Trystero ([research/load/REPORT.md](research/load/REPORT.md)).
 
-Next is M3: networking and consensus.
+Next is M4: rendering, input and screens.
 
 ## Run
 
@@ -28,6 +29,8 @@ npm run check
 ```
 
 `npm run check` is the gate: lint, public-scan, typecheck, unit tests, build with the dist audit, and end-to-end tests in Chromium, Firefox and WebKit. It contacts nothing public.
+
+The 12-peer load run stays outside the gate: `npx playwright test -c playwright.load.config.ts` (after `npm run build`).
 
 ## Build
 

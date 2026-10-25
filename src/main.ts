@@ -19,6 +19,9 @@ if (statusLine) {
 if (location.hash === '#test=determinism') {
   void import('./determinism').then((m) => m.run());
 }
+if (location.hash.startsWith('#test=net&') && computesLikeEveryone) {
+  void import('./nettest').then((m) => m.run());
+}
 document.documentElement.dataset.ready = '1';
 
 export {};
