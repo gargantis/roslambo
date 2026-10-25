@@ -254,7 +254,7 @@ Every setting should be easy to change.
 | Arena size, planet size and mass, gravitational constant | Arena side 1 (the unit of length); planet radius 0.03; G·m set by a 3-planet ring period of 10 seconds (G·m ≈ 0.004) | Together these set the ring's speed and period. All masses are equal, so only G·m matters |
 | Correction factor | 2 | Strength of the pre-start correction |
 | Re-arm gap | 1 planet diameter | How far apart a scoring pair's surfaces must get before it can score again (C-16) |
-| Maximum rotation rate | 1 turn per second | Must stay above the ring's rotation rate with the most players, so the default rotation fits under it |
+| Maximum rotation rate | 1 turn per second | Must stay above the ring's rotation rate with the most players, so the default rotation fits under it. Must also be at least the orbital rate of two planets almost touching (0.97 turn per second now), so a planet circling another can keep thrusting sideways |
 | Rotation acceleration | 2 turns per second² | Holding a rotate button reaches the maximum from rest in half a second |
 | Result retention | 30 days (Q-10) | How long witnesses keep a result for absent players |
 

@@ -18,6 +18,12 @@ describe('config', () => {
     expect(P.ringRate(playersCap)).toBeLessThan(P.maxRate);
   });
 
+  it('lets a planet turn as fast as two touching planets orbit each other', () => {
+    // So a planet circling another can keep its thrust sideways (the
+    // owner's rule, 2026-10-24). At these settings: 0.97 turn/s.
+    expect(config.maxRotationTurnsPerSecond).toBeGreaterThanOrEqual(makeParams().contactOrbitOmega / (2 * Math.PI));
+  });
+
   it('fits the mesh cap on the ring, and at least the minimum', () => {
     expect(ringCapacity).toBeGreaterThanOrEqual(config.maxPlayersCap);
     expect(playersCap).toBe(config.maxPlayersCap);

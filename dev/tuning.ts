@@ -154,6 +154,7 @@ function draw(): void {
     `${phase}${countdown}   tick ${s.tick}${s.phase === FROZEN ? '   (the round froze)' : ''}`,
     `points  ${s.planets.map((p, i) => `${i + 1}:${p.points}`).join('  ')}`,
     `episodes/s ${episodes}   top speed ${maxSpeed.toFixed(2)}   Gm ${P.gm.toFixed(4)}   8-ring ${(P.ringOmega(8) / 2 / Math.PI).toFixed(3)} turn/s`,
+    `touching orbit ${(P.contactOrbitOmega / 2 / Math.PI).toFixed(3)} turn/s against a maximum rotation of ${P.settings.maxRotationTurnsPerSecond} turn/s${P.contactOrbitOmega / 2 / Math.PI > P.settings.maxRotationTurnsPerSecond ? '  (TOO SLOW: breaks the requirement)' : ''}`,
     s.phase === PRESTART ? 'Press “Everyone ready” to start the countdown.' : '',
   ].join('\n');
 }

@@ -88,6 +88,10 @@ export interface SimParams {
   /** The same in binary-angle units per tick: the ring's phase step and the
    *  default rotation rate (D-5). */
   ringRate(n: number): number;
+  /** The angular rate, rad/s, of two planets orbiting each other almost
+   *  touching: the rate a planet must turn at to keep thrusting sideways
+   *  while circling another (REQUIREMENTS, maximum rotation rate). */
+  readonly contactOrbitOmega: number;
 }
 
 /** Inward acceleration on one planet of an n-ring of radius R, per unit Gm,
@@ -125,6 +129,9 @@ export function makeParams(settings: SimSettings = DEFAULT_SETTINGS): SimParams 
     return rate[n]!;
   };
   const twoR = 2 * r;
+  // Two equal planets d = 2r apart: ω²·d = 2·(pull at d), as each is pulled.
+  const s2 = twoR * twoR + eps2;
+  const contactPull = (gm * twoR) / (s2 * Math.sqrt(s2));
   // Touching centres are 2r apart; the surfaces must open a further gap,
   // counted in planet diameters (C-16).
   const release = twoR + settings.rearmGapDiameters * twoR;
@@ -148,5 +155,6 @@ export function makeParams(settings: SimSettings = DEFAULT_SETTINGS): SimParams 
     readyExpiryTicks: settings.readyExpirySeconds * settings.tickRate,
     ringOmega,
     ringRate,
+    contactOrbitOmega: Math.sqrt((2 * contactPull) / twoR),
   };
 }

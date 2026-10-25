@@ -159,4 +159,16 @@ Gravity weakens with a smaller ring at the same ring period, since Gm ∝ R³ / 
 - rounds last 48 / 37 / 27 s (3 / 5 / 8 bots, ante 5), at 29 / 47 / 71 points a minute;
 - top speed 1.8 arena sides/s.
 
+### 4.5 The rotation limit and the touching orbit
+
+The owner's rule: the maximum rotation rate must be at least the orbital rate of two planets almost touching, √(2Gm/(2r)³). Only then can a planet circling another keep its thrust sideways. It accounts for the escape times in §4.3:
+
+| Ring radius | Gm | Touching orbit | Median escape |
+|---|---|---|---|
+| 0.44 | 0.058 | 3.70 turn/s | 19 s (thrust 1.4) |
+| 0.22 | 0.0073 | 1.31 turn/s | 18 s (thrust 0.6) |
+| **0.18** | **0.0040** | **0.97 turn/s** | **8.4 s** (thrust 0.6) |
+
+At the final values the rule holds with 3% to spare, against the 1 turn/s maximum. A gate test (`src/config.test.ts`) fails any re-tune that breaks it, and the tuning page shows the margin.
+
 **Still unknown:** how it feels to people.

@@ -638,6 +638,7 @@ Everything below is in the canonical state (A.1) and so in the hash. Spectators 
 ### 7.5 Configuration checks (unit tests on `src/config.ts`)
 
 - The maximum rotation rate exceeds ω_N at the largest allowed N.
+- The maximum rotation rate is at least the orbital rate of two planets almost touching, √(2Gm/(2r)³), so a planet circling another can keep thrusting sideways (the owner's rule, 2026-10-24; 0.97 turn/s at the M2 values).
 - The ring capacity is at least the cap on maximum players.
 - No tunnelling up to the speed bound of D-4.
 - Every setting from the Configuration table lives in `src/config.ts`, and nowhere else.
