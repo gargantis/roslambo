@@ -281,3 +281,36 @@ describe('closing connections that misbehave (§9.4)', () => {
     agree(nodes);
   });
 });
+
+describe('events that arrive too late (§8.3)', () => {
+  it('a Ready whose TICKs reach the others after its tick is final is sent again, so the countdown still starts', () => {
+    // Player 3's links are slow for 0.6 s around its Ready, at 2150 ms.
+    const net: LoopbackNet = new LoopbackNet(38, (a: string, b: string): LinkSpec => {
+      const late = (a === 'n3' || b === 'n3') && net.now >= 2100 && net.now < 2700;
+      return { base: late ? 450 : 40, jitter: 10 };
+    });
+    const nodes = lobby(net);
+    net.run(12_000);
+    for (const n of nodes) expect(finalOf(n).phase, n.id).not.toBe(0);
+    agree(nodes);
+  });
+
+  it('a Ready that expires the normal way stays expired', () => {
+    const net = new LoopbackNet(39, uniform(49));
+    const keeper = node(net, 0, 'n0');
+    net.join(keeper, 0, (now) => keeper.session.propose(keeper.local(now), SETTINGS, 'a'.repeat(16)));
+    const nodes = [keeper];
+    for (const k of [1, 2, 3]) {
+      const n = node(net, k, `n${k}`);
+      net.join(n, 200 * k, () => n.session.play());
+      if (k !== 3) net.at(2000 + 50 * k, () => n.session.ready()); // player 3 never presses Ready
+      nodes.push(n);
+    }
+    net.run(2000 + config.readyExpirySeconds * 1000 + 5000);
+    const s = finalOf(nodes[1]!);
+    expect(s.phase).toBe(0);
+    expect(s.planets.map((p) => p.readyUntil > s.tick)).toEqual([false, false, false]);
+    agree(nodes);
+  });
+});
+

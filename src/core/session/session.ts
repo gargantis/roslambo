@@ -98,6 +98,11 @@ export class Session implements RoomPeer {
   private lastPeersSent = -Infinity;
   private joinAsk = { next: 0, at: -Infinity };
   private joinSentAt = -1; // local tick of the last JOIN, -1 if none pending
+  /** The player's last Ready or cancel. An event whose TICKs reach the
+   *  others after its tick is final is lost to them, and the vote then
+   *  undoes it here too, so it is sent again until the round explains its
+   *  absence: the Ready expired, or the player was removed and rejoined. */
+  private readyWant: { on: boolean; sentAt: number; joinTick: number; until: number } | null = null;
   private openedAt = -1;
 
   constructor(cfg: SessionConfig, link: Link) {
@@ -138,8 +143,12 @@ export class Session implements RoomPeer {
     this.joinSentAt = -1; // advance() sends the JOIN once a timeline is held
   }
 
+  /** Ready, or its cancel (Q-21). Only a player with a planet can. */
   ready(on = true): void {
+    const mine = this.timeline.final.planets.find((p) => p.id === this.cfg.me);
+    if (!mine) return;
     this.timeline.queueEvent(on ? READY : UNREADY);
+    this.readyWant = { on, sentAt: this.timeline.localTick, joinTick: mine.joinTick, until: 0 };
   }
 
   leave(): void {
@@ -341,7 +350,10 @@ export class Session implements RoomPeer {
       else this.askToJoin(now);
     }
     this.timeline.advance(now);
-    if (this.timeline.started && this.wantsToPlay) this.joinOrGiveUp();
+    if (this.timeline.started && this.wantsToPlay) {
+      this.joinOrGiveUp();
+      this.keepReady();
+    }
     if (this.peersDirty || now - this.lastPeersSent >= PEERS_EVERY_MS) {
       this.peersDirty = false;
       this.lastPeersSent = now;
@@ -374,6 +386,37 @@ export class Session implements RoomPeer {
     const [peer] = holders[this.joinAsk.next++ % holders.length]!;
     this.joinAsk.at = now;
     this.timeline.requestState(peer);
+  }
+
+  /** Keep the final state as the player asked: send Ready (or its cancel)
+   *  again if it was lost. Votes can't say it landed: with the others'
+   *  votes late, a peer's own vote agrees with itself until they arrive.
+   *  So only the round's own reasons end the wish: the Ready's expiry
+   *  tick, or a new join after the player was removed (Q-15). */
+  private keepReady(): void {
+    const w = this.readyWant;
+    if (!w) return;
+    const t = this.timeline;
+    const s = t.final;
+    const mine = s.planets.find((p) => p.id === this.cfg.me);
+    if (!mine || mine.joinTick !== w.joinTick) {
+      this.readyWant = null;
+      return;
+    }
+    // A countdown here may be this peer's alone, until a resync undoes it.
+    if (s.phase !== PRESTART) return;
+    if (mine.readyUntil > s.tick === w.on) {
+      if (w.on) w.until = mine.readyUntil;
+      return;
+    }
+    if (w.on && w.until > 0 && s.tick >= w.until) {
+      this.readyWant = null; // it expired, as Ready does after a minute
+      return;
+    }
+    if (t.finalTick > w.sentAt + t.cfg.delay + 30) {
+      t.queueEvent(w.on ? READY : UNREADY);
+      w.sentAt = t.localTick;
+    }
   }
 
   /** Send JOIN once, and again if it was lost; give up if the round won't

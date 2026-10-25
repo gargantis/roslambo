@@ -8,6 +8,8 @@
     "not_found_handling": "none"
   },
   // Request logs would keep visitor IP addresses (C-21).
-  "observability": { "enabled": false }
-  // "routes": the domain, once Q-9 is answered.
+  "observability": { "enabled": false },
+  // Served at roslambo.<account subdomain>.workers.dev until the domain is
+  // chosen (Q-9); "routes" then adds it.
+  "workers_dev": true
 }

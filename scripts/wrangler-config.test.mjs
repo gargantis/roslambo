@@ -21,7 +21,8 @@ describe('wrangler.jsonc', () => {
     expect(config.observability).toEqual({ enabled: false });
   });
 
-  it('has no route until the domain is chosen (Q-9)', () => {
+  it('has no route until the domain is chosen (Q-9), and serves on workers.dev meanwhile', () => {
     expect(config.routes).toBeUndefined();
+    expect(config.workers_dev).toBe(true);
   });
 });

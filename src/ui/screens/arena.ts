@@ -50,7 +50,9 @@ export function arenaScreen(game: Game, host: ArenaHost): Screen {
   const left = h('button', { type: 'button', class: 'pad-button', 'aria-label': 'Rotate left (A)' }, '⟲');
   const right = h('button', { type: 'button', class: 'pad-button', 'aria-label': 'Rotate right (D)' }, '⟳');
   const thrust = h('button', { type: 'button', class: 'pad-button thrust', 'aria-label': 'Thrust (W)', hidden: true }, 'Thrust');
-  const ready = h('button', { type: 'button', class: 'pad-button ready', 'data-test': 'ready' }, 'Ready');
+  // Disabled until this player has a planet: a Ready before then has no
+  // planet to apply to, and would be lost.
+  const ready = h('button', { type: 'button', class: 'pad-button ready', 'data-test': 'ready', disabled: true }, 'Joining…');
   bindButton(left, LEFT, host.controls);
   bindButton(right, RIGHT, host.controls);
   bindButton(thrust, THRUST, host.controls);

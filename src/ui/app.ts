@@ -40,8 +40,10 @@ export interface Inspection {
   started: boolean;
   finalTick: number;
   phase: number;
-  planets: { id: string; lastInputTick: number; points: number }[];
+  planets: { id: string; lastInputTick: number; points: number; joinTick: number; readyUntil: number }[];
   me: string;
+  peers: number;
+  stats: { late: number; resyncs: number; disagree: number; received: number };
   hashes: Record<number, string>; // the last 200 final ticks' hashes
 }
 
@@ -101,7 +103,9 @@ export class App {
     for (let k = Math.max(0, t.finalTick - 200); k <= t.finalTick; k++) hashes[k] = t.hashAt(k);
     return {
       roundId: g.roundId, timeline: t.id, started: t.started, finalTick: t.finalTick, phase: t.final.phase, me: g.session.cfg.me, hashes,
-      planets: t.final.planets.map((p) => ({ id: p.id, lastInputTick: p.lastInputTick, points: p.points })),
+      planets: t.final.planets.map((p) => ({ id: p.id, lastInputTick: p.lastInputTick, points: p.points, joinTick: p.joinTick, readyUntil: p.readyUntil })),
+      peers: g.peers(),
+      stats: { late: t.stats.late, resyncs: t.stats.resyncs, disagree: t.stats.disagree, received: t.stats.received },
     };
   }
 

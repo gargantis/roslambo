@@ -55,6 +55,10 @@ test('three engines play a round through the screens, joining by link and by cod
     await c.page.locator('[data-test=code]').fill(code.toLowerCase());
     await c.page.locator('[data-test=join]').click();
     await c.page.locator('[data-test=join-play]').click();
+    // Until its planet is in the round, Ready has nothing to apply to: a
+    // press then was lost, and the round never started (found on the live site).
+    await expect(c.page.locator('[data-test=ready]')).toBeDisabled();
+    await expect(c.page.locator('[data-test=ready]')).toHaveText('Joining…');
 
     const pages = [a, b, c];
     for (const p of pages) {

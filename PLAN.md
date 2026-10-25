@@ -4,7 +4,7 @@
 - The owner left the open questions to Claude's judgement for the MVP, so every question is settled at its proposal except four. Q-1, Q-2, Q-9 and Q-19 need facts or choices only the owner has.
 - Q-19 was settled on 2026-10-24: no license. The owner keeps all rights.
 - Q-1 was settled on 2026-10-24: the owner's Pixel 8a is the reference phone, and there is no laptop.
-- Manual runs are deferred for now (§15).
+- Manual runs are deferred for now (§15). On 2026-10-24 the owner deferred the phone and network tests again ("too much hassle") and asked to deploy and see what happens. So the first deploy comes before Q-2 and Q-9, to the account's `workers.dev` address (M6 amended). **Deployed 2026-10-24.** The address isn't written here because it carries the account's name, and this repo is public.
 - M5 finished on 2026-10-24. The passive-room probe is in [research/passive/REPORT.md](research/passive/REPORT.md). Its amendments are marked "M5".
 - M4 finished on 2026-10-24, except its runs on the phone, which wait with the other manual runs. The devices and criteria are in [docs/acceptance.md](docs/acceptance.md). Its amendments are marked "M4".
 - M3 finished on 2026-10-24: the load run is in [research/load/REPORT.md](research/load/REPORT.md). Its amendments are marked "M3".
@@ -230,6 +230,7 @@ REQUIREMENTS.md is yours. These edits went in on 2026-10-24, in one commit that 
 | C-19 | With two voters, any disagreement is a tie, and the smallest hash wins whether right or wrong. This happens before the countdown, and when only 2 of a round's players are connected. | Accepted. Honest peers rarely disagree (D-7). |
 | C-20 | Browsers throttle timers in background tabs, and iOS suspends them. | A hidden player stops sending, so their planet drifts, as for a disconnect. On return the browser resyncs (D-23). Before the countdown, 3 s away removes them (Q-15). |
 | C-21 | "No tracking" vs what P2P exposes: peers see each other's IP addresses; relays and STUN servers see IP addresses and timing; Cloudflare can keep request logs. | Logs off (D-25). §18 lists what each party sees. No analytics. |
+| C-22 | **Found at the first deploy (2026-10-24): three of the six curated relays refuse roslambo.** nostr.bitcoiner.social and offchain.pub accept only keys in their "web of trust". Trystero signs with a new random key on every page load, so they always refuse. relay.damus.io answered "banned: too many rate-limit violations", probably for this machine's test traffic, and probably for a while only. Signalling works through the other three: relay.primal.net, nos.lol and yabu.me/v2. | **Open: the list is the owner's (REQUIREMENTS, *Stack*).** Proposed: replace the two web-of-trust relays with two open ones, checked the same way, in `third-party.json` and REQUIREMENTS.md. Keep damus and check it again later. Until then, players can add relays in Settings. |
 
 ---
 
@@ -694,6 +695,18 @@ At each new local tick n:
    - On STATE: check that the state hashes to the winner; replace my state at g; adopt the sender's inputs after g; re-simulate.
 
 Spectators run steps 2–5 without sending. A keeper with no players runs steps 3 and 4.
+
+**Fixed at the first deploy: a lost Ready, so the round never started.**
+- An end-to-end run failed once this way, and so did the first three-engine round on the live site, over the public relays. That round's trace (2026-10-24) found the cause:
+  - The Ready button was enabled while the page was still connecting, before the player had a planet. A press then had nothing to apply to.
+  - Now it reads "Joining…" and stays disabled until the planet is in the round, and `Session.ready` ignores a press without one. `play.spec.ts` checks it.
+  - With that fixed, the same live round played to the freeze in 26 s, in all three engines, with no late inputs and no resyncs.
+- A second way was found and fixed in simulation:
+  - An event (JOIN, READY, UNREADY, LEAVE) rides in its sender's TICKs until its tick is final *at the sender*. If those TICKs reach the others after the tick is final for them, the event is lost there, and the vote then undoes it at the sender too.
+  - JOIN was already sent again until the player is in the roster. READY and its cancel now are too, until the state shows them (`Session.keepReady`).
+  - The wish ends only for the round's own reasons: the Ready's expiry, or a new join after the player was removed (Q-15). Votes can't say an event landed: with the others' votes late, a peer's own vote agrees with itself.
+  - LEAVE needs nothing: an absent player is removed after 3 s anyway.
+  - `src/net/resume-results.test.ts` reproduces it with one player's links slow for 0.6 s around its Ready, and checks that a Ready that expires stays expired.
 
 ### 8.4 Spectators and late arrivals
 
@@ -1250,6 +1263,7 @@ Rules:
 
 **M6 — Acceptance and release**
 - *Prerequisites:* Q-2's machines and people booked; Q-9's domain.
+- *Amended 2026-10-24 by the owner:* deploy first, without either, to the Cloudflare account's `workers.dev` address. The acceptance runs, the phone runs and the domain stay open. The exit below still needs them.
 - *Build:* the README in full; the acceptance runs, including the manual runs deferred from M0.
 - *Release:*
   - `npm run check`;
