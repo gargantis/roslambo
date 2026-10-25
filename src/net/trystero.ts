@@ -2,11 +2,12 @@
 // Trystero. It joins one room, runs the two-round handshake (both HELLOs,
 // then both verdicts, so a refused peer learns why), carries every
 // message on one binary action, measures round trips with room.ping, and
-// hands everything to a Session.
+// hands everything to a room peer: a game Session, or a settler or
+// witness. It can close one peer's connection and refuse it after (§9.4).
 
 import { getRelaySockets, joinRoom } from '@trystero-p2p/nostr';
 import * as M from '../core/protocol/messages';
-import type { Session } from '../core/session/session';
+import type { RoomPeer } from '../core/session/room-peer';
 import { roomConfig, type RoomConfigInput } from './room-config';
 
 const ACCEPTED = 0; // REFUSE with reason 0: the handshake's "yes"
@@ -29,12 +30,14 @@ export class TrysteroRoom {
   private readonly action: { send: (d: Uint8Array, o?: { target?: string }) => Promise<void> };
   private readonly pending = new Map<string, { hello: M.Hello; sent: M.Hello }>();
   private readonly peers = new Set<string>();
+  private readonly blocked = new Set<string>();
   private readonly timer: ReturnType<typeof setInterval>;
 
-  constructor(opts: RoomOptions, session: Session, now: () => number) {
+  constructor(opts: RoomOptions, session: RoomPeer, now: () => number) {
     this.room = joinRoom(roomConfig(opts), opts.roundId, {
       handshakeTimeoutMs: 10_000,
       onPeerHandshake: async (peerId, send, receive) => {
+        if (this.blocked.has(peerId)) throw new Error('dropped');
         const sent = session.hello();
         await send(M.encodeHello(sent));
         const theirs = M.decode(bytesOf((await receive()).data) ?? new Uint8Array(0));
@@ -55,7 +58,7 @@ export class TrysteroRoom {
     this.action = this.room.makeAction<Uint8Array>('rl', {
       onMessage: (data, ctx) => {
         const bytes = bytesOf(data);
-        if (bytes) session.onMessage(ctx.peerId, bytes, now());
+        if (bytes && !this.blocked.has(ctx.peerId)) session.onMessage(ctx.peerId, bytes, now());
       },
     });
     this.room.onPeerJoin = (peerId) => {
@@ -84,7 +87,19 @@ export class TrysteroRoom {
     if (this.peers.size > 0) void this.action.send(bytes).catch(() => {});
   }
 
-  private async ping(peer: string, session: Session): Promise<void> {
+  /** §9.4: close this peer's connection, and refuse it from now on. Its
+   *  page would have to reload to get a new peer ID. */
+  drop(peer: string): void {
+    this.blocked.add(peer);
+    this.peers.delete(peer);
+    try {
+      (this.room.getPeers() as Record<string, RTCPeerConnection>)[peer]?.close();
+    } catch {
+      // already closed
+    }
+  }
+
+  private async ping(peer: string, session: RoomPeer): Promise<void> {
     try {
       session.onRtt(peer, await this.room.ping(peer));
     } catch {

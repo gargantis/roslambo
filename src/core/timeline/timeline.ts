@@ -161,6 +161,22 @@ export class Timeline {
     this.prevHead = cloneState(this.finalState);
   }
 
+  /** A paused round goes on from a saved state, as a new timeline (§8.5,
+   *  D-12): the saved tick is final, and the clock runs on from it. */
+  resume(now: number, state: RoundState, id: string): void {
+    this.id = id;
+    this.finalState = cloneState(state);
+    this.finalTick = state.tick;
+    this.localTick = state.tick;
+    this.lastTallied = state.tick;
+    this.t0 = now;
+    this.b0 = state.tick;
+    this.started = true;
+    this.store(state.tick);
+    this.head = cloneState(this.finalState);
+    this.prevHead = cloneState(this.finalState);
+  }
+
   /** The newest final state. */
   get final(): RoundState {
     return this.finalState;
@@ -209,7 +225,9 @@ export class Timeline {
     if (target > this.localTick) {
       while (this.localTick < target) {
         this.localTick++;
-        this.stepLocal(this.localTick, now);
+        // After a stall (a throttled timer), inputs for ticks already past
+        // the late window are useless to peers: send only the newest.
+        this.stepLocal(this.localTick, now, this.localTick > target - this.cfg.window);
       }
       this.predict();
     }
@@ -254,8 +272,8 @@ export class Timeline {
 
   // ---- per tick ----
 
-  private stepLocal(n: number, now: number): void {
-    if (this.sending) this.send(n, now);
+  private stepLocal(n: number, now: number, send: boolean): void {
+    if (this.sending && send) this.send(n, now);
     this.finalizeTo(n - this.cfg.window);
     this.tallyTo(Math.min(n - this.cfg.window - this.cfg.voteWindow, this.finalTick), now);
   }

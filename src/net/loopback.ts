@@ -4,7 +4,7 @@
 // connect, and per-node clock offset and drift. Seeded, so runs repeat.
 
 import * as M from '../core/protocol/messages';
-import type { Session } from '../core/session/session';
+import type { Link, RoomPeer } from '../core/session/room-peer';
 
 export function mulberry32(seed: number): () => number {
   let a = seed >>> 0;
@@ -77,9 +77,9 @@ export interface NodeOptions {
   drift?: number; // relative clock rate error
 }
 
-export interface LoopNode {
+export interface LoopNode<S extends RoomPeer = RoomPeer> {
   id: string; // transport peer ID
-  session: Session;
+  session: S;
   online: boolean;
   local(now: number): number;
   neighbours: Set<string>;
@@ -118,17 +118,20 @@ export class LoopbackNet {
     if (na?.online && nb?.online) this.connect(na, nb);
   }
 
-  /** Adds a node, offline until join(). `make` builds its session around
+  /** Connections closed with drop(), as [by, peer]. */
+  readonly drops: [string, string][] = [];
+
+  /** Adds a node, offline until join(). `make` builds its room peer around
    *  the link this network provides. */
-  add(id: string, make: (link: { send(peer: string, b: Uint8Array): void; broadcast(b: Uint8Array): void }) => Session, opts: NodeOptions = {}): LoopNode {
+  add<S extends RoomPeer>(id: string, make: (link: Link) => S, opts: NodeOptions = {}): LoopNode<S> {
     const offset = opts.clockOffset ?? 0;
     const drift = opts.drift ?? 0;
-    const node: LoopNode = {
+    const node = {
       id,
       online: false,
-      neighbours: new Set(),
-      local: (now) => now * (1 + drift) + offset,
-      session: undefined as unknown as Session,
+      neighbours: new Set<string>(),
+      local: (now: number) => now * (1 + drift) + offset,
+      session: undefined as unknown as S,
     };
     node.session = make({
       send: (peer, b) => {
@@ -138,9 +141,21 @@ export class LoopbackNet {
         if (!node.online) return;
         for (const peer of node.neighbours) this.deliver(node, peer, b);
       },
+      drop: (peer) => {
+        this.drops.push([id, peer]);
+        this.block(id, peer);
+        this.disconnect(node, peer);
+      },
     });
     this.nodes.set(id, node);
     return node;
+  }
+
+  private disconnect(node: LoopNode, peer: string): void {
+    const other = this.nodes.get(peer);
+    if (!node.neighbours.delete(peer)) return;
+    node.session.onPeerLeave(peer);
+    if (other?.neighbours.delete(node.id)) other.session.onPeerLeave(node.id);
   }
 
   /** The node enters the room at virtual time `at`, connecting to every

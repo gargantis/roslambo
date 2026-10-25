@@ -7,9 +7,10 @@ Bumper planet rock, paper, scissors: a browser-based, peer-to-peer multiplayer g
 - M1, the skeleton and its test gate;
 - M2, the deterministic simulation, with its tuning ([research/tuning/REPORT.md](research/tuning/REPORT.md));
 - M3, networking and consensus: the wire protocol, the rollback timeline, sessions over Trystero ([research/load/REPORT.md](research/load/REPORT.md));
-- M4, rendering, input and screens: a round is playable from Home to Results. The runs on the reference phone are still to do ([docs/acceptance.md](docs/acceptance.md)).
+- M4, rendering, input and screens: a round is playable from Home to Results. The runs on the reference phone are still to do ([docs/acceptance.md](docs/acceptance.md));
+- M5, persistence: saved rounds, pause and resume, missed results collected from other players' browsers, Settings, and one game tab per browser ([research/passive/REPORT.md](research/passive/REPORT.md)).
 
-Next is M5: saved rounds, pause and resume, missed results, and Settings.
+Next is M6, acceptance and release. It needs the networks and people for the manual runs, and a domain.
 
 ## Run
 
@@ -35,9 +36,10 @@ npm run check
 
 `npm run check` is the gate: lint, public-scan, typecheck, unit tests, build with the dist audit, and end-to-end tests in Chromium, Firefox and WebKit. It contacts nothing public.
 
-Two runs stay outside the gate (after `npm run build`):
+Three runs stay outside the gate (after `npm run build`):
 - the 12-peer load run: `npx playwright test -c playwright.load.config.ts`;
-- the frame-time bench at phone size, with the CPU slowed 1×, 4× and 6×: `npx playwright test -c playwright.bench.config.ts`.
+- the frame-time bench at phone size, with the CPU slowed 1×, 4× and 6×: `npx playwright test -c playwright.bench.config.ts`;
+- the passive-room probe, on the dev server: `npx playwright test -c research/passive/playwright.config.ts`.
 
 ## Build
 

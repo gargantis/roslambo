@@ -54,5 +54,6 @@ The proxy rows are headless Chromium 156 on the development machine (12 cores, W
 | Run | Where | Status |
 |---|---|---|
 | 12-peer load run (Q-3) | [research/load/REPORT.md](../research/load/REPORT.md) | done on desktop at M3; the cap stays at 8 and 4 |
+| Passive rooms for witnesses (C-6, Q-10) | [research/passive/REPORT.md](../research/passive/REPORT.md) | done on desktop with a local relay at M5; public relays unmeasured |
 | Determinism page on real Safari, macOS and iOS | M6 | not yet run |
 | The Q-2 network matrix | M6 | waits for Q-2 |

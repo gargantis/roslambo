@@ -241,7 +241,7 @@ export function encodeResultReq(player: string): Uint8Array {
 
 export function encodeResult(r: ResultRecord): Uint8Array {
   const w = new Writer().u8(T.RESULT).string(r.round).u32(r.ante).u32(r.freezeTick).hex(r.finalHash, 8).u8(r.players.length);
-  for (const p of r.players) w.hex(p.player, 16).string(p.name).u32(p.points);
+  for (const p of r.players) w.hex(p.player, 16).string(p.name).i32(p.points);
   return w.done();
 }
 
@@ -385,7 +385,7 @@ export function decode(bytes: Uint8Array): Message | null {
       const finalHash = r.hex(8);
       const n = r.u8();
       const players: ResultRecord['players'] = [];
-      for (let i = 0; i < n; i++) players.push({ player: r.hex(16), name: r.string(), points: r.u32() });
+      for (let i = 0; i < n; i++) players.push({ player: r.hex(16), name: r.string(), points: r.i32() });
       m = { type, record: { round, ante, freezeTick, finalHash, players } };
       break;
     }

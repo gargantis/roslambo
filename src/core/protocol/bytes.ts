@@ -44,6 +44,13 @@ export class Writer {
     return this;
   }
 
+  i32(v: number): this {
+    this.room(4);
+    this.view.setInt32(this.length, v, true);
+    this.length += 4;
+    return this;
+  }
+
   bytes(b: Uint8Array): this {
     this.room(b.length);
     this.buf.set(b, this.length);
@@ -108,6 +115,11 @@ export class Reader {
   u32(): number {
     const at = this.take(4);
     return at < 0 ? 0 : this.view.getUint32(at, true);
+  }
+
+  i32(): number {
+    const at = this.take(4);
+    return at < 0 ? 0 : this.view.getInt32(at, true);
   }
 
   bytes(n: number): Uint8Array {

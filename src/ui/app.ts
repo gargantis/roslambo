@@ -1,15 +1,21 @@
 // The screens and the moves between them (PLAN §11, D-22): one in-memory
 // state machine. While in a round the URL fragment is #join=<round ID>, so
-// a reload returns to it; Home clears it.
+// a reload returns to it; Home clears it. The background service watches
+// witnessed and unsettled rounds while no game has their room (§8.7).
 
 import * as M from '../core/protocol/messages';
 import { generateRoundId, nextRoundId, roundIdFromHash } from '../core/round-id';
+import type { RoomPeer } from '../core/session/room-peer';
 import { scriptButtons } from '../core/sim/scripts';
 import type { RoundSettings } from '../core/sim/state';
-import { TrysteroRoom } from '../net/trystero';
+import { TrysteroRoom, type RoomOptions } from '../net/trystero';
 import { ProfileStore } from '../storage/profile';
+import { SavedRounds } from '../storage/rounds';
+import { SettingsStore } from '../storage/settings';
+import { WitnessStore } from '../storage/witness';
+import { Background } from './background';
 import { Controls } from './controls';
-import { Game, type Result } from './game';
+import { BUILD, Game, type Result, type Transport } from './game';
 import { arenaScreen } from './screens/arena';
 import { homeScreen } from './screens/home';
 import { joinScreen } from './screens/join';
@@ -17,27 +23,56 @@ import { messageScreen } from './screens/message';
 import { createdScreen, proposeScreen } from './screens/propose';
 import { resultsScreen } from './screens/results';
 import type { Screen } from './screens/screen';
+import { settingsScreen } from './screens/settings';
 
 declare global {
   interface Window {
     /** End-to-end tests only, set before the page loads: a local relay
      *  instead of the public ones, and scripted buttons for this page. */
-    roslamboTest?: { relay?: string; script?: { seed: number; k: number } };
+    roslamboTest?: { relay?: string; script?: { seed: number; k: number }; inspect?: () => Inspection | null };
   }
+}
+
+/** What end-to-end tests read about the open round (window.roslamboTest). */
+export interface Inspection {
+  roundId: string;
+  timeline: string;
+  started: boolean;
+  finalTick: number;
+  phase: number;
+  planets: { id: string; lastInputTick: number; points: number }[];
+  me: string;
+  hashes: Record<number, string>; // the last 200 final ticks' hashes
 }
 
 const CLOSE_AFTER_AGAIN_MS = 500;
 
 export class App {
   readonly profile = new ProfileStore();
+  readonly rounds = new SavedRounds();
+  readonly witnesses = new WitnessStore();
+  readonly settings = new SettingsStore();
   readonly controls = new Controls();
+  readonly background: Background;
   private readonly root: HTMLElement;
   private readonly test = window.roslamboTest ?? null;
   private screen: Screen | null = null;
   private game: Game | null = null;
+  private suspended = false;
+  private readonly closing = new Set<string>(); // rounds whose game room is still closing
 
   constructor(root: HTMLElement) {
     this.root = root;
+    this.background = new Background({
+      me: () => {
+        const p = this.profile.get();
+        return { id: p.playerId, name: p.name };
+      },
+      build: BUILD, profile: this.profile, witnesses: this.witnesses, rounds: this.rounds,
+      open: (roundId, peer, passive) => this.room(roundId, peer, passive),
+      closing: (roundId) => this.closing.has(roundId),
+    });
+    if (this.test) this.test.inspect = () => this.inspect();
     addEventListener('hashchange', () => this.route());
     const loop = (now: number): void => {
       this.screen?.frame?.(now);
@@ -47,7 +82,31 @@ export class App {
     this.route();
   }
 
+  /** Every room this tab opens: the settings' relays and TURN (§8.8), or
+   *  the local relay in end-to-end tests. */
+  private room(roundId: string, peer: RoomPeer, passive: boolean): Transport {
+    const s = this.settings.get();
+    const relay = this.test?.relay;
+    const opts: RoomOptions = relay
+      ? { roundId, relays: [relay], local: true, passive }
+      : { roundId, extraRelays: s.relays, turn: s.turn, passive };
+    return new TrysteroRoom(opts, peer, () => performance.now());
+  }
+
+  private inspect(): Inspection | null {
+    const g = this.game;
+    if (!g) return null;
+    const t = g.session.timeline;
+    const hashes: Record<number, string> = {};
+    for (let k = Math.max(0, t.finalTick - 200); k <= t.finalTick; k++) hashes[k] = t.hashAt(k);
+    return {
+      roundId: g.roundId, timeline: t.id, started: t.started, finalTick: t.finalTick, phase: t.final.phase, me: g.session.cfg.me, hashes,
+      planets: t.final.planets.map((p) => ({ id: p.id, lastInputTick: p.lastInputTick, points: p.points })),
+    };
+  }
+
   private route(): void {
+    if (this.suspended) return;
     const id = roundIdFromHash(location.hash);
     if (id) this.open(id);
     else this.home();
@@ -70,10 +129,35 @@ export class App {
     history.replaceState(null, '', roundId ? `#join=${roundId}` : `${location.pathname}${location.search}`);
   }
 
+  /** Another tab took over (Q-16): stop everything and say so. */
+  suspend(useHere: () => void): void {
+    this.suspended = true;
+    this.closeGame(false);
+    this.background.stop();
+    this.show(messageScreen('roslambo is open in another tab', 'Only one tab plays at a time. Use that one, or play here instead.', [{ label: 'Use here', run: useHere }], 'other-tab'));
+  }
+
+  resume(): void {
+    this.suspended = false;
+    this.background.restart(null);
+    this.route();
+  }
+
   home(): void {
     this.closeGame();
     this.setHash(null);
-    this.show(homeScreen({ profile: this.profile, propose: () => this.proposeForm(), join: (id) => this.open(id) }));
+    this.show(homeScreen({
+      profile: this.profile,
+      background: this.background,
+      propose: () => this.proposeForm(),
+      join: (id) => this.open(id),
+      rejoin: (id) => this.enter(id, true),
+      settings: () => this.settingsForm(),
+    }));
+  }
+
+  private settingsForm(): void {
+    this.show(settingsScreen({ settings: this.settings, health: () => TrysteroRoom.relayHealth(), home: () => this.home() }));
   }
 
   /** A #join= link or a typed code. A player of a round this browser
@@ -91,13 +175,14 @@ export class App {
   }
 
   private newGame(roundId: string): Game {
-    this.closeGame();
+    this.closeGame(false);
+    this.background.release(roundId);
     this.setHash(roundId);
     const p = this.profile.get();
-    const relay = this.test?.relay;
     const g = new Game({
-      roundId, me: p.playerId, name: p.name, profile: this.profile,
-      transport: (s) => new TrysteroRoom({ roundId, ...(relay ? { relays: [relay], local: true } : {}) }, s, () => performance.now()),
+      roundId, me: p.playerId, name: p.name, profile: this.profile, rounds: this.rounds, witnesses: this.witnesses,
+      saved: this.rounds.load(roundId),
+      transport: (s) => this.room(roundId, s, false),
     });
     const script = this.test?.script;
     g.controls = script ? () => scriptButtons(script.seed, script.k, g.session.timeline.localTick) : () => this.controls.sample();
@@ -105,9 +190,12 @@ export class App {
     return g;
   }
 
-  private closeGame(): void {
+  /** Closes the open game; the background takes its room back unless
+   *  another game is about to open. */
+  private closeGame(refresh = true): void {
     this.game?.close();
     this.game = null;
+    if (refresh) this.background.refresh(null);
   }
 
   private enter(roundId: string, play: boolean): void {
@@ -126,9 +214,23 @@ export class App {
   }
 
   private leaveGame(): void {
-    this.game?.leave();
+    const g = this.game;
     this.game = null;
+    if (g) {
+      g.leave();
+      this.closeLater(g.roundId, 600); // its LEAVE goes out first
+    }
     this.home();
+  }
+
+  /** The background may use a round's room again once its game has left it. */
+  private closeLater(roundId: string, ms: number, close?: () => void): void {
+    this.closing.add(roundId);
+    setTimeout(() => {
+      close?.();
+      this.closing.delete(roundId);
+      this.background.refresh(this.game?.roundId ?? null);
+    }, ms);
   }
 
   private proposeForm(): void {
@@ -159,7 +261,7 @@ export class App {
     if (this.game !== old) return; // left meanwhile
     old.session.announceAgain();
     this.game = null;
-    setTimeout(() => old.close(), CLOSE_AFTER_AGAIN_MS);
+    this.closeLater(old.roundId, CLOSE_AFTER_AGAIN_MS, () => old.close());
     const g = this.newGame(id);
     if (!old.session.againSeen) g.propose(r.settings);
     g.play();

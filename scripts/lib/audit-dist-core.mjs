@@ -18,8 +18,9 @@ const SECRET_PATTERNS = [
 ];
 
 // The scheme starts a word: minified CSS such as `grid-template-rows:auto`
-// holds "ws:auto", which is not a WebSocket URL.
-const URL_RE = /\b(?:https?|wss?|stun|turn):\/?\/?([A-Za-z0-9.-]+)(?::\d+)?/g;
+// holds "ws:auto", which is not a WebSocket URL. A host starts with a
+// letter or digit: "start with wss://." in a sentence names none.
+const URL_RE = /\b(?:https?|wss?|stun|turn):\/?\/?([A-Za-z0-9][A-Za-z0-9.-]*)(?::\d+)?/g;
 const LOOPBACK = new Set(['127.0.0.1', 'localhost', '::1', '[::1]', '0.0.0.0']);
 
 export async function auditDist(dir, { allowedHosts, expectedLicensePackages, ignoredHosts = [] }) {
@@ -108,9 +109,81 @@ function cssRefs(text) {
   return [...text.matchAll(/url\(\s*["']?([^"')]+)["']?\s*\)/g)].map((m) => m[1]);
 }
 
-function jsStringLiterals(text) {
+// A small tokenizer, enough for minified JS: comments, quoted strings,
+// template literals with nested ${…} expressions, and regex literals
+// (a '/' where an operand may start). It returns every string's text and
+// every template's static parts. A regular expression alone can't track
+// nested templates, and read code between two of them as a string (M5).
+// It jumps between the characters that matter, so a 25 MiB file is quick.
+const SPECIAL = /["'`/{}]/g;
+const QUOTED = { '"': /"((?:[^"\\\n]|\\.)*)"/y, "'": /'((?:[^'\\\n]|\\.)*)'/y };
+const TEMPLATE_PART = /((?:[^`\\$]|\\[\s\S]|\$(?!\{))*)(`|\$\{)?/y;
+const REGEX_LITERAL = /\/(?:[^/\\[\n]|\\.|\[(?:[^\]\\\n]|\\.)*\])+\/[a-z]*/iy;
+const REGEX_AFTER = new Set(['(', ',', '=', ':', '[', '!', '&', '|', '?', '{', '}', ';', '+', '-', '*', '%', '<', '>', '~', '^']);
+const REGEX_AFTER_WORD = new Set(['return', 'typeof', 'case', 'do', 'else', 'in', 'of', 'void', 'delete', 'new', 'throw', 'yield', 'await']);
+
+function regexMayStart(text, i) {
+  let j = i - 1;
+  while (j >= 0 && (text[j] === ' ' || text[j] === '\n' || text[j] === '\t' || text[j] === '\r')) j--;
+  if (j < 0) return true;
+  const c = text[j];
+  if (REGEX_AFTER.has(c)) return true;
+  if (!/[A-Za-z]/.test(c)) return false;
+  let k = j;
+  while (k > 0 && /[\w$]/.test(text[k - 1])) k--;
+  return REGEX_AFTER_WORD.has(text.slice(k, j + 1));
+}
+
+export function jsStringLiterals(text) {
   const out = [];
-  for (const m of text.matchAll(/(["'`])((?:\\.|(?!\1)[^\\\n])*)\1/g)) out.push(m[2]);
+  const braces = []; // per open template expression: '{' depth inside it
+  let i = 0;
+  const template = () => {
+    // i is just after a backtick, or after the '}' closing an expression.
+    TEMPLATE_PART.lastIndex = i;
+    const m = TEMPLATE_PART.exec(text);
+    out.push(m[1]);
+    i = TEMPLATE_PART.lastIndex;
+    if (m[2] === '${') braces.push(0);
+  };
+  while (i < text.length) {
+    SPECIAL.lastIndex = i;
+    const m = SPECIAL.exec(text);
+    if (!m) break;
+    i = m.index;
+    const c = m[0];
+    if (c === '/' && text[i + 1] === '/') {
+      const end = text.indexOf('\n', i);
+      i = end < 0 ? text.length : end;
+    } else if (c === '/' && text[i + 1] === '*') {
+      const end = text.indexOf('*/', i + 2);
+      i = end < 0 ? text.length : end + 2;
+    } else if (c === '/') {
+      REGEX_LITERAL.lastIndex = i;
+      i = regexMayStart(text, i) && REGEX_LITERAL.test(text) ? REGEX_LITERAL.lastIndex : i + 1;
+    } else if (c === '"' || c === "'") {
+      const re = QUOTED[c];
+      re.lastIndex = i;
+      const q = re.exec(text);
+      if (q) {
+        out.push(q[1]);
+        i = re.lastIndex;
+      } else i++;
+    } else if (c === '`') {
+      i++;
+      template();
+    } else if (c === '{') {
+      if (braces.length > 0) braces[braces.length - 1]++;
+      i++;
+    } else if (braces.length > 0 && braces[braces.length - 1] === 0) {
+      braces.pop(); // the '}' closing a template expression
+      i++;
+      template();
+    } else {
+      if (braces.length > 0) braces[braces.length - 1]--;
+      i++;
+    }
+  }
   return out;
 }
 

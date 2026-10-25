@@ -59,3 +59,44 @@ test('Propose checks its settings, and a typed code reaches Join', async ({ page
   expect(seen.errors).toEqual([]);
   expect(seen.outside).toEqual([]);
 });
+
+test('one tab plays at a time, and Use here moves the game (Q-16)', async ({ page, context, baseURL }) => {
+  const seen = watch(page, baseURL!);
+  await page.goto('./');
+  await expect(page.locator('[data-test=balance]')).toBeVisible();
+  const second = await context.newPage();
+  await second.goto('./');
+  await expect(second.locator('[data-test=other-tab]')).toBeVisible();
+  await second.getByRole('button', { name: 'Use here' }).click();
+  await expect(second.locator('[data-test=balance]')).toBeVisible();
+  await expect(page.locator('[data-test=other-tab]')).toBeVisible();
+  await page.getByRole('button', { name: 'Use here' }).click();
+  await expect(page.locator('[data-test=balance]')).toBeVisible();
+  await expect(second.locator('[data-test=other-tab]')).toBeVisible();
+  expect(seen.errors).toEqual([]);
+  expect(seen.outside).toEqual([]);
+});
+
+test('Settings checks relays and TURN, and keeps what it saved', async ({ page, baseURL }) => {
+  const seen = watch(page, baseURL!);
+  await page.goto('./');
+  await page.locator('[data-test=settings]').click();
+  await expect(page.locator('[data-test=relay-health]')).toHaveText('Relays are contacted when you propose or join a round.');
+  await page.locator('[data-test=relays]').fill('ws://insecure.example');
+  await page.locator('[data-test=settings-save]').click();
+  await expect(page.locator('[data-test=settings-message]')).toContainText('must start with wss://');
+  await page.locator('[data-test=relays]').fill('wss://relay.one.example\nwss://relay.two.example');
+  await page.locator('[data-test=turn-url]').fill('turns:turn.example:443');
+  await page.locator('[data-test=settings-save]').click();
+  await expect(page.locator('[data-test=settings-message]')).toContainText('needs its user name');
+  await page.locator('[data-test=turn-user]').fill('me');
+  await page.locator('[data-test=turn-credential]').fill('secret');
+  await page.locator('[data-test=settings-save]').click();
+  await expect(page.locator('[data-test=settings-message]')).toHaveText('Saved. Rounds you open from now on use these.');
+  await page.reload();
+  await page.locator('[data-test=settings]').click();
+  await expect(page.locator('[data-test=relays]')).toHaveValue('wss://relay.one.example\nwss://relay.two.example');
+  await expect(page.locator('[data-test=turn-user]')).toHaveValue('me');
+  expect(seen.errors).toEqual([]);
+  expect(seen.outside).toEqual([]);
+});

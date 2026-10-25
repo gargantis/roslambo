@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { auditDist } from './audit-dist-core.mjs';
+import { auditDist, jsStringLiterals } from './audit-dist-core.mjs';
 import { mkdtemp, rm, mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -55,6 +55,16 @@ describe('audit-dist', () => {
     await writeFile(join(dir, 'assets', 's.css'), '.a{grid-template-rows:auto auto;grid-template-columns:1fr}.b{background:url(wss://evil.example.com)}');
     const r = await auditDist(dir, opts());
     expect(r.findings.filter((f) => f.why === 'host not in third-party.json').map((f) => f.detail)).toEqual(['evil.example.com']);
+  });
+
+  it('reads strings, template parts and regex literals in minified JS without losing its place', () => {
+    const js = 'let a=`x${b?`in`:"q"}y`,c={turn:r.turn},d=/["`]/g,e=1/2/3,f=\'s\\\'t\';// "nope"\n/* `no` */g(`z`)';
+    expect(jsStringLiterals(js)).toEqual(['x', 'in', 'q', 'y', "s\\'t", 'z']);
+  });
+
+  it('ignores code between two templates that hold nested templates, and a scheme without a host', async () => {
+    await writeFile(join(dir, 'assets', 'a.js'), 'h(`p`,{x:`a${y?`b`:`c`}d`}),q({turn:r.turn,u:c?[1]:[]}),w(`e`),m(`It must start with wss://.`)');
+    expect((await auditDist(dir, opts())).findings).toEqual([]);
   });
 
   it('fails on dotfiles, markdown and source maps', async () => {

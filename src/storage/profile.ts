@@ -6,6 +6,7 @@
 
 import type { LedgerEntry, Profile } from '../core/ledger/ledger';
 import { fitName } from '../core/names';
+import { browserStorage } from './kv';
 
 export const PROFILE_KEY = 'roslambo.v1.profile';
 export const BACKUP_KEY = 'roslambo.v1.profile.backup';
@@ -43,14 +44,6 @@ export function parseProfile(raw: string): Profile | null {
   if (typeof rounds !== 'object' || rounds === null || Array.isArray(rounds)) return null;
   if (!Object.values(rounds).every(isEntry)) return null;
   return { v: 1, playerId: p['playerId'], name: fitName(p['name']), balance: p['balance'] as number, rounds: rounds as Record<string, LedgerEntry> };
-}
-
-function browserStorage(): KeyValue | null {
-  try {
-    return localStorage;
-  } catch {
-    return null; // storage blocked
-  }
 }
 
 export class ProfileStore {

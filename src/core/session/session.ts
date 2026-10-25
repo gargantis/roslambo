@@ -1,14 +1,20 @@
 // One room's controller (PLAN §8): HELLO checks and refusals (D-16), the
 // map from connections to players, PEERS gossip and forwarding for pairs
 // that can't connect (D-14), joining a timeline, merging two (D-12, Q-7),
-// and the local player's Play, Ready and Leave. Pure: the caller passes
-// `now` and wires a transport to the on… methods.
+// resuming a paused round from a saved state (§8.5), answering settlers
+// (§8.7), closing connections that misbehave (§9.4), and the local
+// player's Play, Ready and Leave. Pure: the caller passes `now` and wires
+// a transport to the on… methods.
 
+import { hash64 } from '../sim/hash';
 import type { SimParams } from '../sim/params';
 import { JOIN, LEAVE, READY, UNREADY } from '../sim/rules';
-import { PRESTART, type RoundSettings } from '../sim/state';
+import { PRESTART, type RoundSettings, type RoundState } from '../sim/state';
 import * as M from '../protocol/messages';
 import { Timeline, type TimelineConfig } from '../timeline/timeline';
+import { commonRefusal, INVALID_LIMIT, type Accepted, type Link, type Refusal, type RoomPeer } from './room-peer';
+
+export type { Accepted, Link, Refusal } from './room-peer';
 
 export interface SessionConfig {
   params: SimParams;
@@ -18,12 +24,16 @@ export interface SessionConfig {
   timeline: Omit<TimelineConfig, 'params' | 'me'>;
   maxSpectators: number;
   forwarding: boolean;
+  /** How long a player with a saved state waits for a live round before
+   *  resuming its own (§8.5). */
+  resumeWaitMs?: number;
 }
 
-/** What the session needs from a transport. */
-export interface Link {
-  send(peer: string, bytes: Uint8Array): void;
-  broadcast(bytes: Uint8Array): void;
+/** A paused round's state, as this browser saved it (§10). */
+export interface SavedTimeline {
+  timelineId: string;
+  state: RoundState;
+  hash: string;
 }
 
 interface PeerInfo {
@@ -31,13 +41,17 @@ interface PeerInfo {
   hello: M.Hello;
   sent: M.Hello; // the HELLO this side sent: merges compare the same pair on both sides
   oneWayMs: number;
+  live: boolean; // holds a running timeline: its HELLO said so, or it sends TICKs
+  ticks: number[]; // arrival times of its recent TICKs, for the flood limit
+  invalid: number;
 }
-
-export type Refusal = { ok: false; reason: number };
-export type Accepted = { ok: true; hello: M.Hello };
 
 const PEERS_EVERY_MS = 5000;
 const JOIN_RETRY_MS = 1000;
+const RESUME_WAIT_MS = 6000;
+// §9.3: more than 3 TICKs per tick from one sender for 2 s closes the connection.
+const FLOOD_WINDOW_MS = 2000;
+const FLOOD_PER_TICK = 3;
 
 /** D-12, Q-7: which of two timelines a room keeps. A live round beats a
  *  saved state; then the later final tick (the older timeline); then the
@@ -51,7 +65,13 @@ export function beats(a: M.Hello, b: M.Hello): boolean {
   return a.timeline < b.timeline;
 }
 
-export class Session {
+/** D-12: a resumed round's timeline ID, from the save it resumes and the
+ *  player who resumes it, so two players resuming apart get two IDs. */
+export function resumedTimelineId(savedHash: string, player: string): string {
+  return hash64(new TextEncoder().encode(`roslambo resume ${savedHash} ${player}`));
+}
+
+export class Session implements RoomPeer {
   readonly cfg: SessionConfig;
   timeline: Timeline;
   /** The local player wants a planet (pressed Play). */
@@ -60,8 +80,15 @@ export class Session {
   refused = false;
   /** A peer pressed Play again (AGAIN, §9.3): the next round exists. */
   againSeen = false;
-  /** Per-message counts of malformed input, by peer (§9.4). */
-  readonly invalid = new Map<string, number>();
+  /** A paused round's state, until a live round or a better save beats it,
+   *  or this browser resumes from it (§8.5, Q-7). */
+  saved: SavedTimeline | null = null;
+  /** The confirmed result, once there is one: answers RESULT_REQ (§8.7). */
+  resultRecord: M.ResultRecord | null = null;
+  /** A player acknowledged the result (SETTLED). */
+  onSettled: ((player: string) => void) | null = null;
+  /** Connections this side closed for misbehaving (§9.4). */
+  readonly dropped: string[] = [];
 
   private readonly link: Link;
   private readonly peers = new Map<string, PeerInfo>(); // by transport peer ID
@@ -71,6 +98,7 @@ export class Session {
   private lastPeersSent = -Infinity;
   private joinAsk = { next: 0, at: -Infinity };
   private joinSentAt = -1; // local tick of the last JOIN, -1 if none pending
+  private openedAt = -1;
 
   constructor(cfg: SessionConfig, link: Link) {
     this.cfg = cfg;
@@ -124,10 +152,15 @@ export class Session {
     if (this.peers.size > 0) this.link.broadcast(M.encodeAgain());
   }
 
+  /** This player has credited the result (§8.2 step 6). */
+  announceSettled(): void {
+    if (this.peers.size > 0) this.link.broadcast(M.encodeSettled(this.cfg.me));
+  }
+
   /** Drop the timeline and take a peer's again, as on a reload: after the
    *  page was hidden (D-23). Only with a peer to take it from. */
   rejoin(): boolean {
-    if (this.peers.size === 0) return false;
+    if (![...this.peers.values()].some((p) => p.live)) return false;
     this.timeline = this.newTimeline();
     this.joinSentAt = -1;
     this.joinAsk = { next: 0, at: -Infinity };
@@ -151,19 +184,24 @@ export class Session {
 
   hello(): M.Hello {
     const t = this.timeline;
-    return {
+    const base = {
       type: M.T.HELLO, protocol: M.PROTOCOL_VERSION, build: this.cfg.build, player: this.cfg.me, role: this.role(),
-      timeline: t.started ? t.id : M.ZERO_HASH, timelineKind: t.started ? M.TIMELINE.LIVE : M.TIMELINE.NONE,
-      phase: t.final.phase, finalTick: t.finalTick, hash: t.started ? t.hashAt(t.finalTick) : M.ZERO_HASH,
-      holdsResult: false, name: this.cfg.name,
-    };
+      holdsResult: this.resultRecord !== null, name: this.cfg.name,
+    } as const;
+    if (t.started) {
+      return { ...base, timeline: t.id, timelineKind: M.TIMELINE.LIVE, phase: t.final.phase, finalTick: t.finalTick, hash: t.hashAt(t.finalTick) };
+    }
+    if (this.saved) {
+      const s = this.saved;
+      return { ...base, timeline: s.timelineId, timelineKind: M.TIMELINE.SAVED, phase: s.state.phase, finalTick: s.state.tick, hash: s.hash };
+    }
+    return { ...base, timeline: M.ZERO_HASH, timelineKind: M.TIMELINE.NONE, phase: t.final.phase, finalTick: 0, hash: M.ZERO_HASH };
   }
 
   /** Checks a peer's HELLO; a refusal says why (REFUSE reasons, §9.3). */
   checkHello(hello: M.Hello): Accepted | Refusal {
-    if (hello.protocol !== M.PROTOCOL_VERSION) return { ok: false, reason: M.REFUSAL.PROTOCOL };
-    if (hello.build !== this.cfg.build) return { ok: false, reason: M.REFUSAL.BUILD };
-    if (hello.player === this.cfg.me || this.byPlayer.has(hello.player)) return { ok: false, reason: M.REFUSAL.DUPLICATE };
+    const common = commonRefusal(hello, this.cfg.build, this.cfg.me, (p) => this.byPlayer.has(p));
+    if (common) return common;
     if (hello.role === M.ROLE.SPECTATOR) {
       let spectators = 0;
       for (const p of this.peers.values()) if (p.hello.role === M.ROLE.SPECTATOR) spectators++;
@@ -174,16 +212,17 @@ export class Session {
 
   /** A connection completed the handshake: `sent` is what this side said. */
   onPeerJoin(peer: string, hello: M.Hello, sent: M.Hello): void {
-    this.peers.set(peer, { player: hello.player, hello, sent, oneWayMs: 0 });
+    this.peers.set(peer, { player: hello.player, hello, sent, oneWayMs: 0, live: hello.timelineKind === M.TIMELINE.LIVE, ticks: [], invalid: 0 });
     this.byPlayer.set(hello.player, peer);
     this.peersDirty = true;
-    // D-12: if the peer's timeline wins over the one this side announced,
-    // drop ours and take theirs.
+    // D-12, Q-7: if the peer's history wins over the one this side
+    // announced, drop ours: take theirs now if it is live, or once it is.
     if (sent.timelineKind !== M.TIMELINE.NONE && hello.timeline !== sent.timeline && beats(hello, sent)) {
-      this.timeline = this.newTimeline();
+      this.saved = null;
+      if (this.timeline.started) this.timeline = this.newTimeline();
       this.joinSentAt = -1;
-      this.timeline.requestState(peer);
       this.joinAsk = { next: 0, at: -Infinity };
+      if (hello.timelineKind === M.TIMELINE.LIVE) this.timeline.requestState(peer);
     }
   }
 
@@ -203,22 +242,42 @@ export class Session {
     this.timeline.setOneWay(info.player, ms / 2);
   }
 
+  /** Players connected now, not settlers or witnesses: PEERS lists these. */
   connectedPlayers(): string[] {
-    return [...this.peers.values()].map((p) => p.player);
+    return [...this.peers.values()].filter((p) => !isResultsRole(p.hello.role)).map((p) => p.player);
   }
 
   // ---- messages ----
+
+  private drop(peer: string): void {
+    this.dropped.push(peer);
+    this.onPeerLeave(peer);
+    this.link.drop?.(peer);
+  }
+
+  /** §9.3: more than 3 TICKs per tick, sustained for 2 s. */
+  private flooding(info: PeerInfo, now: number): boolean {
+    info.ticks.push(now);
+    while (info.ticks.length > 0 && info.ticks[0]! < now - FLOOD_WINDOW_MS) info.ticks.shift();
+    const limit = FLOOD_PER_TICK * this.cfg.params.settings.tickRate * (FLOOD_WINDOW_MS / 1000);
+    return info.ticks.length > limit && now - info.ticks[0]! >= FLOOD_WINDOW_MS * 0.9;
+  }
 
   onMessage(peer: string, bytes: Uint8Array, now: number): void {
     const info = this.peers.get(peer);
     if (!info) return; // not through the handshake: dropped (§9.4)
     const m = M.decode(bytes);
     if (!m) {
-      this.invalid.set(peer, (this.invalid.get(peer) ?? 0) + 1);
+      if (++info.invalid >= INVALID_LIMIT) this.drop(peer);
       return;
     }
     switch (m.type) {
       case M.T.TICK:
+        if (this.flooding(info, now)) {
+          this.drop(peer);
+          return;
+        }
+        info.live = true;
         this.timeline.onTick(info.player, m, now);
         if (this.cfg.forwarding) this.forward(info.player, peer, bytes);
         break;
@@ -233,13 +292,21 @@ export class Session {
         break;
       case M.T.STATE:
         if (this.timeline.started && m.timeline !== this.timeline.id) break; // another timeline's: merging goes through HELLO
+        info.live = true;
+        if (!this.timeline.started) this.saved = null; // a live round beats a save (Q-7)
         this.timeline.onState(m, info.oneWayMs, now);
         break;
       case M.T.AGAIN:
         this.againSeen = true;
         break;
+      case M.T.RESULT_REQ:
+        if (this.resultRecord) this.link.send(peer, M.encodeResult(this.resultRecord));
+        break;
+      case M.T.SETTLED:
+        this.onSettled?.(m.player);
+        break;
       default:
-        break; // RESULT_REQ, RESULT, SETTLED: M5
+        break; // RESULT: for settlers (ResultsPeer)
     }
   }
 
@@ -249,7 +316,7 @@ export class Session {
     const originPeers = this.peersOf.get(origin);
     let fwd: Uint8Array | null = null;
     for (const [peer, info] of this.peers) {
-      if (peer === fromPeer) continue;
+      if (peer === fromPeer || isResultsRole(info.hello.role)) continue;
       const b = info.player;
       const bPeers = this.peersOf.get(b);
       if (!bPeers || !originPeers) continue; // not known yet: assume a full mesh
@@ -267,10 +334,14 @@ export class Session {
   // ---- time ----
 
   advance(now: number): void {
+    if (this.openedAt < 0) this.openedAt = now;
     const t = this.timeline;
-    if (!t.started) this.askToJoin(now);
-    t.advance(now);
-    if (t.started && this.wantsToPlay) this.joinOrGiveUp();
+    if (!t.started) {
+      if (this.shouldResume(now)) this.resume(now);
+      else this.askToJoin(now);
+    }
+    this.timeline.advance(now);
+    if (this.timeline.started && this.wantsToPlay) this.joinOrGiveUp();
     if (this.peersDirty || now - this.lastPeersSent >= PEERS_EVERY_MS) {
       this.peersDirty = false;
       this.lastPeersSent = now;
@@ -278,10 +349,26 @@ export class Session {
     }
   }
 
-  /** Without a timeline: ask the peer whose timeline wins, then the next. */
+  /** §8.5: a player with a save, after the wait, with no live round in
+   *  sight and no better save connected, resumes from its own. */
+  private shouldResume(now: number): boolean {
+    if (!this.saved || !this.wantsToPlay) return false;
+    if (now - this.openedAt < (this.cfg.resumeWaitMs ?? RESUME_WAIT_MS)) return false;
+    const mine = this.hello();
+    for (const p of this.peers.values()) if (p.live || beats(p.hello, mine)) return false;
+    return true;
+  }
+
+  private resume(now: number): void {
+    const s = this.saved!;
+    this.saved = null;
+    this.timeline.resume(now, s.state, resumedTimelineId(s.hash, this.cfg.me));
+  }
+
+  /** Without a timeline: ask the live peer whose timeline wins, then the next. */
   private askToJoin(now: number): void {
     if (now - this.joinAsk.at < JOIN_RETRY_MS) return;
-    const holders = [...this.peers].filter(([, p]) => p.hello.timelineKind !== M.TIMELINE.NONE)
+    const holders = [...this.peers].filter(([, p]) => p.live)
       .sort(([, a], [, b]) => (beats(a.hello, b.hello) ? -1 : beats(b.hello, a.hello) ? 1 : 0));
     if (holders.length === 0) return;
     const [peer] = holders[this.joinAsk.next++ % holders.length]!;
@@ -313,4 +400,8 @@ export class Session {
       this.joinSentAt = t.localTick;
     }
   }
+}
+
+function isResultsRole(role: number): boolean {
+  return role === M.ROLE.SETTLER || role === M.ROLE.WITNESS;
 }

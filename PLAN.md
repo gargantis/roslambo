@@ -5,6 +5,7 @@
 - Q-19 was settled on 2026-10-24: no license. The owner keeps all rights.
 - Q-1 was settled on 2026-10-24: the owner's Pixel 8a is the reference phone, and there is no laptop.
 - Manual runs are deferred for now (§15).
+- M5 finished on 2026-10-24. The passive-room probe is in [research/passive/REPORT.md](research/passive/REPORT.md). Its amendments are marked "M5".
 - M4 finished on 2026-10-24, except its runs on the phone, which wait with the other manual runs. The devices and criteria are in [docs/acceptance.md](docs/acceptance.md). Its amendments are marked "M4".
 - M3 finished on 2026-10-24: the load run is in [research/load/REPORT.md](research/load/REPORT.md). Its amendments are marked "M3".
 - M2 finished on 2026-10-24, and was revised the same day at the owner's request: Newtonian gravity with a smaller ring, and energy-conserving bounces. The tuning is in [research/tuning/REPORT.md](research/tuning/REPORT.md), §4. Its amendments are marked "M2".
@@ -392,6 +393,9 @@ Each decision gives the choice, the options rejected, and the cost if it's wrong
 - **Rejected:** asking the user to choose, because peers could choose differently.
 - **Cost if wrong:** a history is lost in a rare case. Q-7 decides which one.
 - **M3:** both sides compare the same pair of HELLOs, the one each sent and the one it received, so they always agree on the winner (`beats` in `src/core/session/session.ts`; test P7).
+- **M5:**
+  - A resumed timeline's ID is a hash of the save's hash *and the player who resumes it*. Two players who resume the same save apart, unable to reach each other, get two IDs, so the merge rule applies when they meet. With one ID, they would look like one timeline that disagrees.
+  - A browser returning with a save says so in HELLO (timeline kind "saved", its tick and hash). So a returning player meets other savers, and live rounds, under the same rule: a live round wins; between saves the later tick wins.
 
 ### Networking
 
@@ -457,6 +461,7 @@ Each decision gives the choice, the options rejected, and the cost if it's wrong
   - IndexedDB: asynchronous transactions for a few kilobytes, and more code.
   - Cookies: sent to the server.
 - **Cost if wrong:** move to IndexedDB if the data grows. The schema is versioned.
+- **M5:** **Use here** takes the lock with the Web Locks API's `steal` option, and the other tab learns from its own lock request, which fails. No `BroadcastChannel` is needed. `steal` is in every engine the gate runs.
 
 **D-19 — Witnesses track acknowledgements.**
 - **Choice:** a witness marks a player settled when that player sends SETTLED, not because the player was connected at the freeze.
@@ -703,6 +708,10 @@ A spectator joining at any time sends STATE_REQ for the newest final tick and re
   - The first *player* to come back finds nobody, restores their save, and starts a new timeline from it (D-12), alone if need be.
   - Spectators can't resume a round.
 - **Two histories meet:** Q-7.
+- **M5, as built:**
+  - A returning player waits 6 s for a live round, then resumes from its save, unless a better save is connected: that save's player resumes instead.
+  - A player who loses to a live round or a better save drops its own, and joins the winner once that is live: its HELLO said so, or it sends TICKs.
+  - Leaving before the countdown takes the planet away, so the browser forgets the round: no save, no ledger entry.
 
 ### 8.6 The mesh
 
@@ -721,6 +730,12 @@ A spectator joining at any time sends STATE_REQ for the newest final tick and re
   - The first RESULT that lists this player settles the round. That's one atomic ledger write (D-18), then SETTLED to every connected peer, then leave.
 - **Still running:** if HELLO shows a live timeline, the settler doesn't take part. Home offers **Rejoin** (Q-6).
 - **Paused:** if nobody answers, Home offers **Resume**.
+- **M5, as built** (the probe: research/passive/REPORT.md):
+  - An idle passive room costs the relays nothing. Trystero puts every room's topics into one subscription per relay. A passive peer woke in about 300 ms on a local relay.
+  - A settler shows a round as paused after 20 s without an answer. It leaves a running round at once and looks again a minute later.
+  - A settler skips a round this browser witnessed, because it settled at the confirmed freeze.
+  - A RESULT that doesn't name this player means the round ended without it, so a round it never paid for is forgotten.
+  - Home's list shows **Open** while a round is still being checked, so a player who knows it's running needn't wait.
 
 ### 8.8 Room configuration
 
@@ -846,7 +861,7 @@ Rules:
 - The history fills any of the sender's inputs the receiver doesn't have yet (M0). It carries buttons only. An event is repeated in each of the sender's TICKs until its tick is final, so a joiner can't miss one.
 - A t that is already final at the receiver is dropped.
 - A t more than 2w ahead of the receiver is dropped.
-- More than 3 TICKs per tick from one sender for 2 s closes the connection. *Not yet enforced (M3):* closing one connection needs a per-peer drop in the transport. Planned for M5, with §9.4's 20-invalid-messages rule; the session already counts invalid messages.
+- More than 3 TICKs per tick from one sender for 2 s closes the connection. *M5: enforced.* The transport closes that peer's RTCPeerConnection and refuses its Trystero peer ID from then on, so it can't come back without reloading. A timeline that stalled (a throttled timer) sends inputs only for the ticks still inside the late window, so catching up never looks like a flood.
 
 **FWD (0x11):** `u8[16] origin player ID`, then a complete TICK message, type byte included. The receiver treats it as the origin's TICK and drops duplicates by (origin, t). FWD is never forwarded again.
 
@@ -875,14 +890,14 @@ Rules:
 
 **RESULT_REQ (0x30):** `u8[16] player ID`.
 
-**RESULT (0x31):** the result record (A.2). The settler checks that its own player ID is in it.
+**RESULT (0x31):** the result record (A.2). The settler checks that its own player ID is in it. *M5:* final points are an i32. A u32 would wrap if a planet ever ended below 0.
 
 **SETTLED (0x32):** `u8[16] player ID`.
 
 ### 9.4 Limits and validation
 
 - Every decoder is total: malformed bytes return "invalid", never an exception.
-- An invalid message is dropped and counted. 20 invalid messages from one peer closes the connection.
+- An invalid message is dropped and counted. 20 invalid messages from one peer closes the connection (*M5: enforced*, as for the TICK flood).
 - `maxReceiveBytes` is 1 MiB per room, so Trystero refuses anything larger before buffering it.
 - Messages from a peer that hasn't completed HELLO are dropped. Trystero 0.26.0 already drops non-handshake data while a peer is pending.
 
@@ -901,7 +916,11 @@ Rules:
 - **Saved rounds:** the newest final state and timeline ID of every round the browser is in, every second and on `pagehide`. Deleted once the round is settled and no longer witnessed.
 - **Witness records:** A.2 plus the unacknowledged players and an expiry time. At most 20 (Q-10); the oldest goes first.
 - **Settings:** extra relays and TURN.
-- **One tab:** a Web Lock named `roslambo-game`. A second tab shows "roslambo is open in another tab" with **Use here**, which takes the lock through a `BroadcastChannel` message.
+- **One tab:** a Web Lock named `roslambo-game`. A second tab shows "roslambo is open in another tab" with **Use here**, which takes the lock through a `BroadcastChannel` message. *M5:* through the lock's `steal` option instead (D-18).
+- *M5, as built:*
+  - Only a player in the round's roster saves it; spectators can't resume (§8.5).
+  - The save is removed at the confirmed freeze, when the witness record takes over.
+  - A failed write (quota, blocked storage) loses that write only: the profile store says so on Home, and the others carry on.
 - **Bad data:** an unreadable profile is copied to a backup key before a fresh one is made, so a parsing bug can't silently zero a balance.
 - **Not stored:** anything about other players beyond witness records. No analytics.
 - **Safari:** C-5.
@@ -1006,6 +1025,7 @@ Rules:
   - One documented exception (M3): Trystero's built-in STUN list is a template literal, `stun:stun${i}.l.google.com:19302`, which the scan reads as a host named "stun". roslambo always passes its own `iceServers`, so those defaults are never used (`src/net/room-config.test.ts`).
 - No source maps, no `.md` files, nothing matching a secret pattern.
 - *M4:* a URL's scheme must start a word. Minified CSS such as `grid-template-rows:auto` contains `ws:auto`, which the scan had read as a WebSocket URL to a host named "auto". The self-test now includes that case.
+- *M5:* the JavaScript scan finds string literals with a small tokenizer instead of a regular expression. A regular expression can't follow template literals nested inside `${…}`, and it read code between two of them as a string. A host must also start with a letter or digit, so the sentence "must start with wss://." names none. Both cases are in the self-test.
 - A self-test with planted failures.
 
 **wrangler.jsonc:** assets only, `./dist`, `observability.enabled: false`, the domain once Q-9 is answered (A.7).
@@ -1091,8 +1111,25 @@ Rules:
   - Each balance equals that player's change.
   - The buttons are scripted through `window.roslamboTest`, which a test sets before the page loads. It also points the page at the local relay. Production pages never set it.
 
+**M5, as built:**
+- `src/net/resume-results.test.ts`, in simulated time:
+  - resuming alone, and a live round beating a later save;
+  - two saves meeting (Q-7);
+  - a missed result settled once while three witnesses answer (P6);
+  - a settler finding the round running;
+  - a witness without a game;
+  - a TICK flood and garbage, each closing its connection.
+- `e2e/persist.spec.ts`, Chromium, one context per player, through the screens:
+  - a reload mid-round takes the planet back;
+  - a missed result comes from passive witnesses, and they drop their records once it settles;
+  - everyone leaves, one player resumes from Home, and another rejoins it;
+  - two saved histories meet by link, and the later one wins.
+  - `window.roslamboTest.inspect()` lets the tests read the open round's timeline, ticks and hashes.
+- `smoke.spec.ts`, in every engine: the tab lock's **Use here** both ways, and Settings' checks.
+
 **Outside the gate** (logged in `docs/acceptance.md`):
 - the 12-peer load run;
+- the M5 passive-room probe (research/passive/REPORT.md);
 - the Q-1 frame-time runs: the bench on the Pixel 8a, and a proxy in Chromium slowed by DevTools throttling (`playwright.bench.config.ts`);
 - the Q-2 network matrix;
 - the determinism page on real Safari (macOS and iOS).
@@ -1204,6 +1241,12 @@ Rules:
 - *Exit:*
   - P6 is green;
   - the end-to-end tests are green: reload mid-round, reload after the end, everyone leaves and one resumes, two histories (Q-7).
+- *Done 2026-10-24:*
+  - The probe came first: research/passive/REPORT.md. Passive rooms work as §8.7 assumed, and the Q-10 caps stay.
+  - P6: the ledger and store tests, and a settler settling once while three witnesses answer.
+  - The four end-to-end tests above are green in the gate, with the reload after the end done the hard way: the player is away when the round ends, and both other players have gone Home, so only passive witnesses hold the result.
+  - The two connection-closing rules of §9.3 and §9.4, deferred from M3, are enforced.
+  - Found on the way: the dist audit's JavaScript scan, rewritten (§13).
 
 **M6 — Acceptance and release**
 - *Prerequisites:* Q-2's machines and people booked; Q-9's domain.
@@ -1344,7 +1387,7 @@ u32     ante
 u32     freeze tick
 u8[8]   final state hash
 u8      n
-n × { u8[16] player ID, u8+n display name, u32 final points }
+n × { u8[16] player ID, u8+n display name, i32 final points }   (M5: was u32)
 ```
 
 ### A.3 Storage (localStorage)

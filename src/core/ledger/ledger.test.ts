@@ -1,6 +1,6 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
-import { noteJoined, payAnte, prune, settle, unsettled, type Profile } from './ledger';
+import { forget, noteJoined, payAnte, prune, settle, unsettled, type Profile } from './ledger';
 
 const fresh = (): Profile => ({ v: 1, playerId: 'a'.repeat(32), name: '', balance: 0, rounds: {} });
 const DAY = 86_400_000;
@@ -56,5 +56,14 @@ describe('the ledger (P6)', () => {
     settle(p, 'recent', 2, 2, 29 * DAY);
     expect(prune(p, 31 * DAY, 30 * DAY)).toBe(true);
     expect(Object.keys(p.rounds).sort()).toEqual(['recent', 'waiting']);
+  });
+
+  it('forgets a round that never started for this player, but never one it paid for', () => {
+    const p = fresh();
+    noteJoined(p, 'left', 3, 0);
+    payAnte(p, 'paid', 3, 0);
+    expect(forget(p, 'left')).toBe(true);
+    expect(forget(p, 'paid')).toBe(false);
+    expect(Object.keys(p.rounds)).toEqual(['paid']);
   });
 });

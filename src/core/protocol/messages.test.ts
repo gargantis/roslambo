@@ -46,8 +46,8 @@ describe('wire protocol (PLAN §9)', () => {
       [encodeState({ timeline: hash, senderTick: 50, phase: 0.5, g: 30, senderFinal: 38, state: bytes, roster, inputs }),
         { type: T.STATE, timeline: hash, senderTick: 50, phase: 0.5, g: 30, senderFinal: 38, state: bytes, roster, inputs }],
       [encodeResultReq(id(4)), { type: T.RESULT_REQ, player: id(4) }],
-      [encodeResult({ round: 'K7QM2XDP4TR8WHZN3VBC7', ante: 5, freezeTick: 900, finalHash: hash, players: [{ player: id(0), name: 'A', points: 7 }, { player: id(1), name: '', points: 0 }] }),
-        { type: T.RESULT, record: { round: 'K7QM2XDP4TR8WHZN3VBC7', ante: 5, freezeTick: 900, finalHash: hash, players: [{ player: id(0), name: 'A', points: 7 }, { player: id(1), name: '', points: 0 }] } }],
+      [encodeResult({ round: 'K7QM2XDP4TR8WHZN3VBC7', ante: 5, freezeTick: 900, finalHash: hash, players: [{ player: id(0), name: 'A', points: 7 }, { player: id(1), name: '', points: -1 }] }),
+        { type: T.RESULT, record: { round: 'K7QM2XDP4TR8WHZN3VBC7', ante: 5, freezeTick: 900, finalHash: hash, players: [{ player: id(0), name: 'A', points: 7 }, { player: id(1), name: '', points: -1 }] } }],
       [encodeSettled(id(5)), { type: T.SETTLED, player: id(5) }],
     ];
     for (const [bytes, want] of cases) expect(decode(bytes)).toEqual(want);

@@ -23,6 +23,6 @@ export default defineConfig({
     { name: 'firefox', testMatch: /(smoke|determinism|frames)\.spec\.ts/, use: { browserName: 'firefox' } },
     { name: 'webkit', testMatch: /(smoke|determinism|frames)\.spec\.ts/, use: { browserName: 'webkit' } },
     // These launch one browser per engine themselves.
-    { name: 'net', testMatch: /(round|play)\.spec\.ts/ },
+    { name: 'net', testMatch: /(round|play|persist)\.spec\.ts/ },
   ],
 });

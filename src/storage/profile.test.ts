@@ -1,21 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { payAnte, settle } from '../core/ledger/ledger';
-import { BACKUP_KEY, PROFILE_KEY, ProfileStore, parseProfile, type KeyValue } from './profile';
-
-class MemoryStorage implements KeyValue {
-  readonly data = new Map<string, string>();
-  failNextWrite = false;
-  getItem(k: string): string | null {
-    return this.data.get(k) ?? null;
-  }
-  setItem(k: string, v: string): void {
-    if (this.failNextWrite) {
-      this.failNextWrite = false;
-      throw new Error('closed mid-write');
-    }
-    this.data.set(k, v);
-  }
-}
+import { MemoryStorage } from './kv';
+import { BACKUP_KEY, PROFILE_KEY, ProfileStore, parseProfile } from './profile';
 
 const ID = '0123456789abcdef0123456789abcdef';
 

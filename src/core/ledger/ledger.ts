@@ -60,6 +60,15 @@ export function settle(p: Profile, roundId: string, ante: number, finalPoints: n
   return true;
 }
 
+/** A round this player left before it started, or that ended without
+ *  it: nothing was paid, so nothing is owed. */
+export function forget(p: Profile, roundId: string): boolean {
+  const e = p.rounds[roundId];
+  if (!e || e.antePaid) return false;
+  delete p.rounds[roundId];
+  return true;
+}
+
 /** Rounds whose ante was paid and whose result hasn't arrived (§8.7). */
 export function unsettled(p: Profile): string[] {
   return Object.entries(p.rounds).filter(([, e]) => e.antePaid && !e.settled).map(([id]) => id);

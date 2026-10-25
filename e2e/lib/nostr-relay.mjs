@@ -7,9 +7,12 @@ import { WebSocketServer } from 'ws';
 export async function startNostrRelay(port = 0) {
   const wss = new WebSocketServer({ host: '127.0.0.1', port });
   const subs = new Map(); // ws -> Map<subId, filters[]>
+  const counts = []; // per connection, in order: what each client asked of the relay
 
   wss.on('connection', (ws) => {
     subs.set(ws, new Map());
+    const count = { req: 0, close: 0, event: 0 };
+    counts.push(count);
     ws.on('close', () => subs.delete(ws));
     ws.on('message', (raw) => {
       let msg;
@@ -20,6 +23,8 @@ export async function startNostrRelay(port = 0) {
       }
       if (!Array.isArray(msg)) return;
       const [type] = msg;
+      const kind = String(type).toLowerCase();
+      if (kind in count) count[kind]++;
       if (type === 'REQ') {
         const [, subId, ...filters] = msg;
         subs.get(ws)?.set(subId, filters);
@@ -46,6 +51,8 @@ export async function startNostrRelay(port = 0) {
   await new Promise((resolve) => wss.on('listening', resolve));
   return {
     port: wss.address().port,
+    /** REQ, CLOSE and EVENT messages received so far, per connection. */
+    counts: () => counts.map((c) => ({ ...c })),
     close: () =>
       new Promise((resolve) => {
         for (const ws of wss.clients) ws.terminate();

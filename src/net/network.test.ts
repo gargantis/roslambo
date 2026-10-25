@@ -11,6 +11,8 @@ import { Session, type SessionConfig } from '../core/session/session';
 import * as M from '../core/protocol/messages';
 import { LoopbackNet, mulberry32, type LoopNode, type LinkSpec } from './loopback';
 
+type GameNode = LoopNode<Session>;
+
 const P = makeParams();
 const BUILD = buildHash(P.settings);
 const id = (k: number): string => (k + 1).toString(16).padStart(32, '0');
@@ -35,7 +37,7 @@ function uniform(seed: number, lo: number, hi: number, jitter: number): (a: stri
 }
 
 /** A node whose player (if it plays) presses scripted buttons. */
-function node(net: LoopbackNet, k: number, over: Partial<SessionConfig> = {}, opts = {}, nodeId = `n${k}`): LoopNode {
+function node(net: LoopbackNet, k: number, over: Partial<SessionConfig> = {}, opts = {}, nodeId = `n${k}`): GameNode {
   return net.add(nodeId, (link) => {
     const s = new Session(sessionConfig(k, over), link);
     s.timeline.controls = () => scriptButtons(7, k, s.timeline.localTick);
@@ -44,23 +46,23 @@ function node(net: LoopbackNet, k: number, over: Partial<SessionConfig> = {}, op
 }
 
 /** The newest tick every node has final, and each node's hash there. */
-function common(nodes: LoopNode[]): { tick: number; hashes: string[] } {
+function common(nodes: GameNode[]): { tick: number; hashes: string[] } {
   const tick = Math.min(...nodes.map((n) => n.session.timeline.finalTick));
   return { tick, hashes: nodes.map((n) => n.session.timeline.hashAt(tick)) };
 }
 
-function agreeNow(nodes: LoopNode[]): void {
+function agreeNow(nodes: GameNode[]): void {
   const c = common(nodes);
   expect(c.hashes.every((h) => h !== ''), `tick ${c.tick} missing somewhere`).toBe(true);
   expect(new Set(c.hashes).size, `disagree at tick ${c.tick}: ${c.hashes.join(' ')}`).toBe(1);
 }
 
-function finalOf(n: LoopNode): RoundState {
+function finalOf(n: GameNode): RoundState {
   return n.session.timeline.final;
 }
 
 /** Keeper n0 proposes at 0; players join, press Play, and Ready. */
-function lobby(net: LoopbackNet, players: number[], readyAt: number, over: Partial<SessionConfig> = {}): LoopNode[] {
+function lobby(net: LoopbackNet, players: number[], readyAt: number, over: Partial<SessionConfig> = {}): GameNode[] {
   const keeper = node(net, 0, over);
   net.join(keeper, 0, (now) => keeper.session.propose(keeper.local(now), SETTINGS, 'a'.repeat(16)));
   const nodes = [keeper];
@@ -122,7 +124,7 @@ describe('rounds over the network (PLAN §8.9)', () => {
   });
 
   it('keeps a pair that can’t connect in step through forwarding (P5)', () => {
-    const run = (forwarding: boolean): LoopNode[] => {
+    const run = (forwarding: boolean): GameNode[] => {
       const net = new LoopbackNet(4, uniform(14, 30, 60, 20));
       net.block('n1', 'n2');
       const nodes = lobby(net, [1, 2, 3], 2000, { forwarding });
@@ -231,7 +233,7 @@ describe('rounds over the network (PLAN §8.9)', () => {
   it('confirms the freeze by vote on every peer before results count, and AGAIN reaches the room (D-10)', () => {
     const net = new LoopbackNet(11, uniform(21, 30, 60, 20));
     const nodes = lobby(net, [1, 2, 3], 2000);
-    const confirmed = (n: LoopNode): boolean => finalOf(n).phase === FROZEN && n.session.timeline.isConfirmed(finalOf(n).freezeTick);
+    const confirmed = (n: GameNode): boolean => finalOf(n).phase === FROZEN && n.session.timeline.isConfirmed(finalOf(n).freezeTick);
     const atFreeze = new Map<string, boolean>(); // confirmed the moment it froze?
     const watch = (): void => {
       for (const n of nodes) if (finalOf(n).phase === FROZEN && !atFreeze.has(n.id)) atFreeze.set(n.id, confirmed(n));
