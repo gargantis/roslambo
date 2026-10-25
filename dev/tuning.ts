@@ -9,7 +9,7 @@ import { steer } from './steer';
 type Key = keyof SimSettings;
 const SLIDERS: [Key, string, number, number, number][] = [
   ['planetRadius', 'Planet radius', 0.01, 0.08, 0.005],
-  ['ringMargin', 'Ring margin', 0, 0.15, 0.005],
+  ['ringRadius', 'Ring radius', 0.1, 0.47, 0.01],
   ['ringPeriod3Seconds', '3-planet ring period (s), sets Gm', 3, 30, 0.5],
   ['softening', 'Gravity softening ε', 0, 0.4, 0.01],
   ['thrust', 'Thrust (sides/s²)', 0.2, 4, 0.1],

@@ -1,0 +1,41 @@
+{
+ "final: Newtonian R.18 T10 t0.6 c2": {
+  "settings": {},
+  "gm": 0.004,
+  "contactPull": 1.11,
+  "escapeMargin": 0.27,
+  "ring8TurnsPerSec": 0.22,
+  "hold8": 0.0024,
+  "hold3": 0.0011,
+  "break3": 44.1,
+  "break8": 13.1,
+  "escape": null,
+  "escapePrograde": 5.8,
+  "escapeSpeed": 0.52,
+  "ringRadius": 0.18,
+  "n3": {
+   "medianSeconds": 48.1,
+   "unfinished": 0,
+   "pointsPerMin": 28.7,
+   "maxSpeed": 1.74,
+   "nearShare": 0.07,
+   "longestNear": 0.3
+  },
+  "n5": {
+   "medianSeconds": 36.7,
+   "unfinished": 0,
+   "pointsPerMin": 46.6,
+   "maxSpeed": 1.7,
+   "nearShare": 0.13,
+   "longestNear": 0.6
+  },
+  "n8": {
+   "medianSeconds": 26.9,
+   "unfinished": 0,
+   "pointsPerMin": 71,
+   "maxSpeed": 1.81,
+   "nearShare": 0.23,
+   "longestNear": 1.1
+  }
+ }
+}

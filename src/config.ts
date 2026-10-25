@@ -29,13 +29,13 @@ export const config = {
   // Arena and planets
   arenaSide: 1,
   planetRadius: 0.03, // was TBD
-  ringMargin: 0.03, // was TBD
+  ringRadius: 0.18, // the owner, 2026-10-24: planets start near the centre, so gravity can be weak and Newtonian
   ringClearance: 0.03, // was TBD: a ring capacity of 30
-  ringPeriod3Seconds: 10, // was TBD: the 3-planet ring period, which sets Gm (Q-12)
-  softening: 0.25, // gravity softening ε (C-16): a touching quarry can thrust free
-  thrust: 1.4, // was TBD, arena sides per second²: 1.67 × twice the peak pull
+  ringPeriod3Seconds: 10, // was TBD: the 3-planet ring period, which sets Gm (Q-12): about 0.004 here
+  softening: 0, // Newtonian gravity (C-16); the tuning page can soften it for comparison
+  thrust: 0.6, // was TBD, arena sides per second²: the starting value, enough once gravity is weak
   wallEnergyLoss: 0.2, // was TBD, fraction of kinetic energy per wall bounce (Q-14)
-  correctionFactor: 1, // was TBD
+  correctionFactor: 2, // was TBD: 1 doesn't hold a Newtonian 8-planet ring
   rearmGapDiameters: 1, // C-16, owner 2026-10-24: a pair scores again only once its surfaces are a planet diameter apart
   maxRotationTurnsPerSecond: 1,
   rotationAccelTurnsPerSecond2: 2,
@@ -59,8 +59,7 @@ export function ringSum(n: number): number {
   return s / 4;
 }
 
-/** R = L/2 − r − margin; the inscribed radius of the square (D-6). */
-export const ringRadius = config.arenaSide / 2 - config.planetRadius - config.ringMargin;
+export const ringRadius = config.ringRadius;
 
 /** The most planets the ring holds with the clearance between neighbours. */
 export const ringCapacity = Math.floor(

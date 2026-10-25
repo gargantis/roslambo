@@ -1,0 +1,313 @@
+{
+ "N R.22 T10 t0.8 c4": {
+  "settings": {
+   "softening": 0,
+   "correctionFactor": 4,
+   "thrust": 0.8,
+   "ringMargin": 0.25
+  },
+  "gm": 0.0073,
+  "contactPull": 2.02,
+  "escapeMargin": 0.2,
+  "ring8TurnsPerSec": 0.22,
+  "hold8": 0.0054,
+  "hold3": 0.0024,
+  "break3": 44.2,
+  "break8": 14.2,
+  "escape": null,
+  "escapePrograde": 4.75,
+  "escapeSpeed": 0.7,
+  "ringRadius": 0.22,
+  "n3": {
+   "medianSeconds": 54.1,
+   "unfinished": 0,
+   "pointsPerMin": 37.6,
+   "maxSpeed": 1.8,
+   "nearShare": 0.08,
+   "longestNear": 0.5
+  },
+  "n5": {
+   "medianSeconds": 35.4,
+   "unfinished": 0,
+   "pointsPerMin": 55.3,
+   "maxSpeed": 1.96,
+   "nearShare": 0.15,
+   "longestNear": 0.5
+  },
+  "n8": {
+   "medianSeconds": 22.8,
+   "unfinished": 0,
+   "pointsPerMin": 87.3,
+   "maxSpeed": 2.06,
+   "nearShare": 0.24,
+   "longestNear": 1.1
+  }
+ },
+ "N R.22 T10 t1.0 c2": {
+  "settings": {
+   "softening": 0,
+   "correctionFactor": 2,
+   "thrust": 1,
+   "ringMargin": 0.25
+  },
+  "gm": 0.0073,
+  "contactPull": 2.02,
+  "escapeMargin": 0.25,
+  "ring8TurnsPerSec": 0.22,
+  "hold8": 0.0055,
+  "hold3": 0.0025,
+  "break3": 44.1,
+  "break8": 13.7,
+  "escape": null,
+  "escapePrograde": 4.6,
+  "escapeSpeed": 0.7,
+  "ringRadius": 0.22,
+  "n3": {
+   "medianSeconds": 39.7,
+   "unfinished": 0,
+   "pointsPerMin": 33.2,
+   "maxSpeed": 1.98,
+   "nearShare": 0.06,
+   "longestNear": 0.3
+  },
+  "n5": {
+   "medianSeconds": 24.1,
+   "unfinished": 0,
+   "pointsPerMin": 63,
+   "maxSpeed": 2.17,
+   "nearShare": 0.14,
+   "longestNear": 0.6
+  },
+  "n8": {
+   "medianSeconds": 32.6,
+   "unfinished": 0,
+   "pointsPerMin": 97.8,
+   "maxSpeed": 2.11,
+   "nearShare": 0.24,
+   "longestNear": 1.1
+  }
+ },
+ "N R.22 T10 t1.0 c1": {
+  "settings": {
+   "softening": 0,
+   "correctionFactor": 1,
+   "thrust": 1,
+   "ringMargin": 0.25
+  },
+  "gm": 0.0073,
+  "contactPull": 2.02,
+  "escapeMargin": 0.25,
+  "ring8TurnsPerSec": 0.22,
+  "hold8": 0.1834,
+  "hold3": 0.0024,
+  "break3": 44,
+  "break8": 10.3,
+  "escape": null,
+  "escapePrograde": 4.6,
+  "escapeSpeed": 0.7,
+  "ringRadius": 0.22,
+  "n3": {
+   "medianSeconds": 34.7,
+   "unfinished": 0,
+   "pointsPerMin": 39.3,
+   "maxSpeed": 1.95,
+   "nearShare": 0.08,
+   "longestNear": 0.4
+  },
+  "n5": {
+   "medianSeconds": 28.5,
+   "unfinished": 0,
+   "pointsPerMin": 62.7,
+   "maxSpeed": 2.36,
+   "nearShare": 0.14,
+   "longestNear": 0.5
+  },
+  "n8": {
+   "medianSeconds": 24,
+   "unfinished": 0,
+   "pointsPerMin": 93.1,
+   "maxSpeed": 2.2,
+   "nearShare": 0.23,
+   "longestNear": 0.7
+  }
+ },
+ "N R.22 T8 t1.0 c4": {
+  "settings": {
+   "softening": 0,
+   "correctionFactor": 4,
+   "thrust": 1,
+   "ringMargin": 0.25,
+   "ringPeriod3Seconds": 8
+  },
+  "gm": 0.0114,
+  "contactPull": 3.16,
+  "escapeMargin": 0.16,
+  "ring8TurnsPerSec": 0.276,
+  "hold8": 0.0068,
+  "hold3": 0.0031,
+  "break3": 35.3,
+  "break8": 10.5,
+  "escape": null,
+  "escapePrograde": 4.92,
+  "escapeSpeed": 0.87,
+  "ringRadius": 0.22,
+  "n3": {
+   "medianSeconds": 53.5,
+   "unfinished": 0,
+   "pointsPerMin": 40,
+   "maxSpeed": 2.07,
+   "nearShare": 0.08,
+   "longestNear": 0.3
+  },
+  "n5": {
+   "medianSeconds": 21.1,
+   "unfinished": 0,
+   "pointsPerMin": 60.2,
+   "maxSpeed": 2.23,
+   "nearShare": 0.14,
+   "longestNear": 0.4
+  },
+  "n8": {
+   "medianSeconds": 25.1,
+   "unfinished": 0,
+   "pointsPerMin": 95.3,
+   "maxSpeed": 2.34,
+   "nearShare": 0.25,
+   "longestNear": 1.1
+  }
+ },
+ "N R.22 T12 t0.8 c4": {
+  "settings": {
+   "softening": 0,
+   "correctionFactor": 4,
+   "thrust": 0.8,
+   "ringMargin": 0.25,
+   "ringPeriod3Seconds": 12
+  },
+  "gm": 0.0051,
+  "contactPull": 1.4,
+  "escapeMargin": 0.28,
+  "ring8TurnsPerSec": 0.184,
+  "hold8": 0.0045,
+  "hold3": 0.002,
+  "break3": 53.1,
+  "break8": 16.3,
+  "escape": null,
+  "escapePrograde": 5.4,
+  "escapeSpeed": 0.58,
+  "ringRadius": 0.22,
+  "n3": {
+   "medianSeconds": 55.8,
+   "unfinished": 0,
+   "pointsPerMin": 33.3,
+   "maxSpeed": 1.81,
+   "nearShare": 0.07,
+   "longestNear": 0.3
+  },
+  "n5": {
+   "medianSeconds": 31.3,
+   "unfinished": 0,
+   "pointsPerMin": 49.5,
+   "maxSpeed": 2.03,
+   "nearShare": 0.14,
+   "longestNear": 0.7
+  },
+  "n8": {
+   "medianSeconds": 25.3,
+   "unfinished": 0,
+   "pointsPerMin": 88,
+   "maxSpeed": 2.14,
+   "nearShare": 0.23,
+   "longestNear": 1.1
+  }
+ },
+ "N R.27 T10 t1.0 c4": {
+  "settings": {
+   "softening": 0,
+   "correctionFactor": 4,
+   "thrust": 1,
+   "ringMargin": 0.2
+  },
+  "gm": 0.0135,
+  "contactPull": 3.74,
+  "escapeMargin": 0.13,
+  "ring8TurnsPerSec": 0.22,
+  "hold8": 0.0054,
+  "hold3": 0.0024,
+  "break3": 44.2,
+  "break8": 13.3,
+  "escape": null,
+  "escapePrograde": 23.32,
+  "escapeSpeed": 0.95,
+  "ringRadius": 0.27,
+  "n3": {
+   "medianSeconds": 53.7,
+   "unfinished": 0,
+   "pointsPerMin": 37.7,
+   "maxSpeed": 2.14,
+   "nearShare": 0.08,
+   "longestNear": 0.5
+  },
+  "n5": {
+   "medianSeconds": 17.5,
+   "unfinished": 0,
+   "pointsPerMin": 72.2,
+   "maxSpeed": 2.2,
+   "nearShare": 0.14,
+   "longestNear": 0.4
+  },
+  "n8": {
+   "medianSeconds": 26.6,
+   "unfinished": 0,
+   "pointsPerMin": 98.6,
+   "maxSpeed": 2.61,
+   "nearShare": 0.25,
+   "longestNear": 1.3
+  }
+ },
+ "N R.22 T10 t1.0 c4 wall.1": {
+  "settings": {
+   "softening": 0,
+   "correctionFactor": 4,
+   "thrust": 1,
+   "ringMargin": 0.25,
+   "wallEnergyLoss": 0.1
+  },
+  "gm": 0.0073,
+  "contactPull": 2.02,
+  "escapeMargin": 0.25,
+  "ring8TurnsPerSec": 0.22,
+  "hold8": 0.0054,
+  "hold3": 0.0024,
+  "break3": 44.2,
+  "break8": 14.2,
+  "escape": null,
+  "escapePrograde": 4.42,
+  "escapeSpeed": 0.7,
+  "ringRadius": 0.22,
+  "n3": {
+   "medianSeconds": 39.5,
+   "unfinished": 0,
+   "pointsPerMin": 34.9,
+   "maxSpeed": 2.26,
+   "nearShare": 0.07,
+   "longestNear": 0.3
+  },
+  "n5": {
+   "medianSeconds": 28.9,
+   "unfinished": 0,
+   "pointsPerMin": 66.7,
+   "maxSpeed": 2.55,
+   "nearShare": 0.13,
+   "longestNear": 0.5
+  },
+  "n8": {
+   "medianSeconds": 23.9,
+   "unfinished": 0,
+   "pointsPerMin": 100.4,
+   "maxSpeed": 2.78,
+   "nearShare": 0.23,
+   "longestNear": 0.7
+  }
+ }
+}

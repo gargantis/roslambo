@@ -1,0 +1,348 @@
+{
+ "softened (M2 choice)": {
+  "settings": {},
+  "gm": 0.0679,
+  "contactPull": 0.24,
+  "escapeMargin": 1.67,
+  "ring8TurnsPerSec": 0.198,
+  "hold8": 0.0042,
+  "hold3": 0.0022,
+  "break3": 52.4,
+  "break8": 38.2,
+  "escape": 0.8,
+  "escapePrograde": 0.78,
+  "escapeSpeed": 2.13,
+  "ringRadius": 0.44,
+  "n3": {
+   "medianSeconds": 23.8,
+   "unfinished": 0,
+   "pointsPerMin": 47.7,
+   "maxSpeed": 2.58,
+   "nearShare": 0.09,
+   "longestNear": 0.3
+  },
+  "n5": {
+   "medianSeconds": 25.1,
+   "unfinished": 0,
+   "pointsPerMin": 64.6,
+   "maxSpeed": 2.6,
+   "nearShare": 0.15,
+   "longestNear": 0.4
+  },
+  "n8": {
+   "medianSeconds": 13.6,
+   "unfinished": 0,
+   "pointsPerMin": 127.7,
+   "maxSpeed": 2.95,
+   "nearShare": 0.25,
+   "longestNear": 0.6
+  }
+ },
+ "N R.44 T10 t1.4": {
+  "settings": {
+   "softening": 0,
+   "correctionFactor": 4
+  },
+  "gm": 0.0582,
+  "contactPull": 16.18,
+  "escapeMargin": 0.04,
+  "ring8TurnsPerSec": 0.22,
+  "hold8": 0.0054,
+  "hold3": 0.0024,
+  "break3": 44.2,
+  "break8": 14.1,
+  "escape": null,
+  "escapePrograde": 5.07,
+  "escapeSpeed": 1.97,
+  "ringRadius": 0.44,
+  "n3": {
+   "medianSeconds": 21.1,
+   "unfinished": 0,
+   "pointsPerMin": 74.4,
+   "maxSpeed": 2.56,
+   "nearShare": 0.16,
+   "longestNear": 2.3
+  },
+  "n5": {
+   "medianSeconds": 10.8,
+   "unfinished": 0,
+   "pointsPerMin": 125,
+   "maxSpeed": 2.89,
+   "nearShare": 0.25,
+   "longestNear": 1.6
+  },
+  "n8": {
+   "medianSeconds": 11.6,
+   "unfinished": 0,
+   "pointsPerMin": 239,
+   "maxSpeed": 3.27,
+   "nearShare": 0.44,
+   "longestNear": 1.6
+  }
+ },
+ "N R.44 T10 t0.6": {
+  "settings": {
+   "softening": 0,
+   "correctionFactor": 4,
+   "thrust": 0.6
+  },
+  "gm": 0.0582,
+  "contactPull": 16.18,
+  "escapeMargin": 0.02,
+  "ring8TurnsPerSec": 0.22,
+  "hold8": 0.0054,
+  "hold3": 0.0024,
+  "break3": 44.2,
+  "break8": 14.1,
+  "escape": null,
+  "escapePrograde": null,
+  "escapeSpeed": 1.97,
+  "ringRadius": 0.44,
+  "n3": {
+   "medianSeconds": 25.9,
+   "unfinished": 0,
+   "pointsPerMin": 62.1,
+   "maxSpeed": 2.29,
+   "nearShare": 0.35,
+   "longestNear": 5.7
+  },
+  "n5": {
+   "medianSeconds": 10.6,
+   "unfinished": 0,
+   "pointsPerMin": 127.7,
+   "maxSpeed": 2.5,
+   "nearShare": 0.44,
+   "longestNear": 2.2
+  },
+  "n8": {
+   "medianSeconds": 11.8,
+   "unfinished": 0,
+   "pointsPerMin": 209.1,
+   "maxSpeed": 3.03,
+   "nearShare": 0.62,
+   "longestNear": 4
+  }
+ },
+ "N R.32 T10 t0.6": {
+  "settings": {
+   "softening": 0,
+   "correctionFactor": 4,
+   "thrust": 0.6,
+   "ringMargin": 0.15
+  },
+  "gm": 0.0224,
+  "contactPull": 6.22,
+  "escapeMargin": 0.05,
+  "ring8TurnsPerSec": 0.22,
+  "hold8": 0.0054,
+  "hold3": 0.0024,
+  "break3": 44.2,
+  "break8": 13.4,
+  "escape": null,
+  "escapePrograde": 19.67,
+  "escapeSpeed": 1.22,
+  "ringRadius": 0.32,
+  "n3": {
+   "medianSeconds": 24.7,
+   "unfinished": 0,
+   "pointsPerMin": 39.7,
+   "maxSpeed": 1.91,
+   "nearShare": 0.08,
+   "longestNear": 0.5
+  },
+  "n5": {
+   "medianSeconds": 23.2,
+   "unfinished": 0,
+   "pointsPerMin": 82.7,
+   "maxSpeed": 2.06,
+   "nearShare": 0.19,
+   "longestNear": 1.9
+  },
+  "n8": {
+   "medianSeconds": 19.3,
+   "unfinished": 0,
+   "pointsPerMin": 118,
+   "maxSpeed": 2.3,
+   "nearShare": 0.34,
+   "longestNear": 1.9
+  }
+ },
+ "N R.22 T10 t0.6": {
+  "settings": {
+   "softening": 0,
+   "correctionFactor": 4,
+   "thrust": 0.6,
+   "ringMargin": 0.25
+  },
+  "gm": 0.0073,
+  "contactPull": 2.02,
+  "escapeMargin": 0.15,
+  "ring8TurnsPerSec": 0.22,
+  "hold8": 0.0054,
+  "hold3": 0.0024,
+  "break3": 44.2,
+  "break8": 14.2,
+  "escape": null,
+  "escapePrograde": 8.1,
+  "escapeSpeed": 0.7,
+  "ringRadius": 0.22,
+  "n3": {
+   "medianSeconds": 50.9,
+   "unfinished": 0,
+   "pointsPerMin": 29.8,
+   "maxSpeed": 1.74,
+   "nearShare": 0.08,
+   "longestNear": 0.6
+  },
+  "n5": {
+   "medianSeconds": 20.5,
+   "unfinished": 0,
+   "pointsPerMin": 51.9,
+   "maxSpeed": 2.01,
+   "nearShare": 0.15,
+   "longestNear": 0.5
+  },
+  "n8": {
+   "medianSeconds": 16.7,
+   "unfinished": 0,
+   "pointsPerMin": 73.9,
+   "maxSpeed": 1.98,
+   "nearShare": 0.24,
+   "longestNear": 1.3
+  }
+ },
+ "N R.22 T10 t1.0": {
+  "settings": {
+   "softening": 0,
+   "correctionFactor": 4,
+   "thrust": 1,
+   "ringMargin": 0.25
+  },
+  "gm": 0.0073,
+  "contactPull": 2.02,
+  "escapeMargin": 0.25,
+  "ring8TurnsPerSec": 0.22,
+  "hold8": 0.0054,
+  "hold3": 0.0024,
+  "break3": 44.2,
+  "break8": 14.2,
+  "escape": null,
+  "escapePrograde": 4.6,
+  "escapeSpeed": 0.7,
+  "ringRadius": 0.22,
+  "n3": {
+   "medianSeconds": 42.1,
+   "unfinished": 0,
+   "pointsPerMin": 36.5,
+   "maxSpeed": 2.14,
+   "nearShare": 0.07,
+   "longestNear": 0.3
+  },
+  "n5": {
+   "medianSeconds": 19.6,
+   "unfinished": 0,
+   "pointsPerMin": 67,
+   "maxSpeed": 2.12,
+   "nearShare": 0.15,
+   "longestNear": 0.5
+  },
+  "n8": {
+   "medianSeconds": 22.4,
+   "unfinished": 0,
+   "pointsPerMin": 93.6,
+   "maxSpeed": 2.3,
+   "nearShare": 0.22,
+   "longestNear": 0.7
+  }
+ },
+ "N R.32 T15 t0.6": {
+  "settings": {
+   "softening": 0,
+   "correctionFactor": 4,
+   "thrust": 0.6,
+   "ringMargin": 0.15,
+   "ringPeriod3Seconds": 15
+  },
+  "gm": 0.01,
+  "contactPull": 2.77,
+  "escapeMargin": 0.11,
+  "ring8TurnsPerSec": 0.147,
+  "hold8": 0.0036,
+  "hold3": 0.0016,
+  "break3": null,
+  "break8": 20.1,
+  "escape": null,
+  "escapePrograde": 11.4,
+  "escapeSpeed": 0.81,
+  "ringRadius": 0.32,
+  "n3": {
+   "medianSeconds": 36.6,
+   "unfinished": 0,
+   "pointsPerMin": 34.3,
+   "maxSpeed": 1.81,
+   "nearShare": 0.09,
+   "longestNear": 0.7
+  },
+  "n5": {
+   "medianSeconds": 25.3,
+   "unfinished": 0,
+   "pointsPerMin": 49.7,
+   "maxSpeed": 1.94,
+   "nearShare": 0.17,
+   "longestNear": 1.3
+  },
+  "n8": {
+   "medianSeconds": 30.7,
+   "unfinished": 0,
+   "pointsPerMin": 92.1,
+   "maxSpeed": 1.86,
+   "nearShare": 0.25,
+   "longestNear": 1.3
+  }
+ },
+ "N R.22 T10 t0.6 r.04": {
+  "settings": {
+   "softening": 0,
+   "correctionFactor": 4,
+   "thrust": 0.6,
+   "ringMargin": 0.24,
+   "planetRadius": 0.04
+  },
+  "gm": 0.0073,
+  "contactPull": 1.14,
+  "escapeMargin": 0.26,
+  "ring8TurnsPerSec": 0.22,
+  "hold8": 0.0054,
+  "hold3": 0.0024,
+  "break3": 44.2,
+  "break8": 14.1,
+  "escape": null,
+  "escapePrograde": 5.93,
+  "escapeSpeed": 0.6,
+  "ringRadius": 0.22,
+  "n3": {
+   "medianSeconds": 47.5,
+   "unfinished": 0,
+   "pointsPerMin": 42.4,
+   "maxSpeed": 1.69,
+   "nearShare": 0.13,
+   "longestNear": 0.8
+  },
+  "n5": {
+   "medianSeconds": 21.6,
+   "unfinished": 0,
+   "pointsPerMin": 62.5,
+   "maxSpeed": 1.97,
+   "nearShare": 0.24,
+   "longestNear": 1
+  },
+  "n8": {
+   "medianSeconds": 19.6,
+   "unfinished": 0,
+   "pointsPerMin": 97.1,
+   "maxSpeed": 1.78,
+   "nearShare": 0.37,
+   "longestNear": 1.2
+  }
+ }
+}

@@ -4,7 +4,7 @@
 - The owner left the open questions to Claude's judgement for the MVP, so every question is settled at its proposal except four. Q-1, Q-2, Q-9 and Q-19 need facts or choices only the owner has.
 - Q-19 was settled on 2026-10-24: no license. The owner keeps all rights.
 - Manual runs are deferred for now (§15).
-- M2 finished on 2026-10-24: the tuning is in [research/tuning/REPORT.md](research/tuning/REPORT.md). Its amendments are marked "M2".
+- M2 finished on 2026-10-24, and was revised the same day at the owner's request: Newtonian gravity with a smaller ring, and energy-conserving bounces. The tuning is in [research/tuning/REPORT.md](research/tuning/REPORT.md), §4. Its amendments are marked "M2".
 - M0 finished on 2026-10-24: see [research/lockstep/REPORT.md](research/lockstep/REPORT.md). Its amendments are marked "M0" in §3, §4, §9 and A.4.
 
 **Date:** 2026-10-24; approved 2026-10-24.
@@ -216,10 +216,11 @@ REQUIREMENTS.md is yours. These edits went in on 2026-10-24, in one commit that 
 | C-14 | Player IDs are broadcast in the room, so any peer can take over an absent player's planet, or collect their result. | Q-17: honor system. |
 | C-15 | Two tabs in one browser are one player, and would send conflicting inputs. | Q-16 |
 | C-16 | **A caught quarry probably can't escape.** Gravity at contact is R²/(4r²·S₃) times the acceleration that holds a 3-planet ring: about 90 for r = 0.07R, regardless of G and m. Once a hunter and its quarry touch at low speed, thrust on the scale of the ring's forces can't separate them, and every elastic bounce scores (the appendix shows 30 contacts in 3 time units). Rounds may end soon after the first capture. This is as specified for the MVP. | **M0 measured worse** (REPORT §3.4): with gravity alone, planets come to rest touching and register about 170 approach-gated contacts a second. **Settled at M2** (research/tuning/REPORT.md):
-  - gravity is softened (ε = 0.25), so a touching quarry can thrust free when thrust beats twice the peak pull (1.4 against about 0.84);
+  - Gravity stays Newtonian, made weak by a smaller ring (radius 0.18 at a 10 s period, so Gm ≈ 0.004). Thrust stays at 0.6, and a quarry stopped dead against its hunter works free by thrusting prograde, in a median 8 s. Softening was tried first and dropped at the owner's request (research/tuning/REPORT.md §4).
+  - Bounces now conserve energy (D-4). Stopping overlapping planets at touching had leaked energy at every bounce, which drove much of the clustering.
   - a pair scores once per contact episode, re-arming once the surfaces are a full planet diameter apart (the owner's change on 2026-10-24; M2 had used a quarter diameter).
 
-  Both are now in REQUIREMENTS.md. |
+  The rules are in REQUIREMENTS.md. |
 | C-17 | `W`, `A`, `D` are awkward on AZERTY and other layouts. | Q-18 |
 | C-18 | It's unknown whether Playwright's WebKit on Linux has working WebRTC. | **Settled by M0:** it does, with Trystero's mDNS-to-loopback test option (REPORT §2). |
 | C-19 | With two voters, any disagreement is a tie, and the smallest hash wins whether right or wrong. This happens before the countdown, and when only 2 of a round's players are connected. | Accepted. Honest peers rarely disagree (D-7). |
@@ -275,12 +276,16 @@ Each decision gives the choice, the options rejected, and the cost if it's wrong
   Scoring contacts are collected and applied at the end of the tick (Q-13).
 - **"One contact, one point":** only planets moving toward each other count, so the ticks they still overlap after a bounce don't score again.
 - **Rejected:**
-  - Continuous collision detection: more code, and substeps suffice. A test asserts no tunnelling up to 5 arena widths per second.
+  - Continuous collision detection: more code, and substeps suffice. A test asserts no tunnelling up to 5 arena widths per second. *Reversed at M2*: exact contact times turned out to be needed to conserve energy.
   - An iterative impulse solver: equal-mass circles don't need one.
   - Velocity Verlet: fine too, but Euler is simpler when contacts change velocities mid-step.
 - **Cost if wrong:** feel and energy drift. The tuning page shows it, and the integrator is one module.
-- **M2, amended** (C-16; research/tuning/REPORT.md):
-  - Gravity is softened: a = Gm·d/(d² + ε²)^{3/2}, still with d ≥ 2r.
+- **M2, amended** (C-16; research/tuning/REPORT.md §4):
+  - **The integrator is velocity Verlet, and each substep is split at the predicted moment of the next contact.** The contact time comes from the second-order expansion of each distance, a stable quadratic using only exact operations, and the bounce happens exactly then.
+    - Measured: semi-implicit Euler that stops overlapping planets at touching leaks energy at every bounce, until an isolated pair rests in contact. Mirroring the overlap gains energy instead.
+    - The split integrator keeps an isolated pair bouncing a full diameter high for 10 minutes, with energy within 0.1%, and a gate test checks it.
+    - Planets resting together would bounce infinitely often, so a per-substep event cap ends the substep, and overlaps are settled the old way.
+  - Gravity stays Newtonian. A softening setting ε exists for the tuning page and is 0.
   - A hunter's `engaged` flag (A.1) makes a pair score once per contact episode, until it separates past 2r + gap.
 
 **D-5 — Pre-start ring: ideal slots, plus a spring.**
@@ -293,7 +298,7 @@ Each decision gives the choice, the options rejected, and the cost if it's wrong
   - Placing planets on their slots every tick: gravity would then do nothing, but the requirements say gravity holds the ring.
   - Gliding planets to their new slots: slower, and neighbours can touch on the way.
 - **Cost if wrong:** looks only.
-- **M2, amended:** with softening, the ring's speed comes from a direct sum of the softened pulls on one planet, using exact operations. A test checks it against the appendix formula at ε = 0. Gm is set from the 3-planet ring period.
+- **M2, amended:** the ring's speed comes from a direct sum of the pulls on one planet, using exact operations. A test checks it against the appendix formula at ε = 0. Gm is set from the 3-planet ring period.
 
 **D-6 — The arena is a convex polygon.**
 - **Choice:** walls are a list of half-planes. The ring radius uses the inscribed radius, R = inradius − r − margin, which is L/2 − r − margin for the square.
@@ -610,7 +615,7 @@ Everything below is in the canonical state (A.1) and so in the hash. Spectators 
 
 ### 7.3 Physics details
 
-- **Gravity** (softened at M2): a_i += Gm · (x_j − x_i) / s³, with s² = max(d², (2r)²) + ε². Both planets of a pair are updated in the same pass.
+- **Gravity:** Newtonian. a_i += Gm · (x_j − x_i) / d³, with d = max(|x_j − x_i|, 2r). Both planets of a pair are updated in the same pass. A softening term ε² can be added to d², but it is 0 (M2).
 - **Thrust:** a += thrust · (dcos(angle), dsin(angle)).
 - **Planet contact:** when |x_j − x_i| < 2r and (v_j − v_i) · n < 0, with n the unit vector from i to j:
   - exchange the normal components of the two velocities;
@@ -1330,13 +1335,13 @@ n × { u8[16] player ID, u8+n display name, u32 final points }
 |---|---|---|
 | Arena side L | 1 (the unit) | |
 | Planet radius r | 0.03 L | |
-| Ring margin | 0.03 L | R = 0.44 L |
-| 3-planet ring period | 10 s (8 s) | Gm ≈ 0.068 L³/s²; the 8-planet ring turns at 0.20 turn/s |
-| Gravity softening ε | 0.25 L (added at M2) | peak pull ≈ 0.42 L/s² |
-| Ring clearance | 0.03 L | ring capacity 30 |
-| Thrust | 1.4 L/s² (0.6) | escape margin 1.67 |
+| Ring radius | 0.18 L (R = 0.44 L, "almost fills the arena") | the planets start near the centre (the owner) |
+| 3-planet ring period | 10 s (8 s) | Gm ≈ 0.0040 L³/s²; the 8-planet ring turns at 0.22 turn/s |
+| Gravity | Newtonian (softening tried, then dropped) | escape speed from contact 0.52 L/s |
+| Ring clearance | 0.03 L | ring capacity 12 |
+| Thrust | 0.6 L/s² (0.6) | median escape from a dead stop 8 s |
 | Wall energy loss | 0.2 | |
-| Correction factor | 1 | |
+| Correction factor | 2 (1.0) | 1 doesn't hold a Newtonian 8-ring |
 | Re-arm gap | 1 planet diameter (the owner, 2026-10-24; M2 chose 0.015 L) | |
 | Ready expiry | 60 s | |
 | Countdown | 10 s | (set in the requirements) |

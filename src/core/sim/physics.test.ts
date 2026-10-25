@@ -65,6 +65,24 @@ describe('the ring (D-5)', () => {
 describe('contacts (D-4)', () => {
   const Pc = paramsWith(NO_GRAVITY);
 
+  it('keeps an isolated pair bouncing at the same height for 10 minutes: bounces conserve energy', () => {
+    // The appendix's case: released at rest, a diameter apart, Newtonian
+    // gravity. Bounces are timed exactly, so none leaks or adds energy.
+    const s = running([{ x: 0.5 - 2 * P.r, y: 0.5 }, { x: 0.5 + 2 * P.r, y: 0.5 }], 1000);
+    const energy = (): number => {
+      const [a, b] = s.planets as [RoundState['planets'][0], RoundState['planets'][0]];
+      return kineticEnergy(s) - P.gm / Math.max(Math.hypot(b.x - a.x, b.y - a.y), P.twoR);
+    };
+    const e0 = energy();
+    let peak = 0;
+    for (let t = 1; t <= 36_000; t++) {
+      step(s, [], P);
+      if (t > 35_400) peak = Math.max(peak, Math.hypot(s.planets[1]!.x - s.planets[0]!.x, s.planets[1]!.y - s.planets[0]!.y) - P.twoR);
+    }
+    expect(Math.abs(energy() / e0 - 1)).toBeLessThan(1e-3);
+    expect(peak / P.twoR).toBeCloseTo(1, 2); // still a diameter apart at the top of each bounce
+  });
+
   it('conserves the pair kinetic energy in every planet bounce', () => {
     fc.assert(
       fc.property(

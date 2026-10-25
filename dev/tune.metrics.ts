@@ -9,7 +9,8 @@ import { writeFileSync } from 'node:fs';
 import { makeParams, DEFAULT_SETTINGS, type SimSettings, type SimParams } from '../src/core/sim/params';
 import { step, JOIN, READY, THRUST, type PlayerInput } from '../src/core/sim/rules';
 import { genesis, RUNNING, FROZEN, type RoundState } from '../src/core/sim/state';
-import { steer, DEFAULT_STYLE, type SteerStyle } from './steer';
+import { steer, prograde, DEFAULT_STYLE, type SteerStyle } from './steer';
+import { LEFT, RIGHT } from '../src/core/sim/rules';
 
 const id = (k: number): string => (k + 1).toString(16).padStart(32, '0');
 
@@ -63,11 +64,41 @@ function escape(P: SimParams): number {
   return Infinity;
 }
 
+/** Two planets at rest, touching, mid-arena; one escapes the best way, with
+ *  the real controls: thrust prograde (along the relative velocity, or
+ *  sideways at first), turning within the rotation limits. Seconds until
+ *  0.3 apart, or Infinity after 30 s. */
+function escapePrograde(P: SimParams): number {
+  const s = genesis({ ante: 1000, minPlayers: 3, maxPlayers: 3 });
+  s.phase = RUNNING;
+  const base = { name: '', joinTick: 0, readyUntil: 0, lastInputTick: 0, points: 1000, rate: 0, vx: 0, vy: 0, engaged: 0 };
+  s.planets.push({ ...base, id: id(0), angle: 0, x: 0.5 - P.r, y: 0.5 });
+  s.planets.push({ ...base, id: id(1), angle: 0x40000000, x: 0.5 + P.r, y: 0.5 }); // faces sideways
+  const maxRate = 2 * Math.PI * P.settings.maxRotationTurnsPerSecond;
+  for (let t = 1; t <= 1800; t++) {
+    const [a, b] = [s.planets[0]!, s.planets[1]!];
+    if (Math.hypot(b.x - a.x, b.y - a.y) > 0.3) return t / 60;
+    const [dx, dy] = prograde(b.vx - a.vx, b.vy - a.vy, b.x - a.x, b.y - a.y);
+    const heading = (b.angle / 4294967296) * 2 * Math.PI;
+    let err = Math.atan2(dy, dx) - heading;
+    err -= 2 * Math.PI * Math.round(err / (2 * Math.PI));
+    const rate = (b.rate / 4294967296) * 2 * Math.PI * 60;
+    const want = Math.max(-maxRate, Math.min(maxRate, 6 * err));
+    let buttons = Math.abs(err) < 0.6 ? THRUST : 0;
+    if (rate < want - 0.2) buttons |= LEFT;
+    else if (rate > want + 0.2) buttons |= RIGHT;
+    step(s, [{ id: id(1), buttons, events: 0 }], P);
+  }
+  return Infinity;
+}
+
 interface RoundStats {
   seconds: number; // from the start until the freeze
   frozen: boolean;
   points: number; // transfers per minute
   maxSpeed: number;
+  near: number; // share of planet-time within a diameter of another planet
+  longestNear: number; // seconds: the longest a pair stayed within a diameter
 }
 
 function round(P: SimParams, n: number, ante: number, seed: number, maxSeconds: number): RoundStats {
@@ -82,6 +113,10 @@ function round(P: SimParams, n: number, ante: number, seed: number, maxSeconds: 
   });
   let maxSpeed = 0;
   let transfers = 0;
+  let nearTicks = 0;
+  let longest = 0;
+  const run = new Map<string, number>();
+  const near2 = 16 * P.r * P.r; // centres 4r apart: surfaces a diameter apart
   const start = s.tick;
   while (s.phase === RUNNING && s.tick - start < maxSeconds * 60) {
     const before = s.planets.map((p) => p.points);
@@ -90,9 +125,24 @@ function round(P: SimParams, n: number, ante: number, seed: number, maxSeconds: 
       if (p.points > before[i]!) transfers += p.points - before[i]!;
       maxSpeed = Math.max(maxSpeed, Math.hypot(p.vx, p.vy));
     });
+    const close = new Set<number>();
+    for (let i = 0; i < n; i++) {
+      for (let j = i + 1; j < n; j++) {
+        const a = s.planets[i]!;
+        const b = s.planets[j]!;
+        const key = `${i}-${j}`;
+        if ((b.x - a.x) ** 2 + (b.y - a.y) ** 2 < near2) {
+          close.add(i).add(j);
+          const r = (run.get(key) ?? 0) + 1;
+          run.set(key, r);
+          longest = Math.max(longest, r);
+        } else run.set(key, 0);
+      }
+    }
+    nearTicks += close.size;
   }
   const seconds = (s.tick - start) / 60;
-  return { seconds, frozen: (s.phase as number) === FROZEN, points: (transfers / seconds) * 60, maxSpeed };
+  return { seconds, frozen: (s.phase as number) === FROZEN, points: (transfers / seconds) * 60, maxSpeed, near: nearTicks / (n * (s.tick - start)), longestNear: longest / 60 };
 }
 
 /** The strongest pull between two planets at any distance from contact out. */
@@ -120,6 +170,10 @@ function measure(settings: SimSettings): Record<string, unknown> {
     break3: +ringBreak(P, 3).toFixed(1),
     break8: +ringBreak(P, 8).toFixed(1),
     escape: +escape(P).toFixed(2),
+    escapePrograde: +escapePrograde(P).toFixed(2),
+    // The pair's escape speed from contact: the relative speed needed.
+    escapeSpeed: +Math.sqrt((2 * P.gm) / P.r).toFixed(2),
+    ringRadius: +P.ringRadius.toFixed(3),
   };
   for (const n of [3, 5, 8]) {
     const rs = rounds(n);
@@ -128,6 +182,8 @@ function measure(settings: SimSettings): Record<string, unknown> {
       unfinished: rs.filter((r) => !r.frozen).length,
       pointsPerMin: +median(rs.map((r) => r.points)).toFixed(1),
       maxSpeed: +Math.max(...rs.map((r) => r.maxSpeed)).toFixed(2),
+      nearShare: +median(rs.map((r) => r.near)).toFixed(2),
+      longestNear: +median(rs.map((r) => r.longestNear)).toFixed(1),
     };
   }
   return out;

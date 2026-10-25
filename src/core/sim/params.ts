@@ -9,7 +9,7 @@ export interface SimSettings {
   tickRate: number;
   substeps: number;
   planetRadius: number;
-  ringMargin: number;
+  ringRadius: number;
   ringPeriod3Seconds: number;
   softening: number;
   thrust: number;
@@ -27,7 +27,7 @@ export const DEFAULT_SETTINGS: SimSettings = {
   tickRate: config.tickRate,
   substeps: config.substeps,
   planetRadius: config.planetRadius,
-  ringMargin: config.ringMargin,
+  ringRadius: config.ringRadius,
   ringPeriod3Seconds: config.ringPeriod3Seconds,
   softening: config.softening,
   thrust: config.thrust,
@@ -107,7 +107,7 @@ function ringPull(n: number, R: number, eps2: number): number {
 
 export function makeParams(settings: SimSettings = DEFAULT_SETTINGS): SimParams {
   const r = settings.planetRadius;
-  const ringRadius = SQUARE.inradius - r - settings.ringMargin;
+  const ringRadius = Math.min(settings.ringRadius, SQUARE.inradius - r);
   const eps2 = settings.softening * settings.softening;
   // Gm from the 3-planet ring period: ω₃²·R = Gm · pull(3).
   const w3 = TWO_PI / settings.ringPeriod3Seconds;

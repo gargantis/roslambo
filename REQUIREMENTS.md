@@ -49,7 +49,6 @@ Status: draft from the requirements discussion of 2026-10-24, amended the same d
 ### Physics
 
 - Mutual gravity between all planets acts at all times: before, during and after the countdown
-- Gravity is softened at short range, so touching planets can still thrust apart: a = G·m·d / (d² + ε²)^{3/2} (C-16; see *Configuration*)
 - Planets bounce off each other elastically (MVP)
 - Bounces, off planets or walls, don't change a planet's rotation (MVP; likely to be revisited)
 - Planets bounce off the walls and lose a fraction of their kinetic energy (20%), so speeds can't grow without limit (Q-14)
@@ -98,14 +97,14 @@ Status: draft from the requirements discussion of 2026-10-24, amended the same d
 
 - Until the round starts, the planets orbit their common center in a ring, held by their mutual gravity
 - The ring re-forms each time a player joins
-- The ring radius is the same for every round and almost fills the arena (margin 0.03 of the arena side)
+- The ring radius is the same for every round: 0.18 of the arena side, so the planets start near the centre and gravity can be weak (the owner, 2026-10-24; it said "almost fills the arena" before)
 - Planets are evenly spaced and numbered in the direction of rotation, so each planet trails its quarry
 - The orbital speed is recalculated for the number of planets so the ring stays circular. It rises as players join (see *Appendix: physics checks*)
 - The ring is unstable on its own, so a **correction factor** holds it in shape until the countdown reaches 0
 - Each planet starts with a default rotation that keeps it pointed at its quarry: it faces its quarry and turns at the ring's rate. After the start, the planet keeps that rate unless its player changes it, so it no longer tracks the quarry
 - A lone planet has no quarry, so it starts with no rotation
 - Each time a player joins or leaves, every planet's rotation resets to the default
-- The largest number of players is the most planets that fit on the ring with a clearance between neighbors (0.03 of the arena side, so 30 planets)
+- The largest number of players is the most planets that fit on the ring with a clearance between neighbors (0.03 of the arena side, so 12 planets)
 
 ### End of round
 
@@ -248,13 +247,12 @@ Every setting should be easy to change.
 |---|---|---|
 | Ready expiry | 60 seconds | |
 | Countdown | 10 seconds | |
-| Thrust | 1.4 arena sides per second² | Acceleration while thrust is held. Above twice the strongest pull, so a touching quarry can escape |
-| Ring margin | 0.03 arena sides | Gap between the ring and the walls; the ring should almost fill the arena |
-| Ring clearance | 0.03 arena sides | Minimum gap between neighbors on the ring; sets the largest number of players (30) |
+| Thrust | 0.6 arena sides per second² | Acceleration while thrust is held |
+| Ring radius | 0.18 arena sides | The planets start near the centre, which keeps gravity weak (the owner, 2026-10-24) |
+| Ring clearance | 0.03 arena sides | Minimum gap between neighbors on the ring; sets the largest number of players (12) |
 | Wall energy loss | 20% | Fraction of kinetic energy lost per wall bounce |
-| Arena size, planet size and mass, gravitational constant | Arena side 1 (the unit of length); planet radius 0.03; G·m set by a 3-planet ring period of 10 seconds (G·m ≈ 0.068) | Together these set the ring's speed and period. All masses are equal, so only G·m matters |
-| Correction factor | 1 | Strength of the pre-start correction |
-| Gravity softening ε | 0.25 arena sides | Weakens gravity at short range (C-16) |
+| Arena size, planet size and mass, gravitational constant | Arena side 1 (the unit of length); planet radius 0.03; G·m set by a 3-planet ring period of 10 seconds (G·m ≈ 0.004) | Together these set the ring's speed and period. All masses are equal, so only G·m matters |
+| Correction factor | 2 | Strength of the pre-start correction |
 | Re-arm gap | 1 planet diameter | How far apart a scoring pair's surfaces must get before it can score again (C-16) |
 | Maximum rotation rate | 1 turn per second | Must stay above the ring's rotation rate with the most players, so the default rotation fits under it |
 | Rotation acceleration | 2 turns per second² | Holding a rotate button reaches the maximum from rest in half a second |
@@ -283,7 +281,7 @@ For N planets of mass m, evenly spaced on a circle of radius R, with gravitation
 
 - Ring radius from the arena: R = L/2 − r − margin, where L is the arena side and r is the planet radius
 - Orbital speed: v = √(G·m·S_N / R), where S_N = ¼ · Σ_{k=1}^{N−1} 1 / sin(πk/N)
-- With softened gravity (see *Physics*) this is the ε → 0 limit. The game sums the softened pulls directly, and a test checks that sum against this formula with ε = 0
+- The game sums the pulls directly with exact operations, and a test checks that sum against this formula
 - Orbital period: T = 2πR / v
 - The direct force sum matches this to machine precision for N = 1 to 12
 - One planet: v = 0, so it rests on the ring. Two planets: an ordinary binary orbit. Both occur while players are joining

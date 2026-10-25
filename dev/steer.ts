@@ -14,9 +14,19 @@ export interface SteerStyle {
   fear: number; // weight of fleeing a hunter closer than fearRange
   fearRange: number;
   aimTolerance: number; // radians: thrust only when aimed this well
+  sidewaysFlee: boolean; // when touching its hunter, thrust prograde to orbit free
 }
 
-export const DEFAULT_STYLE: SteerStyle = { gain: 4, fear: 1.5, fearRange: 0.2, aimTolerance: 0.5 };
+export const DEFAULT_STYLE: SteerStyle = { gain: 4, fear: 1.5, fearRange: 0.2, aimTolerance: 0.5, sidewaysFlee: true };
+
+/** The unit direction that adds energy fastest: along the relative velocity,
+ *  or sideways to the line between the planets when there's none yet. */
+export function prograde(rvx: number, rvy: number, ox: number, oy: number): [number, number] {
+  const v = Math.hypot(rvx, rvy);
+  if (v > 0.05) return [rvx / v, rvy / v];
+  const o = Math.hypot(ox, oy) || 1;
+  return [-oy / o, ox / o];
+}
 
 function wrap(a: number): number {
   return a - TWO_PI * Math.round(a / TWO_PI);
@@ -37,7 +47,14 @@ export function steer(s: RoundState, i: number, P: SimParams, style: SteerStyle 
     const hx = me.x - h.x;
     const hy = me.y - h.y;
     const hd = Math.hypot(hx, hy) || 1;
-    if (hd < style.fearRange) {
+    if (style.sidewaysFlee && hd < 4 * P.r) {
+      // Within a diameter of the hunter: pulling straight away loses to
+      // gravity, so thrust along the relative velocity (or sideways) and
+      // orbit free.
+      const [px, py] = prograde(me.vx - h.vx, me.vy - h.vy, hx, hy);
+      tx = px;
+      ty = py;
+    } else if (hd < style.fearRange) {
       tx += (style.fear * hx) / hd;
       ty += (style.fear * hy) / hd;
     }
