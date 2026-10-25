@@ -1,0 +1,841 @@
+[
+  {
+    "round": 1,
+    "at": "2026-10-25T05:48:30.999Z",
+    "url": "wss://relay.damus.io",
+    "info": {
+      "name": "damus.io",
+      "software": "git+https://github.com/hoytech/strfry.git",
+      "auth_required": null,
+      "payment_required": null,
+      "restricted_writes": null
+    },
+    "connectMs": 114,
+    "eose": true,
+    "ok": {
+      "accepted": false,
+      "reason": "banned: too many rate-limit violations, try again later"
+    },
+    "delivered": false,
+    "deliveryMs": null,
+    "notes": []
+  },
+  {
+    "round": 1,
+    "at": "2026-10-25T05:48:31.000Z",
+    "url": "wss://relay.primal.net",
+    "info": {
+      "name": "Primal Public Relay",
+      "software": "git+https://github.com/hoytech/strfry.git",
+      "auth_required": null,
+      "payment_required": null,
+      "restricted_writes": null
+    },
+    "connectMs": 624,
+    "eose": true,
+    "ok": {
+      "accepted": true,
+      "reason": ""
+    },
+    "delivered": true,
+    "deliveryMs": 199,
+    "notes": []
+  },
+  {
+    "round": 1,
+    "at": "2026-10-25T05:48:31.000Z",
+    "url": "wss://nos.lol",
+    "info": {
+      "name": "nos.lol",
+      "software": "git+https://github.com/hoytech/strfry.git",
+      "auth_required": null,
+      "payment_required": null,
+      "restricted_writes": null
+    },
+    "connectMs": 479,
+    "eose": true,
+    "ok": {
+      "accepted": true,
+      "reason": ""
+    },
+    "delivered": true,
+    "deliveryMs": 276,
+    "notes": []
+  },
+  {
+    "round": 1,
+    "at": "2026-10-25T05:48:31.000Z",
+    "url": "wss://offchain.pub",
+    "info": {
+      "name": "offchain.pub",
+      "software": "git+https://github.com/hoytech/strfry.git",
+      "auth_required": null,
+      "payment_required": null,
+      "restricted_writes": null
+    },
+    "error": "connect ECONNREFUSED 23.137.254.12:443"
+  },
+  {
+    "round": 1,
+    "at": "2026-10-25T05:48:31.000Z",
+    "url": "wss://nostr.bitcoiner.social",
+    "info": {
+      "name": "bitcoiner.social",
+      "software": "git+https://github.com/hoytech/strfry.git",
+      "auth_required": null,
+      "payment_required": null,
+      "restricted_writes": null
+    },
+    "connectMs": 91,
+    "eose": true,
+    "ok": {
+      "accepted": true,
+      "reason": ""
+    },
+    "delivered": true,
+    "deliveryMs": 128,
+    "notes": []
+  },
+  {
+    "round": 1,
+    "at": "2026-10-25T05:48:31.000Z",
+    "url": "wss://yabu.me/v2",
+    "info": {
+      "name": "やぶみ 🏹📨",
+      "software": "git+https://github.com/hoytech/strfry.git",
+      "auth_required": null,
+      "payment_required": null,
+      "restricted_writes": null
+    },
+    "connectMs": 318,
+    "eose": true,
+    "ok": {
+      "accepted": true,
+      "reason": ""
+    },
+    "delivered": true,
+    "deliveryMs": 6077,
+    "notes": []
+  },
+  {
+    "round": 1,
+    "at": "2026-10-25T05:48:31.001Z",
+    "url": "wss://relay.snort.social",
+    "info": {
+      "name": "memlay",
+      "software": "https://github.com/v0l/memlay",
+      "auth_required": null,
+      "payment_required": null,
+      "restricted_writes": null
+    },
+    "connectMs": 467,
+    "eose": true,
+    "ok": {
+      "accepted": true,
+      "reason": "ephemeral: will not be stored"
+    },
+    "delivered": true,
+    "deliveryMs": 143,
+    "notes": []
+  },
+  {
+    "round": 1,
+    "at": "2026-10-25T05:48:31.001Z",
+    "url": "wss://nostr.mom",
+    "info": {
+      "name": "nostr.mom",
+      "software": "git+https://github.com/hoytech/strfry.git",
+      "auth_required": null,
+      "payment_required": null,
+      "restricted_writes": null
+    },
+    "connectMs": 510,
+    "eose": true,
+    "ok": {
+      "accepted": true,
+      "reason": ""
+    },
+    "delivered": true,
+    "deliveryMs": 258,
+    "notes": []
+  },
+  {
+    "round": 1,
+    "at": "2026-10-25T05:48:31.001Z",
+    "url": "wss://nostr.oxtr.dev",
+    "info": {
+      "name": "0xtr relay",
+      "software": "git+https://github.com/hoytech/strfry.git",
+      "auth_required": null,
+      "payment_required": null,
+      "restricted_writes": null
+    },
+    "connectMs": 506,
+    "eose": true,
+    "ok": {
+      "accepted": true,
+      "reason": ""
+    },
+    "delivered": true,
+    "deliveryMs": 260,
+    "notes": []
+  },
+  {
+    "round": 1,
+    "at": "2026-10-25T05:48:31.001Z",
+    "url": "wss://nostr-pub.wellorder.net",
+    "info": {
+      "name": "wellorder-relay",
+      "software": "https://git.sr.ht/~gheartsfield/nostr-rs-relay",
+      "auth_required": null,
+      "payment_required": false,
+      "restricted_writes": false
+    },
+    "connectMs": 99,
+    "eose": true,
+    "ok": {
+      "accepted": true,
+      "reason": ""
+    },
+    "delivered": true,
+    "deliveryMs": 16,
+    "notes": []
+  },
+  {
+    "round": 1,
+    "at": "2026-10-25T05:48:31.001Z",
+    "url": "wss://relay.nostr.net",
+    "info": {
+      "name": "relay.nostr.net",
+      "software": "git+https://github.com/hoytech/strfry.git",
+      "auth_required": null,
+      "payment_required": null,
+      "restricted_writes": null
+    },
+    "connectMs": 736,
+    "eose": true,
+    "ok": {
+      "accepted": true,
+      "reason": ""
+    },
+    "delivered": true,
+    "deliveryMs": 277,
+    "notes": []
+  },
+  {
+    "round": 1,
+    "at": "2026-10-25T05:48:31.001Z",
+    "url": "wss://relay.nostr.dev.br",
+    "info": {
+      "name": "NostrBase relay",
+      "software": "https://git.sr.ht/~gheartsfield/nostr-rs-relay",
+      "auth_required": null,
+      "payment_required": false,
+      "restricted_writes": false
+    },
+    "connectMs": 499,
+    "eose": true,
+    "ok": {
+      "accepted": true,
+      "reason": ""
+    },
+    "delivered": true,
+    "deliveryMs": 167,
+    "notes": []
+  },
+  {
+    "round": 1,
+    "at": "2026-10-25T05:48:31.001Z",
+    "url": "wss://relay.layer.systems",
+    "info": {
+      "name": "layer.systems relay",
+      "software": "https://github.com/layer-systems/relay",
+      "auth_required": null,
+      "payment_required": null,
+      "restricted_writes": null
+    },
+    "connectMs": 447,
+    "eose": true,
+    "ok": {
+      "accepted": true,
+      "reason": "broadcasted to 1 listeners"
+    },
+    "delivered": true,
+    "deliveryMs": 168,
+    "notes": []
+  },
+  {
+    "round": 1,
+    "at": "2026-10-25T05:48:31.001Z",
+    "url": "wss://cdn.satellite.earth",
+    "info": {
+      "name": "Satellite",
+      "software": null,
+      "auth_required": null,
+      "payment_required": null,
+      "restricted_writes": null
+    },
+    "connectMs": 229,
+    "eose": true,
+    "ok": {
+      "accepted": true,
+      "reason": ""
+    },
+    "delivered": true,
+    "deliveryMs": 72,
+    "notes": []
+  },
+  {
+    "round": 2,
+    "at": "2026-10-25T05:48:56.014Z",
+    "url": "wss://relay.damus.io",
+    "info": {
+      "name": "damus.io",
+      "software": "git+https://github.com/hoytech/strfry.git",
+      "auth_required": null,
+      "payment_required": null,
+      "restricted_writes": null
+    },
+    "error": "Unexpected server response: 503"
+  },
+  {
+    "round": 2,
+    "at": "2026-10-25T05:48:56.014Z",
+    "url": "wss://relay.primal.net",
+    "info": {
+      "name": "Primal Public Relay",
+      "software": "git+https://github.com/hoytech/strfry.git",
+      "auth_required": null,
+      "payment_required": null,
+      "restricted_writes": null
+    },
+    "connectMs": 552,
+    "eose": true,
+    "ok": {
+      "accepted": true,
+      "reason": ""
+    },
+    "delivered": true,
+    "deliveryMs": 263,
+    "notes": []
+  },
+  {
+    "round": 2,
+    "at": "2026-10-25T05:48:56.014Z",
+    "url": "wss://nos.lol",
+    "info": {
+      "name": "nos.lol",
+      "software": "git+https://github.com/hoytech/strfry.git",
+      "auth_required": null,
+      "payment_required": null,
+      "restricted_writes": null
+    },
+    "connectMs": 471,
+    "eose": true,
+    "ok": {
+      "accepted": true,
+      "reason": ""
+    },
+    "delivered": true,
+    "deliveryMs": 196,
+    "notes": []
+  },
+  {
+    "round": 2,
+    "at": "2026-10-25T05:48:56.014Z",
+    "url": "wss://offchain.pub",
+    "info": {
+      "name": "offchain.pub",
+      "software": "git+https://github.com/hoytech/strfry.git",
+      "auth_required": null,
+      "payment_required": null,
+      "restricted_writes": null
+    },
+    "error": "connect ECONNREFUSED 23.137.254.12:443"
+  },
+  {
+    "round": 2,
+    "at": "2026-10-25T05:48:56.014Z",
+    "url": "wss://nostr.bitcoiner.social",
+    "info": {
+      "name": "bitcoiner.social",
+      "software": "git+https://github.com/hoytech/strfry.git",
+      "auth_required": null,
+      "payment_required": null,
+      "restricted_writes": null
+    },
+    "connectMs": 80,
+    "eose": true,
+    "ok": {
+      "accepted": true,
+      "reason": ""
+    },
+    "delivered": true,
+    "deliveryMs": 120,
+    "notes": []
+  },
+  {
+    "round": 2,
+    "at": "2026-10-25T05:48:56.014Z",
+    "url": "wss://yabu.me/v2",
+    "info": {
+      "name": "やぶみ 🏹📨",
+      "software": "git+https://github.com/hoytech/strfry.git",
+      "auth_required": null,
+      "payment_required": null,
+      "restricted_writes": null
+    },
+    "connectMs": 320,
+    "eose": true,
+    "ok": {
+      "accepted": true,
+      "reason": ""
+    },
+    "delivered": true,
+    "deliveryMs": 8883,
+    "notes": []
+  },
+  {
+    "round": 2,
+    "at": "2026-10-25T05:48:56.014Z",
+    "url": "wss://relay.snort.social",
+    "info": {
+      "name": "memlay",
+      "software": "https://github.com/v0l/memlay",
+      "auth_required": null,
+      "payment_required": null,
+      "restricted_writes": null
+    },
+    "connectMs": 465,
+    "eose": true,
+    "ok": {
+      "accepted": true,
+      "reason": "ephemeral: will not be stored"
+    },
+    "delivered": true,
+    "deliveryMs": 144,
+    "notes": []
+  },
+  {
+    "round": 2,
+    "at": "2026-10-25T05:48:56.014Z",
+    "url": "wss://nostr.mom",
+    "info": {
+      "name": "nostr.mom",
+      "software": "git+https://github.com/hoytech/strfry.git",
+      "auth_required": null,
+      "payment_required": null,
+      "restricted_writes": null
+    },
+    "connectMs": 471,
+    "eose": true,
+    "ok": {
+      "accepted": true,
+      "reason": ""
+    },
+    "delivered": true,
+    "deliveryMs": 302,
+    "notes": []
+  },
+  {
+    "round": 2,
+    "at": "2026-10-25T05:48:56.015Z",
+    "url": "wss://nostr.oxtr.dev",
+    "info": {
+      "name": "0xtr relay",
+      "software": "git+https://github.com/hoytech/strfry.git",
+      "auth_required": null,
+      "payment_required": null,
+      "restricted_writes": null
+    },
+    "connectMs": 473,
+    "eose": true,
+    "ok": {
+      "accepted": true,
+      "reason": ""
+    },
+    "delivered": true,
+    "deliveryMs": 259,
+    "notes": []
+  },
+  {
+    "round": 2,
+    "at": "2026-10-25T05:48:56.015Z",
+    "url": "wss://nostr-pub.wellorder.net",
+    "info": {
+      "name": "wellorder-relay",
+      "software": "https://git.sr.ht/~gheartsfield/nostr-rs-relay",
+      "auth_required": null,
+      "payment_required": false,
+      "restricted_writes": false
+    },
+    "connectMs": 70,
+    "eose": true,
+    "ok": {
+      "accepted": true,
+      "reason": ""
+    },
+    "delivered": true,
+    "deliveryMs": 11,
+    "notes": []
+  },
+  {
+    "round": 2,
+    "at": "2026-10-25T05:48:56.015Z",
+    "url": "wss://relay.nostr.net",
+    "info": {
+      "name": "relay.nostr.net",
+      "software": "git+https://github.com/hoytech/strfry.git",
+      "auth_required": null,
+      "payment_required": null,
+      "restricted_writes": null
+    },
+    "connectMs": 776,
+    "eose": true,
+    "ok": {
+      "accepted": true,
+      "reason": ""
+    },
+    "delivered": true,
+    "deliveryMs": 281,
+    "notes": []
+  },
+  {
+    "round": 2,
+    "at": "2026-10-25T05:48:56.015Z",
+    "url": "wss://relay.nostr.dev.br",
+    "info": {
+      "name": "NostrBase relay",
+      "software": "https://git.sr.ht/~gheartsfield/nostr-rs-relay",
+      "auth_required": null,
+      "payment_required": false,
+      "restricted_writes": false
+    },
+    "connectMs": 460,
+    "eose": true,
+    "ok": {
+      "accepted": true,
+      "reason": ""
+    },
+    "delivered": true,
+    "deliveryMs": 148,
+    "notes": []
+  },
+  {
+    "round": 2,
+    "at": "2026-10-25T05:48:56.015Z",
+    "url": "wss://relay.layer.systems",
+    "info": {
+      "name": "layer.systems relay",
+      "software": "https://github.com/layer-systems/relay",
+      "auth_required": null,
+      "payment_required": null,
+      "restricted_writes": null
+    },
+    "connectMs": 418,
+    "eose": true,
+    "ok": {
+      "accepted": true,
+      "reason": "broadcasted to 1 listeners"
+    },
+    "delivered": true,
+    "deliveryMs": 174,
+    "notes": []
+  },
+  {
+    "round": 2,
+    "at": "2026-10-25T05:48:56.015Z",
+    "url": "wss://cdn.satellite.earth",
+    "info": {
+      "name": "Satellite",
+      "software": null,
+      "auth_required": null,
+      "payment_required": null,
+      "restricted_writes": null
+    },
+    "connectMs": 255,
+    "eose": true,
+    "ok": {
+      "accepted": true,
+      "reason": ""
+    },
+    "delivered": true,
+    "deliveryMs": 73,
+    "notes": []
+  },
+  {
+    "round": 3,
+    "at": "2026-10-25T05:49:27.726Z",
+    "url": "wss://relay.damus.io",
+    "info": {
+      "name": "damus.io",
+      "software": "git+https://github.com/hoytech/strfry.git",
+      "auth_required": null,
+      "payment_required": null,
+      "restricted_writes": null
+    },
+    "error": "Unexpected server response: 503"
+  },
+  {
+    "round": 3,
+    "at": "2026-10-25T05:49:27.726Z",
+    "url": "wss://relay.primal.net",
+    "info": {
+      "name": "Primal Public Relay",
+      "software": "git+https://github.com/hoytech/strfry.git",
+      "auth_required": null,
+      "payment_required": null,
+      "restricted_writes": null
+    },
+    "connectMs": 565,
+    "eose": true,
+    "ok": {
+      "accepted": true,
+      "reason": ""
+    },
+    "delivered": true,
+    "deliveryMs": 271,
+    "notes": []
+  },
+  {
+    "round": 3,
+    "at": "2026-10-25T05:49:27.726Z",
+    "url": "wss://nos.lol",
+    "info": {
+      "name": "nos.lol",
+      "software": "git+https://github.com/hoytech/strfry.git",
+      "auth_required": null,
+      "payment_required": null,
+      "restricted_writes": null
+    },
+    "connectMs": 469,
+    "eose": true,
+    "ok": {
+      "accepted": true,
+      "reason": ""
+    },
+    "delivered": true,
+    "deliveryMs": 259,
+    "notes": []
+  },
+  {
+    "round": 3,
+    "at": "2026-10-25T05:49:27.726Z",
+    "url": "wss://offchain.pub",
+    "info": {
+      "name": "offchain.pub",
+      "software": "git+https://github.com/hoytech/strfry.git",
+      "auth_required": null,
+      "payment_required": null,
+      "restricted_writes": null
+    },
+    "error": "connect ECONNREFUSED 23.137.254.12:443"
+  },
+  {
+    "round": 3,
+    "at": "2026-10-25T05:49:27.726Z",
+    "url": "wss://nostr.bitcoiner.social",
+    "info": {
+      "name": "bitcoiner.social",
+      "software": "git+https://github.com/hoytech/strfry.git",
+      "auth_required": null,
+      "payment_required": null,
+      "restricted_writes": null
+    },
+    "connectMs": 60,
+    "eose": true,
+    "ok": {
+      "accepted": true,
+      "reason": ""
+    },
+    "delivered": true,
+    "deliveryMs": 125,
+    "notes": []
+  },
+  {
+    "round": 3,
+    "at": "2026-10-25T05:49:27.726Z",
+    "url": "wss://yabu.me/v2",
+    "info": {
+      "name": "やぶみ 🏹📨",
+      "software": "git+https://github.com/hoytech/strfry.git",
+      "auth_required": null,
+      "payment_required": null,
+      "restricted_writes": null
+    },
+    "connectMs": 360,
+    "eose": true,
+    "ok": null,
+    "delivered": false,
+    "deliveryMs": null,
+    "notes": []
+  },
+  {
+    "round": 3,
+    "at": "2026-10-25T05:49:27.726Z",
+    "url": "wss://relay.snort.social",
+    "info": {
+      "name": "memlay",
+      "software": "https://github.com/v0l/memlay",
+      "auth_required": null,
+      "payment_required": null,
+      "restricted_writes": null
+    },
+    "connectMs": 444,
+    "eose": true,
+    "ok": {
+      "accepted": true,
+      "reason": "ephemeral: will not be stored"
+    },
+    "delivered": true,
+    "deliveryMs": 144,
+    "notes": []
+  },
+  {
+    "round": 3,
+    "at": "2026-10-25T05:49:27.726Z",
+    "url": "wss://nostr.mom",
+    "info": {
+      "name": "nostr.mom",
+      "software": "git+https://github.com/hoytech/strfry.git",
+      "auth_required": null,
+      "payment_required": null,
+      "restricted_writes": null
+    },
+    "connectMs": 482,
+    "eose": true,
+    "ok": {
+      "accepted": true,
+      "reason": ""
+    },
+    "delivered": true,
+    "deliveryMs": 256,
+    "notes": []
+  },
+  {
+    "round": 3,
+    "at": "2026-10-25T05:49:27.726Z",
+    "url": "wss://nostr.oxtr.dev",
+    "info": {
+      "name": "0xtr relay",
+      "software": "git+https://github.com/hoytech/strfry.git",
+      "auth_required": null,
+      "payment_required": null,
+      "restricted_writes": null
+    },
+    "connectMs": 484,
+    "eose": true,
+    "ok": {
+      "accepted": true,
+      "reason": ""
+    },
+    "delivered": true,
+    "deliveryMs": 256,
+    "notes": []
+  },
+  {
+    "round": 3,
+    "at": "2026-10-25T05:49:27.726Z",
+    "url": "wss://nostr-pub.wellorder.net",
+    "info": {
+      "name": "wellorder-relay",
+      "software": "https://git.sr.ht/~gheartsfield/nostr-rs-relay",
+      "auth_required": null,
+      "payment_required": false,
+      "restricted_writes": false
+    },
+    "connectMs": 38,
+    "eose": true,
+    "ok": {
+      "accepted": true,
+      "reason": ""
+    },
+    "delivered": true,
+    "deliveryMs": 22,
+    "notes": []
+  },
+  {
+    "round": 3,
+    "at": "2026-10-25T05:49:27.726Z",
+    "url": "wss://relay.nostr.net",
+    "info": {
+      "name": "relay.nostr.net",
+      "software": "git+https://github.com/hoytech/strfry.git",
+      "auth_required": null,
+      "payment_required": null,
+      "restricted_writes": null
+    },
+    "connectMs": 782,
+    "eose": true,
+    "ok": {
+      "accepted": true,
+      "reason": ""
+    },
+    "delivered": true,
+    "deliveryMs": 255,
+    "notes": []
+  },
+  {
+    "round": 3,
+    "at": "2026-10-25T05:49:27.726Z",
+    "url": "wss://relay.nostr.dev.br",
+    "info": {
+      "name": "NostrBase relay",
+      "software": "https://git.sr.ht/~gheartsfield/nostr-rs-relay",
+      "auth_required": null,
+      "payment_required": false,
+      "restricted_writes": false
+    },
+    "connectMs": 474,
+    "eose": true,
+    "ok": {
+      "accepted": true,
+      "reason": ""
+    },
+    "delivered": true,
+    "deliveryMs": 156,
+    "notes": []
+  },
+  {
+    "round": 3,
+    "at": "2026-10-25T05:49:27.726Z",
+    "url": "wss://relay.layer.systems",
+    "info": {
+      "name": "layer.systems relay",
+      "software": "https://github.com/layer-systems/relay",
+      "auth_required": null,
+      "payment_required": null,
+      "restricted_writes": null
+    },
+    "connectMs": 388,
+    "eose": true,
+    "ok": {
+      "accepted": true,
+      "reason": "broadcasted to 1 listeners"
+    },
+    "delivered": true,
+    "deliveryMs": 175,
+    "notes": []
+  },
+  {
+    "round": 3,
+    "at": "2026-10-25T05:49:27.726Z",
+    "url": "wss://cdn.satellite.earth",
+    "info": {
+      "name": "Satellite",
+      "software": null,
+      "auth_required": null,
+      "payment_required": null,
+      "restricted_writes": null
+    },
+    "connectMs": 223,
+    "eose": true,
+    "ok": {
+      "accepted": true,
+      "reason": ""
+    },
+    "delivered": true,
+    "deliveryMs": 97,
+    "notes": []
+  }
+]

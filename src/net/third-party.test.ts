@@ -4,10 +4,10 @@ import thirdParty from '../../third-party.json';
 // PLAN §18 and REQUIREMENTS "Stack": third-party.json is the single list of
 // external hosts. It drives the runtime (M3) and the dist audit.
 describe('third-party.json', () => {
-  it('names exactly the six curated relays', () => {
+  it('names exactly the six curated relays (C-22: two replaced)', () => {
     expect(thirdParty.filter((e) => e.kind === 'signaling').map((e) => e.url)).toEqual([
       'wss://relay.damus.io', 'wss://relay.primal.net', 'wss://nos.lol',
-      'wss://offchain.pub', 'wss://nostr.bitcoiner.social', 'wss://yabu.me/v2',
+      'wss://relay.snort.social', 'wss://nostr-pub.wellorder.net', 'wss://yabu.me/v2',
     ]);
   });
 

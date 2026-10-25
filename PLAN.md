@@ -230,7 +230,7 @@ REQUIREMENTS.md is yours. These edits went in on 2026-10-24, in one commit that 
 | C-19 | With two voters, any disagreement is a tie, and the smallest hash wins whether right or wrong. This happens before the countdown, and when only 2 of a round's players are connected. | Accepted. Honest peers rarely disagree (D-7). |
 | C-20 | Browsers throttle timers in background tabs, and iOS suspends them. | A hidden player stops sending, so their planet drifts, as for a disconnect. On return the browser resyncs (D-23). Before the countdown, 3 s away removes them (Q-15). |
 | C-21 | "No tracking" vs what P2P exposes: peers see each other's IP addresses; relays and STUN servers see IP addresses and timing; Cloudflare can keep request logs. | Logs off (D-25). §18 lists what each party sees. No analytics. |
-| C-22 | **Found at the first deploy (2026-10-24): three of the six curated relays refuse roslambo.** nostr.bitcoiner.social and offchain.pub accept only keys in their "web of trust". Trystero signs with a new random key on every page load, so they always refuse. relay.damus.io answered "banned: too many rate-limit violations", probably for this machine's test traffic, and probably for a while only. Signalling works through the other three: relay.primal.net, nos.lol and yabu.me/v2. | **Open: the list is the owner's (REQUIREMENTS, *Stack*).** Proposed: replace the two web-of-trust relays with two open ones, checked the same way, in `third-party.json` and REQUIREMENTS.md. Keep damus and check it again later. Until then, players can add relays in Settings. |
+| C-22 | **Found at the first deploy (2026-10-24): three of the six curated relays refuse roslambo.** nostr.bitcoiner.social and offchain.pub accept only keys in their "web of trust". Trystero signs with a new random key on every page load, so they always refuse. relay.damus.io answered "banned: too many rate-limit violations", probably for this machine's test traffic, and probably for a while only. Signalling works through the other three: relay.primal.net, nos.lol and yabu.me/v2. | **Settled 2026-10-24 by the owner ("make the swap"):** relay.snort.social replaces offchain.pub, and nostr-pub.wellorder.net replaces nostr.bitcoiner.social, in `third-party.json` and REQUIREMENTS.md. Each played a three-engine round to the freeze with no other relay; nostr.bitcoiner.social, tried the same way, never connected anyone (research/relays/REPORT.md). damus stays, to check again later. yabu.me/v2 answered 2 of 3 probes, so it is watched too. |
 
 ---
 
@@ -1330,7 +1330,7 @@ Rules:
 
 | Party | Role | Sees |
 |---|---|---|
-| relay.damus.io, relay.primal.net, nos.lol, offchain.pub, nostr.bitcoiner.social, yabu.me/v2 | Nostr signaling | IP, Origin, User-Agent, timing, a hashed room topic, a per-load Nostr key and Trystero peer ID, encrypted session-description sizes |
+| relay.damus.io, relay.primal.net, nos.lol, relay.snort.social, nostr-pub.wellorder.net, yabu.me/v2 (C-22: two replaced on 2026-10-24) | Nostr signaling | IP, Origin, User-Agent, timing, a hashed room topic, a per-load Nostr key and Trystero peer ID, encrypted session-description sizes |
 | Relays added in Settings | Nostr signaling | as above |
 | stun.cloudflare.com, stun.l.google.com | STUN | IP and port |
 | The user's TURN server, if any | relay for blocked pairs | IP, traffic volume |

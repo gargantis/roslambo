@@ -7,7 +7,7 @@ describe('room config', () => {
     const c = roomConfig({});
     expect(c.relayConfig?.urls).toEqual([
       'wss://relay.damus.io', 'wss://relay.primal.net', 'wss://nos.lol',
-      'wss://offchain.pub', 'wss://nostr.bitcoiner.social', 'wss://yabu.me/v2',
+      'wss://relay.snort.social', 'wss://nostr-pub.wellorder.net', 'wss://yabu.me/v2',
     ]);
     expect(c.rtcConfig?.iceServers).toEqual([{ urls: ['stun:stun.cloudflare.com:3478', 'stun:stun.l.google.com:19302'] }]);
     expect(c.maxReceiveBytes).toBe(1024 * 1024);

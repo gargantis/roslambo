@@ -133,7 +133,7 @@ Status: draft from the requirements discussion of 2026-10-24, amended the same d
 The same approach as amorfus:
 
 - Peer-to-peer over WebRTC with Trystero (`@trystero-p2p/nostr`). No game server
-- Signaling through public Nostr relays, using amorfus's curated list: relay.damus.io, relay.primal.net, nos.lol, offchain.pub, nostr.bitcoiner.social, yabu.me/v2. Users can add relays
+- Signaling through public Nostr relays: relay.damus.io, relay.primal.net, nos.lol, relay.snort.social, nostr-pub.wellorder.net, yabu.me/v2. That is amorfus's curated list, except that relay.snort.social and nostr-pub.wellorder.net replace offchain.pub and nostr.bitcoiner.social, which refuse Trystero's per-load keys (C-22; the owner, 2026-10-24). Users can add relays
 - STUN: `stun.cloudflare.com:3478` and `stun.l.google.com:19302`
 - TURN: none built in. Users can configure their own
 
