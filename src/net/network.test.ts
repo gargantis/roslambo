@@ -62,9 +62,9 @@ function finalOf(n: GameNode): RoundState {
 }
 
 /** Keeper n0 proposes at 0; players join, press Play, and Ready. */
-function lobby(net: LoopbackNet, players: number[], readyAt: number, over: Partial<SessionConfig> = {}): GameNode[] {
+function lobby(net: LoopbackNet, players: number[], readyAt: number, over: Partial<SessionConfig> = {}, settings = SETTINGS): GameNode[] {
   const keeper = node(net, 0, over);
-  net.join(keeper, 0, (now) => keeper.session.propose(keeper.local(now), SETTINGS, 'a'.repeat(16)));
+  net.join(keeper, 0, (now) => keeper.session.propose(keeper.local(now), settings, 'a'.repeat(16)));
   const nodes = [keeper];
   for (const k of players) {
     const n = node(net, k, over);
@@ -250,19 +250,54 @@ describe('rounds over the network (PLAN §8.9)', () => {
     expect(nodes[1]!.session.againSeen).toBe(false);
   });
 
-  it('takes the timeline from a peer again after the page was hidden (D-23)', () => {
+  it('a page whose timers stopped takes the timeline from a peer again when shown (D-23)', () => {
     const net = new LoopbackNet(12, uniform(22, 30, 60, 20));
-    const nodes = lobby(net, [1, 2, 3], 2000);
-    const hidden = nodes[2]!;
-    net.at(20_000, () => { hidden.session.timeline.sending = false; });
-    net.at(23_000, () => {
-      expect(hidden.session.rejoin()).toBe(true);
-      hidden.session.timeline.sending = true;
-    });
+    const nodes = lobby(net, [1, 2, 3], 2000, {}, { ...SETTINGS, ante: 50 }); // still running when it returns
+    const frozen = nodes[2]!;
+    net.pace(frozen, 20_000, Infinity); // frozen: no timers at all
+    net.pace(frozen, 23_000, 4);
+    net.at(23_000, () => expect(frozen.session.rejoin()).toBe(true)); // what Game does when shown
+    net.run(26_000);
+    const s0 = finalOf(nodes[0]!);
+    const me = s0.planets.find((p) => p.id === id(2))!;
+    expect(s0.phase).toBe(RUNNING);
+    expect(s0.tick - me.lastInputTick).toBeLessThan(30); // in control again
+    expect(frozen.session.inRoster()).toBe(true);
     net.run(40_000);
     agreeNow(nodes);
-    expect(hidden.session.inRoster()).toBe(true);
-    const me = finalOf(nodes[0]!).planets.find((p) => p.id === id(2))!;
-    expect(finalOf(nodes[0]!).tick - me.lastInputTick).toBeLessThan(30);
+  });
+
+  it('a hidden page, its timers throttled to once a second, keeps its planet, number and Ready (D-23)', () => {
+    const net = new LoopbackNet(13, uniform(23, 30, 60, 20));
+    const nodes = lobby(net, [1, 2, 3], 100_000); // nobody readies on schedule
+    const hidden = nodes[2]!;
+    net.at(3000, () => hidden.session.ready());
+    net.pace(hidden, 4000, 1000);
+    net.pace(hidden, 12_000, 4);
+    const rosters = new Set<string>();
+    const watch = (): void => {
+      for (const n of nodes) rosters.add(finalOf(n).planets.map((p) => p.id).join(','));
+      if (net.now < 14_000) net.at(net.now + 100, watch);
+    };
+    net.at(3500, watch);
+    net.run(14_000);
+    expect([...rosters]).toEqual([[id(1), id(2), id(3)].join(',')]); // never removed, never renumbered
+    const p2 = finalOf(nodes[0]!).planets.find((p) => p.id === id(2))!;
+    expect(p2.readyUntil).toBeGreaterThan(finalOf(nodes[0]!).tick);
+    agreeNow(nodes);
+  });
+
+  it('a page frozen for 4 s before the countdown is disconnected: removed, then joins again at the end (Q-15)', () => {
+    const net = new LoopbackNet(14, uniform(24, 30, 60, 20));
+    const nodes = lobby(net, [1, 2, 3], 100_000);
+    const frozen = nodes[1]!; // player 1
+    net.pace(frozen, 4000, Infinity);
+    net.pace(frozen, 8000, 4);
+    net.at(8000, () => frozen.session.rejoin());
+    net.run(7900);
+    expect(finalOf(nodes[0]!).planets.map((p) => p.id)).toEqual([id(2), id(3)]);
+    net.run(14_000);
+    expect(finalOf(nodes[0]!).planets.map((p) => p.id)).toEqual([id(2), id(3), id(1)]);
+    agreeNow(nodes);
   });
 });

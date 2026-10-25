@@ -49,7 +49,7 @@ export const BUILD = buildHash(PARAMS.settings);
 
 const ADVANCE_EVERY_MS = 4;
 const FAIL_AFTER_MS = 20_000; // §8.6
-const HIDDEN_RESYNC_MS = 2000; // D-23
+const STALLED_MS = 2000; // D-23: timers stopped this long, so the timeline is stale
 const LEAVE_GRACE_MS = 400; // LEAVE repeats in TICKs until final (w = 200 ms)
 const TICK_COSTS_KEPT = 50_000;
 const SAVE_EVERY_MS = 1000; // §10
@@ -94,7 +94,7 @@ export class Game {
   private keeper = false;
   private joined = false;
   private paid = false;
-  private hiddenAt = -1;
+  private lastAdvance = -1;
   private closed = false;
 
   constructor(o: GameOptions) {
@@ -166,6 +166,7 @@ export class Game {
 
   private advance(now: number): void {
     if (this.closed) return;
+    this.lastAdvance = now;
     const t = this.session.timeline;
     const before = t.localTick;
     this.session.advance(now);
@@ -223,19 +224,14 @@ export class Game {
     };
   }
 
-  /** D-23: a hidden page stops sending, so its planet drifts; back after
-   *  more than a moment, it takes the round from a peer again. */
+  /** D-23, amended: a hidden page is still connected, so it keeps sending
+   *  as often as the browser's throttled timers let it, with its keys
+   *  released, and keeps its planet (a covered window is hidden too). A
+   *  page whose timers stopped altogether (frozen, or an app in the
+   *  background) takes the round from a peer again when it is shown. */
   private visibility(): void {
-    const now = performance.now();
-    if (document.visibilityState === 'hidden') {
-      this.session.timeline.sending = false;
-      this.hiddenAt = now;
-      return;
-    }
-    if (this.hiddenAt < 0) return;
-    if (now - this.hiddenAt > HIDDEN_RESYNC_MS) this.session.rejoin();
-    this.session.timeline.sending = this.session.wantsToPlay;
-    this.hiddenAt = -1;
+    if (document.visibilityState !== 'visible' || this.lastAdvance < 0) return;
+    if (performance.now() - this.lastAdvance > STALLED_MS) this.session.rejoin();
   }
 
   /** Leave the round: a player's LEAVE goes out first. Before the

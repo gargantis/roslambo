@@ -80,6 +80,9 @@ export interface NodeOptions {
 export interface LoopNode<S extends RoomPeer = RoomPeer> {
   id: string; // transport peer ID
   session: S;
+  /** ms between advance() calls: 4, as in the browser; more for a hidden
+   *  page's throttled timers; Infinity for a frozen one. */
+  paceMs: number;
   online: boolean;
   local(now: number): number;
   neighbours: Set<string>;
@@ -118,6 +121,25 @@ export class LoopbackNet {
     if (na?.online && nb?.online) this.connect(na, nb);
   }
 
+  private readonly frozen = new Set<LoopNode>();
+
+  /** The node's timers run every `ms` from virtual time `at` (Infinity:
+   *  they stop until paced again). */
+  pace(node: LoopNode, at: number, ms: number): void {
+    this.at(at, () => {
+      node.paceMs = ms;
+      if (Number.isFinite(ms) && this.frozen.delete(node)) this.timers(node);
+    });
+  }
+
+  /** The node's timer: advance now, then again after its pace. */
+  private timers(node: LoopNode): void {
+    if (!node.online) return;
+    node.session.advance(node.local(this.now));
+    if (Number.isFinite(node.paceMs)) this.at(this.now + node.paceMs, () => this.timers(node));
+    else this.frozen.add(node);
+  }
+
   /** Connections closed with drop(), as [by, peer]. */
   readonly drops: [string, string][] = [];
 
@@ -131,6 +153,7 @@ export class LoopbackNet {
       online: false,
       neighbours: new Set<string>(),
       local: (now: number) => now * (1 + drift) + offset,
+      paceMs: 4,
       session: undefined as unknown as S,
     };
     node.session = make({
@@ -169,12 +192,7 @@ export class LoopbackNet {
         this.at(this.now + 2 * l.base, () => this.connect(node, other));
       }
       then?.(this.now);
-      const tick = (): void => {
-        if (!node.online) return;
-        node.session.advance(node.local(this.now));
-        this.at(this.now + 4, tick);
-      };
-      tick();
+      this.timers(node);
     });
   }
 

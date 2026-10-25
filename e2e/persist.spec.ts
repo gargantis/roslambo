@@ -177,3 +177,80 @@ test('two saved histories meet: the later one wins (Q-7)', async ({ baseURL }) =
   await agree([a, b]);
   for (const p of ps) expect(p.errors).toEqual([]);
 });
+
+/** What a page shows: its roster, where it draws "you", and its list rows. */
+async function views(page: Page): Promise<{ me: number; head: number; roster: string[]; rows: string[] }> {
+  const s = (await inspect(page))!;
+  const rows = await page.locator('[data-test=players] li').evaluateAll((lis) => lis.map((li) => li.textContent ?? ''));
+  return { me: s.planets.findIndex((x) => x.id === s.me), head: s.headRoster.indexOf(s.me), roster: s.planets.map((x) => x.id), rows };
+}
+
+/** Every page agrees on the numbering, and tags its own planet, its quarry
+ *  (next) and its hunter (previous) as the roster says. */
+async function sameNumbering(pages: Page[]): Promise<string[]> {
+  const vs = await Promise.all(pages.map(views));
+  expect(new Set(vs.map((v) => v.roster.join(','))).size, 'one numbering').toBe(1);
+  for (const v of vs) {
+    const n = v.roster.length;
+    expect(v.head, 'the canvas marks the same planet as the list').toBe(v.me);
+    v.rows.forEach((r, i) => {
+      const want = i === v.me ? 'you' : i === (v.me + 1) % n ? 'your quarry' : i === (v.me + n - 1) % n ? 'your hunter' : '';
+      const has = r.includes('your hunter') ? 'your hunter' : r.includes('your quarry') ? 'your quarry' : r.includes('you') ? 'you' : '';
+      expect(has, `row ${i + 1}: ${r}`).toBe(want);
+    });
+  }
+  return vs[0]!.roster;
+}
+
+async function hide(page: Page, hidden: boolean): Promise<void> {
+  await page.evaluate((h) => {
+    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => (h ? 'hidden' : 'visible') });
+    document.dispatchEvent(new Event('visibilitychange'));
+  }, hidden);
+}
+
+for (const order of [[2, 1, 3], [3, 2, 1]]) {
+  test(`joining in the order ${order.join(', ')}: every page numbers and tags the planets alike`, async ({ baseURL }) => {
+    test.setTimeout(120_000);
+    const ps = await Promise.all([1, 2, 3].map((k) => player(browser, relay, k)));
+    for (const [i, p] of ps.entries()) {
+      await open(p, baseURL!);
+      await p.page.locator('[data-test=name]').fill(['Ada', 'Bo', 'Cy'][i]!);
+      await p.page.locator('[data-test=name]').blur();
+    }
+    const a = ps[0]!.page;
+    await a.locator('[data-test=propose]').click();
+    await a.locator('[data-test=create]').click();
+    const code = (await a.locator('[data-test=invite-code]').textContent())!;
+    for (const p of ps.slice(1)) {
+      await p.page.locator('[data-test=code]').fill(code);
+      await p.page.locator('[data-test=join]').click();
+    }
+    for (const k of order) {
+      const page = ps[k - 1]!.page;
+      if (k === 1) {
+        await expect(page.locator('[data-test=play]')).toBeEnabled({ timeout: 60_000 });
+        await page.locator('[data-test=play]').click();
+      } else {
+        await page.locator('[data-test=join-play]').click();
+      }
+      await expect(page.locator('[data-test=ready]')).toBeEnabled({ timeout: 60_000 });
+    }
+    for (const p of ps) await expect(p.page.locator('[data-test=players] li')).toHaveCount(3);
+    await a.waitForTimeout(1000);
+    const roster = await sameNumbering(ps.map((p) => p.page));
+
+    // A covered or minimised window is "hidden", but still connected: it
+    // keeps its planet, number and Ready (D-23), rather than dropping out
+    // and rejoining at the end, which renumbers everyone.
+    const covered = ps[order[0]! - 1]!.page;
+    await covered.locator('[data-test=ready]').click();
+    await hide(covered, true);
+    await a.waitForTimeout(4000);
+    await hide(covered, false);
+    await a.waitForTimeout(1000);
+    expect(await sameNumbering(ps.map((p) => p.page))).toEqual(roster);
+    await expect(covered.locator('[data-test=ready]')).toHaveText('Ready ✓');
+    for (const p of ps) expect(p.errors).toEqual([]);
+  });
+}

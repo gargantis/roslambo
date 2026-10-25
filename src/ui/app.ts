@@ -45,6 +45,7 @@ export interface Inspection {
   peers: number;
   stats: { late: number; resyncs: number; disagree: number; received: number };
   hashes: Record<number, string>; // the last 200 final ticks' hashes
+  headRoster: string[]; // the predicted state's planets, which the canvas draws
 }
 
 const CLOSE_AFTER_AGAIN_MS = 500;
@@ -104,6 +105,7 @@ export class App {
     return {
       roundId: g.roundId, timeline: t.id, started: t.started, finalTick: t.finalTick, phase: t.final.phase, me: g.session.cfg.me, hashes,
       planets: t.final.planets.map((p) => ({ id: p.id, lastInputTick: p.lastInputTick, points: p.points, joinTick: p.joinTick, readyUntil: p.readyUntil })),
+      headRoster: t.head.planets.map((p) => p.id),
       peers: g.peers(),
       stats: { late: t.stats.late, resyncs: t.stats.resyncs, disagree: t.stats.disagree, received: t.stats.received },
     };
