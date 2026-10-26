@@ -285,6 +285,13 @@ describe('rounds over the network (PLAN §8.9)', () => {
     const p2 = finalOf(nodes[0]!).planets.find((p) => p.id === id(2))!;
     expect(p2.readyUntil).toBeGreaterThan(finalOf(nodes[0]!).tick);
     agreeNow(nodes);
+    // Its timers slept, but it lost no one's inputs, and its bursts of late
+    // TICKs didn't drag anyone's clock.
+    for (const n of nodes) {
+      expect(n.session.timeline.stats.resyncs, n.id).toBe(0);
+      expect(n.session.timeline.stats.jumps, n.id).toBe(0);
+      expect(Math.abs(n.session.timeline.stats.rateAdj), n.id).toBe(0);
+    }
   });
 
   it('a page frozen for 4 s before the countdown is disconnected: removed, then joins again at the end (Q-15)', () => {
@@ -300,4 +307,50 @@ describe('rounds over the network (PLAN §8.9)', () => {
     expect(finalOf(nodes[0]!).planets.map((p) => p.id)).toEqual([id(2), id(3), id(1)]);
     agreeNow(nodes);
   });
+
+  it('players who join while the proposer\'s window is hidden keep everyone in the round (D-11, the owner\'s report)', () => {
+    const net = new LoopbackNet(15, uniform(25, 30, 60, 20));
+    const keeper = node(net, 0); // proposes and plays at once, then its window goes behind another
+    net.join(keeper, 0, (now) => {
+      keeper.session.propose(keeper.local(now), SETTINGS, 'd'.repeat(16));
+      keeper.session.play();
+    });
+    net.pace(keeper, 500, 1000);
+    const nodes = [keeper];
+    for (const k of [1, 2]) {
+      const n = node(net, k);
+      net.join(n, 800 * k, () => n.session.play());
+      nodes.push(n);
+    }
+    const rosters = new Set<string>();
+    const watch = (): void => {
+      for (const n of nodes) if (finalOf(n).planets.length === 3) rosters.add(finalOf(n).planets.map((p) => p.id).join(','));
+      for (const n of nodes) if (n.session.timeline.started && finalOf(n).planets.length > 0 && !finalOf(n).planets.some((p) => p.id === id(0))) rosters.add('without the proposer');
+      if (net.now < 12_000) net.at(net.now + 100, watch);
+    };
+    net.at(4000, watch);
+    net.run(12_000);
+    expect([...rosters]).toEqual([[id(0), id(1), id(2)].join(',')]);
+    agreeNow(nodes);
+    // A STATE from a page whose timers sleep carries its clock, not its
+    // stale tick, so the joiners start in step: no jumps, nothing late.
+    for (const n of nodes) {
+      expect(n.session.timeline.stats.jumps, n.id).toBe(0);
+      expect(n.session.timeline.stats.late, n.id).toBe(0);
+      expect(n.session.timeline.stats.resyncs, n.id).toBe(0);
+    }
+  });
+
+  it('a peer whose state lost a player is outvoted and repaired (P3)', () => {
+    const net = new LoopbackNet(16, uniform(26, 30, 60, 20));
+    const nodes = lobby(net, [1, 2, 3], 2000, {}, { ...SETTINGS, ante: 50 });
+    net.at(20_000, () => {
+      const t = nodes[3]!.session.timeline as unknown as { finalState: RoundState };
+      t.finalState.planets = t.finalState.planets.filter((p) => p.id !== id(1));
+    });
+    net.run(30_000);
+    expect(finalOf(nodes[3]!).planets.map((p) => p.id)).toEqual([id(1), id(2), id(3)]);
+    agreeNow(nodes);
+  });
 });
+

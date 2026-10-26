@@ -24,8 +24,12 @@ export interface ArenaHost {
   failed(reason: 'connect' | number): void;
 }
 
-export function playerName(name: string, i: number): string {
-  return name || `Player ${i + 1}`;
+/** A player's label: their display name, or for one without a name a
+ *  label from their player ID. Not "Player 2": planet numbers follow the
+ *  join order, so a number-based label moved between browsers from one
+ *  round to the next (the owner's report, 2026-10-25). */
+export function playerName(name: string, id: string): string {
+  return name || `Player ${id.slice(0, 4).toUpperCase()}`;
 }
 
 export function chip(i: number): HTMLElement {
@@ -46,6 +50,7 @@ export function arenaScreen(game: Game, host: ArenaHost): Screen {
   const notice = h('p', { class: 'notice', hidden: true });
   const list = h('ol', { class: 'players', 'data-test': 'players' });
   const invite = h('details', { class: 'invite-box' }, h('summary', {}, 'Invite more players'), invitePanel(game.roundId));
+  let inviteShown = false; // opened once while the round lacks players
 
   const left = h('button', { type: 'button', class: 'pad-button', 'aria-label': 'Rotate left (A)' }, '⟲');
   const right = h('button', { type: 'button', class: 'pad-button', 'aria-label': 'Rotate right (D)' }, '⟳');
@@ -108,7 +113,7 @@ export function arenaScreen(game: Game, host: ArenaHost): Screen {
       if (mine >= 0 && n >= 3 && i === hunterOf(mine, n) && i !== mine) tags.push('your hunter');
       const detail = s.phase === PRESTART ? (p.readyUntil > s.tick ? 'ready' : 'not ready') : s.phase === COUNTDOWN ? 'ready' : `${p.points} ${p.points === 1 ? 'point' : 'points'}`;
       return h('li', { class: i === mine ? 'me' : '' }, chip(i),
-        h('span', { class: 'name' }, playerName(p.name, i)),
+        h('span', { class: 'name' }, playerName(p.name, p.id)),
         tags.length ? h('span', { class: 'tag' }, tags.join(', ')) : null,
         h('span', { class: 'detail' }, detail));
     });
@@ -172,6 +177,10 @@ export function arenaScreen(game: Game, host: ArenaHost): Screen {
         setText(status, statusLine(s));
         updateLists(s);
         invite.hidden = s.phase !== PRESTART;
+        if (!inviteShown && s.phase === PRESTART && s.planets.length < s.minPlayers) {
+          inviteShown = true;
+          invite.open = true; // a proposer who played at once still needs the link
+        }
         const refused = session.refused;
         notice.hidden = !refused;
         if (refused) setText(notice, 'This round is full or has already started, so you’re watching it.');

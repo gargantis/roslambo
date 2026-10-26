@@ -5,6 +5,7 @@ import { fitName } from '../../core/names';
 import { formatRoundId, normalizeRoundId } from '../../core/round-id';
 import type { ProfileStore } from '../../storage/profile';
 import type { Background, UnsettledRound } from '../background';
+import { playerName } from './arena';
 import { h, setText } from '../dom';
 import type { Screen } from './screen';
 
@@ -33,7 +34,7 @@ function unsettledRow(u: UnsettledRound, host: HomeHost): HTMLElement {
 
 export function homeScreen(host: HomeHost): Screen {
   const p = host.profile.get();
-  const name = h('input', { type: 'text', value: p.name, maxlength: 40, autocomplete: 'nickname', placeholder: 'Optional', 'data-test': 'name' });
+  const name = h('input', { type: 'text', value: p.name, maxlength: 40, autocomplete: 'nickname', placeholder: `Optional: without one, you appear as ${playerName('', p.playerId)}`, 'data-test': 'name' });
   const saveName = (): void => {
     const fitted = fitName(name.value);
     name.value = fitted;

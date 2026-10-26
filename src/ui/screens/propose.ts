@@ -61,10 +61,12 @@ export interface CreatedHost {
   leave(): void;
 }
 
-/** After Create: share, keep the page open, then Play, Watch or Leave. */
+/** After Create: share, and keep the page open. Play at once (the owner,
+ *  2026-10-25); Watch once someone has arrived, since there is nothing to
+ *  watch before; Leave at any time. */
 export function createdScreen(game: Game, host: CreatedHost): Screen {
   const waiting = h('p', { class: 'status', 'data-test': 'created-status', 'aria-live': 'polite' });
-  const play = h('button', { type: 'button', class: 'primary', disabled: true, 'data-test': 'play', onclick: () => host.play() }, 'Play');
+  const play = h('button', { type: 'button', class: 'primary', 'data-test': 'play', onclick: () => host.play() }, 'Play');
   const watch = h('button', { type: 'button', disabled: true, 'data-test': 'watch', onclick: () => host.watch() }, 'Watch');
   const el = h('section', { class: 'screen' },
     h('h1', {}, 'Share this round'),
@@ -79,8 +81,8 @@ export function createdScreen(game: Game, host: CreatedHost): Screen {
     frame(): void {
       const n = game.peers();
       const arrived = n > 0;
-      play.disabled = watch.disabled = !arrived;
-      setText(waiting, arrived ? `${n} ${n === 1 ? 'person has' : 'people have'} joined. You can play, watch or leave.` : 'Waiting for someone to join…');
+      watch.disabled = !arrived;
+      setText(waiting, arrived ? `${n} ${n === 1 ? 'person has' : 'people have'} joined.` : 'Nobody has joined yet. You can play now, or wait to watch.');
     },
   };
 }

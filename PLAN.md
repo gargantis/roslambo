@@ -385,6 +385,12 @@ Each decision gives the choice, the options rejected, and the cost if it's wrong
   - a player's offset counts only after 2 s.
 
   The 120 s three-engine run then had no jumps and no late inputs.
+- **Amended 2026-10-25** (the owner's three overlapping windows; `e2e/windows.spec.ts`): a page whose timers sleep, hidden behind another window, has a stale tick count. Three things went wrong because of it:
+  - **A STATE carried the stale tick.** A joiner who took the round from such a page started up to a second behind. Everyone's inputs then looked too early or too late, and a window dropped a player as disconnected. In that window the planets were renumbered, so "your quarry" marked a different planet from the other windows. STATE now carries the sender's clock.
+  - **Its bursts dragged the clock.** Waking, it sends several TICKs at once, and all but the newest carry a phase at its cap. Others read those as a clock a few ticks behind, and slowed everyone by about 0.7%. A TICK whose phase is at the cap no longer counts as a clock sample.
+  - **It dropped inputs and split peers.** While asleep, it dropped others' inputs as "more than 2w ahead" of its stale tick. On waking, it sent inputs for ticks near the end of the others' late window, in time for some and not for others. Now "ahead" is measured against the clock, and after a stall only the newest 3 ticks' inputs are sent.
+  - Tests: `src/net/network.test.ts` (a throttled page, and a throttled proposer whose round others join, with no jumps, late inputs or resyncs) and `e2e/windows.spec.ts` (three engines, two windows always behind, five runs in a row clean). Without the STATE fix the browser run failed one time in three.
+  - Counting votes from players this peer had removed itself was tried and dropped: in 30 seeded runs the M3 rule repaired such a peer every time.
 
 **D-12 — Timeline identity and merging.**
 - **Choice:**
@@ -981,9 +987,10 @@ Rules:
 - The pre-start screen also offers the link and code ("Invite more players"), so anyone in the round can invite.
 - The forms check their own values and say what's wrong, instead of the browser's validation bubbles.
 - A player who presses Play after the round filled or started sees "This round is full or has already started, so you're watching it" over the arena.
-- The proposer sees **Play** and **Watch** only once someone has arrived, as the requirements say. **Leave** is always there.
+- The proposer sees **Play** and **Watch** only once someone has arrived, as the requirements say. **Leave** is always there. *Changed 2026-10-25 at the owner's request:* **Play** is there at once; **Watch** still waits for someone, as there is nothing to watch before. The pre-start screen opens its invite panel while the round has fewer than the minimum, so a proposer who played at once can still share the link.
 - **Play again** (Q-8) goes to the derived room. If an AGAIN arrived, the next round already exists, so the browser joins it. Otherwise it proposes the round with the same settings. Two proposals at once merge (D-12).
 - A returning player of an unsettled round (from the ledger) goes straight back to its planet. Everyone else gets Join.
+- *2026-10-25:* a player without a display name is labelled by their player ID ("Player 3F2A"), not by planet number ("Player 2"). Planet numbers follow the join order, so a number-based label belonged to a different browser in each round. Home's name field says what you appear as.
 
 ---
 

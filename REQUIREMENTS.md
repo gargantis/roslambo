@@ -118,7 +118,7 @@ Status: draft from the requirements discussion of 2026-10-24, amended the same d
 ## Screens
 
 - **Home**: the player's balance and display name (editable), with **Propose a round** and **Join** (enter a code), and the player's unsettled rounds, each with **Rejoin** (still running) or **Resume** (paused) (Q-6). Opening a `#join=` link skips Home
-- **Propose**: set the ante, minimum and maximum. Shows the link and code to share, and asks the proposer to keep the page open until someone joins. The proposer can then play, watch or leave
+- **Propose**: set the ante, minimum and maximum. Shows the link and code to share, and asks the proposer to keep the page open until someone joins. The proposer can play at once, or watch once someone has joined, or leave (the owner, 2026-10-25)
 - **Join**: choose **Play** or **Watch**
 - **Pre-start**: the arena with the orbiting ring; a list of players with number, color, name and ready status; the **Ready** button and the rotation buttons; the countdown over the arena
 - **Round**: the arena, every player's current points, and the three buttons below the arena for players. Spectators see the arena without buttons

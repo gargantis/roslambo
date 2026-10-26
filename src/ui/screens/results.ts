@@ -18,7 +18,7 @@ export function resultsScreen(game: Game, r: Result, host: ResultsHost): Screen 
   const ante = r.settings.ante;
   const rows = r.players.map((p, i) => h('tr', { class: i === r.me ? 'me' : '' },
     h('td', {}, chip(i)),
-    h('td', { class: 'name' }, playerName(p.name, i), i === r.me ? h('span', { class: 'tag' }, 'you') : null),
+    h('td', { class: 'name' }, playerName(p.name, p.id), i === r.me ? h('span', { class: 'tag' }, 'you') : null),
     h('td', { class: 'num' }, String(p.points)),
     h('td', { class: 'num' }, signed(p.points - ante))));
   const again = h('button', { type: 'button', class: 'primary', 'data-test': 'again', onclick: () => host.playAgain() }, 'Play again');

@@ -48,6 +48,8 @@ const STATE_RING = 256;
 const CHECKPOINT_EVERY = 500;
 const RESYNC_RETRY_MS = 500;
 const EWMA = 0.1;
+const SEND_BEHIND = 3; // ticks: timer jitter, not a stall
+const PHASE_CAP = 0.9999; // TICK phases are clamped to 0.99998 (u16 on the wire)
 
 export interface TimelineStats {
   sent: number;
@@ -225,9 +227,10 @@ export class Timeline {
     if (target > this.localTick) {
       while (this.localTick < target) {
         this.localTick++;
-        // After a stall (a throttled timer), inputs for ticks already past
-        // the late window are useless to peers: send only the newest.
-        this.stepLocal(this.localTick, now, this.localTick > target - this.cfg.window);
+        // After a stall (a throttled timer), send inputs only for the newest
+        // ticks. Older ones would reach peers near the end of their late
+        // window, in time for some and too late for others, and split them.
+        this.stepLocal(this.localTick, now, this.localTick > target - SEND_BEHIND);
       }
       this.predict();
     }
@@ -256,9 +259,12 @@ export class Timeline {
 
   /** Records a player's input for tick t unless it's final, more than 2w
    *  ahead (§9.3), or already known; events and a name merge into a known
-   *  input. */
-  private setInput(player: string, t: number, buttons: number, events: number, name: string): void {
-    if (t <= this.finalTick || t > this.localTick + 2 * this.cfg.window + this.cfg.delay) return;
+   *  input. "Ahead" is of the clock when `now` is given: a page whose
+   *  timers sleep (hidden, throttled) has a stale localTick, and must not
+   *  drop the inputs that arrive meanwhile. */
+  private setInput(player: string, t: number, buttons: number, events: number, name: string, now?: number): void {
+    const head = now === undefined ? this.localTick : Math.max(this.localTick, Math.floor(this.clock(now)));
+    if (t <= this.finalTick || t > head + 2 * this.cfg.window + this.cfg.delay) return;
     const m = this.slot(t);
     const had = m.get(player);
     if (had) {
@@ -447,26 +453,29 @@ export class Timeline {
       this.stats.late++;
       this.note(`late ${origin.slice(-2)} t${m.t} by ${this.finalTick - m.t + 1}`);
     }
-    else this.setInput(origin, m.t, m.buttons, 0, '');
+    else this.setInput(origin, m.t, m.buttons, 0, '', now);
     for (let k = 0; k < M.HISTORY; k++) {
-      if ((m.histMask & (1 << k)) !== 0) this.setInput(origin, m.t - 1 - k, m.hist[k]!, 0, '');
+      if ((m.histMask & (1 << k)) !== 0) this.setInput(origin, m.t - 1 - k, m.hist[k]!, 0, '', now);
     }
     for (const e of m.events) {
       const et = m.t - e.back;
       const x = this.inputsAt(et)?.get(origin);
-      this.setInput(origin, et, x ? x.buttons : 0, e.events, e.name);
+      this.setInput(origin, et, x ? x.buttons : 0, e.events, e.name, now);
     }
     if (m.voteTick !== M.NO_TICK && m.voteHash) {
       this.vote(m.voteTick, origin, m.voteHash);
       if (m.voteTick <= this.lastTallied) this.lateVote(m.voteTick, now);
     }
+    if (!this.firstHeard.has(origin)) this.firstHeard.set(origin, now);
     // Clock sample: the sender's clock read (t − delay + phase) when it
-    // sent; add the one-way delay, compare with mine now.
+    // sent; add the one-way delay, compare with mine now. A phase at its
+    // cap means the sender was catching up after its timers slept, so the
+    // TICK was sent late for its tick: it says nothing about the clock.
+    if (m.phase >= PHASE_CAP) return;
     const ow = (this.oneWayMs.get(origin) ?? 0) * this.baseRate;
     const off = m.t - this.cfg.delay + m.phase + ow - this.clock(now);
     const prev = this.offset.get(origin);
     this.offset.set(origin, prev === undefined ? off : prev + EWMA * (off - prev));
-    if (!this.firstHeard.has(origin)) this.firstHeard.set(origin, now);
   }
 
   private rebalance(now: number): void {
@@ -524,8 +533,11 @@ export class Timeline {
     }
     this.stats.statesSent++;
     this.out.sendToPeer(peer, M.encodeState({
-      timeline: this.id, senderTick: this.localTick,
-      phase: Math.min(0.99998, Math.max(0, this.clock(now) - this.localTick)),
+      // The clock, not localTick: a page whose timers sleep (hidden,
+      // throttled) has a stale localTick, and a joiner that took it would
+      // start up to a second behind, and drop everyone's inputs as too early.
+      timeline: this.id, senderTick: Math.floor(this.clock(now)),
+      phase: Math.min(0.99998, Math.max(0, this.clock(now) - Math.floor(this.clock(now)))),
       g, senderFinal: this.finalTick, state: this.ringBytes[g % STATE_RING]!, roster: this.rosterAt(g), inputs,
     }));
   }
