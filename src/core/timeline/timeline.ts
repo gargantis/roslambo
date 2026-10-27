@@ -243,6 +243,13 @@ export class Timeline {
 
   // ---- inputs ----
 
+  /** The buttons a player holds at the head tick, as predict() stepped it:
+   *  its input for that tick if known, else its last known buttons. The
+   *  renderer draws thrust flames from this. */
+  headButtons(player: string): number {
+    return this.inputsAt(this.localTick)?.get(player)?.buttons ?? this.lastButtons.get(player) ?? 0;
+  }
+
   private inputsAt(t: number): Map<string, Input> | undefined {
     const s = t % INPUT_RING;
     return this.slotTick[s] === t ? this.slots[s] : undefined;

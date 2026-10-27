@@ -56,7 +56,8 @@ export function run(root: HTMLElement): void {
   game.propose({ ante: 100_000, minPlayers: 3, maxPlayers: players });
   game.play();
 
-  const screen = arenaScreen(game, { controls: new Controls(), leave: () => {}, finished: () => {}, failed: () => {} });
+  // Names on: the most the renderer draws (PLAN §12).
+  const screen = arenaScreen(game, { controls: new Controls(), leave: () => {}, finished: () => {}, failed: () => {}, names: true });
   const verdict = h('pre', { class: 'bench', 'data-test': 'bench' }, `Frame-time bench: waiting for ${players} planets…`);
   root.replaceChildren(screen.el, verdict);
 

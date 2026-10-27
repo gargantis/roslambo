@@ -216,6 +216,7 @@ export class App {
       leave: () => this.leaveGame(),
       finished: (r) => this.results(g, r),
       failed: (reason) => this.failed(g, reason),
+      names: this.settings.get().names,
     }));
   }
 

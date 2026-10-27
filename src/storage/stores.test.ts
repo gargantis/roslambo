@@ -6,7 +6,7 @@ import { hash64 } from '../core/sim/hash';
 import { genesis } from '../core/sim/state';
 import { MemoryStorage } from './kv';
 import { ROUND_PREFIX, SavedRounds } from './rounds';
-import { relayProblem, SettingsStore, turnProblem } from './settings';
+import { relayProblem, SETTINGS_KEY, SettingsStore, turnProblem } from './settings';
 import { WitnessStore } from './witness';
 
 const id = (k: number): string => (k + 1).toString(16).padStart(32, '0');
@@ -76,8 +76,15 @@ describe('settings (§11)', () => {
   it('stores valid settings and refuses invalid ones', () => {
     const kv = new MemoryStorage();
     const s = new SettingsStore(kv);
-    expect(s.set({ relays: ['wss://a.example'], turn: [{ urls: 'turn:t.example', username: 'u', credential: 'c' }] })).toBeNull();
-    expect(s.set({ relays: ['http://nope'], turn: [] })).toMatch(/wss/);
-    expect(new SettingsStore(kv).get()).toEqual({ relays: ['wss://a.example'], turn: [{ urls: 'turn:t.example', username: 'u', credential: 'c' }] });
+    expect(s.set({ relays: ['wss://a.example'], turn: [{ urls: 'turn:t.example', username: 'u', credential: 'c' }], names: true })).toBeNull();
+    expect(s.set({ relays: ['http://nope'], turn: [], names: false })).toMatch(/wss/);
+    expect(new SettingsStore(kv).get()).toEqual({ relays: ['wss://a.example'], turn: [{ urls: 'turn:t.example', username: 'u', credential: 'c' }], names: true });
+  });
+
+  it('shows no names under the planets until a player chooses them, including in settings saved before the choice existed', () => {
+    expect(new SettingsStore(new MemoryStorage()).get().names).toBe(false);
+    const kv = new MemoryStorage();
+    kv.setItem(SETTINGS_KEY, JSON.stringify({ v: 1, relays: ['wss://a.example'], turn: [] }));
+    expect(new SettingsStore(kv).get()).toEqual({ relays: ['wss://a.example'], turn: [], names: false });
   });
 });

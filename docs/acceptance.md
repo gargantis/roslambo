@@ -46,6 +46,11 @@ Still open: which machines, people and networks the acceptance runs use. Needed 
 | 2026-10-24 | proxy: development machine | headless Chromium 156, CPU 1× | 120 s, 8 planets | 16.8 / 16.8 ms | 0.2 ms | 0.25 ms | pass |
 | 2026-10-24 | proxy: development machine | headless Chromium 156, CPU 4× | 120 s, 8 planets | 16.7 / 33.2 ms | 0.6 ms | 0.81 ms | pass |
 | 2026-10-24 | proxy: development machine | headless Chromium 156, CPU 6× | 120 s, 8 planets | 16.8 / 33.3 ms | 0.7 ms | 1.21 ms | pass |
+| 2026-10-27 | proxy: development machine, busy | headless Chromium 156, CPU 1× | 120 s, 8 planets, names on | 16.8 / 100 ms | 0.6 ms | 0.59 ms | fail: one 100 ms frame |
+| 2026-10-27 | proxy: development machine, busy | headless Chromium 156, CPU 4× | 120 s, 8 planets, names on | 33.4 / 116.7 ms | 2.5 ms | 2.74 ms | fail |
+| 2026-10-27 | proxy: development machine, busy | headless Chromium 156, CPU 6× | 120 s, 8 planets, names on | 50.1 / 266.6 ms | 3.4 ms | 4.08 ms | fail |
+
+The 2026-10-27 rows are the look the owner chose on 2026-10-26 (PLAN §12): shaded spheres, flames, coloured marks, and names on, as the bench always draws them. The machine was busy (load average about 4, with another session at work), and the tick cost, which the new look barely touches, was 2.4 to 3.4 times the 2026-10-24 figures. So the same day the previous commit and the new look were run alternately on that machine, four 40 s runs at CPU 4×. Before: frame work mean 0.96 and 0.99 ms. After: 1.05 and 1.51 ms, the second with the tick cost up as well. Every one of those runs passed. The new look costs about a tenth of a millisecond a frame at 4×; the failures above are the machine. Rerun the proxy on a quiet machine before relying on these rows.
 
 The proxy rows are headless Chromium 156 on the development machine (12 cores, WSL2), at the Pixel 8a's CSS size (412 × 915) and pixel ratio, with the CPU slowed by DevTools throttling: `npx playwright test -c playwright.bench.config.ts`. They are a guide to headroom, not the acceptance run. Headless frames aren't tied to a real display, and throttling slows JavaScript evenly, which a phone doesn't.
 

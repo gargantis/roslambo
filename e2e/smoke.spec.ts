@@ -77,11 +77,12 @@ test('one tab plays at a time, and Use here moves the game (Q-16)', async ({ pag
   expect(seen.outside).toEqual([]);
 });
 
-test('Settings checks relays and TURN, and keeps what it saved', async ({ page, baseURL }) => {
+test('Settings checks relays and TURN, and keeps what it saved, names under the planets too', async ({ page, baseURL }) => {
   const seen = watch(page, baseURL!);
   await page.goto('./');
   await page.locator('[data-test=settings]').click();
   await expect(page.locator('[data-test=relay-health]')).toHaveText('Relays are contacted when you propose or join a round.');
+  await expect(page.locator('[data-test=names]'), 'names under the planets are off until chosen').not.toBeChecked();
   await page.locator('[data-test=relays]').fill('ws://insecure.example');
   await page.locator('[data-test=settings-save]').click();
   await expect(page.locator('[data-test=settings-message]')).toContainText('must start with wss://');
@@ -91,12 +92,14 @@ test('Settings checks relays and TURN, and keeps what it saved', async ({ page, 
   await expect(page.locator('[data-test=settings-message]')).toContainText('needs its user name');
   await page.locator('[data-test=turn-user]').fill('me');
   await page.locator('[data-test=turn-credential]').fill('secret');
+  await page.locator('[data-test=names]').check();
   await page.locator('[data-test=settings-save]').click();
   await expect(page.locator('[data-test=settings-message]')).toHaveText('Saved. Rounds you open from now on use these.');
   await page.reload();
   await page.locator('[data-test=settings]').click();
   await expect(page.locator('[data-test=relays]')).toHaveValue('wss://relay.one.example\nwss://relay.two.example');
   await expect(page.locator('[data-test=turn-user]')).toHaveValue('me');
+  await expect(page.locator('[data-test=names]')).toBeChecked();
   expect(seen.errors).toEqual([]);
   expect(seen.outside).toEqual([]);
 });

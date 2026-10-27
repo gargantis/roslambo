@@ -1,7 +1,8 @@
 # Look book: other ways to draw the planets and their marks
 
 **Date:** 2026-10-26.
-**Answers:** the owner's request of 2026-10-26 for samples, without changing the game, of: planets without the nose; more compact marks for you, your quarry and your hunter; photos of real planets; images computed from the player ID; chase lines from every hunter to its quarry; and annotations chosen per round and per player. Nothing was decided: PLAN §12 still describes the game as built.
+**Answers:** the owner's request of 2026-10-26 for samples, without changing the game, of: planets without the nose; more compact marks for you, your quarry and your hunter; photos of real planets; images computed from the player ID; chase lines from every hunter to its quarry; and annotations chosen per round and per player. Nothing was decided on the day; see **Chosen**.
+**Chosen:** on 2026-10-26 the owner picked the shaded sphere, the pip, the colour-and-shape marks and thrust flames, with names under the planets as each player's choice. They're built (PLAN §12). The page still labels the earlier look "Now" and "As built".
 **Setup:** open `look-book.html` in a browser. It contacts nothing; the photos and the recorded rounds are inline.
 - The samples use the game's geometry and palette: planet radius 0.03 arena sides, the ring of radius 0.18, the 12 colours of `src/render/palette.ts`, and the renderer's line widths.
 - Each specimen is drawn at two sizes: a 760 px arena, the largest on a desktop (r = 22.8 px), and a 380 px arena, a Pixel 8a held upright (r = 11.4 px).

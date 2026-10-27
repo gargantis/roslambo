@@ -1,7 +1,8 @@
 // Pre-start, countdown and round (PLAN §11): the arena, the players and
 // their points, and for players the buttons below or beside the arena.
-// The canvas draws predicted ticks every frame; lists follow final ticks
-// (§12), and only change the DOM when their content changes.
+// The canvas draws predicted ticks every frame, with the predicted
+// buttons for thrust flames; lists follow final ticks (§12), and only
+// change the DOM when their content changes.
 
 import { config } from '../../config';
 import { LEFT, RIGHT, THRUST } from '../../core/sim/rules';
@@ -22,6 +23,7 @@ export interface ArenaHost {
   leave(): void;
   finished(result: Result): void;
   failed(reason: 'connect' | number): void;
+  names?: boolean; // names under the planets: Settings (the owner, 2026-10-26)
 }
 
 /** A player's label: their display name, or for one without a name a
@@ -30,6 +32,14 @@ export interface ArenaHost {
  *  round to the next (the owner's report, 2026-10-25). */
 export function playerName(name: string, id: string): string {
   return name || `Player ${id.slice(0, 4).toUpperCase()}`;
+}
+
+const LABEL_CHARS = 12; // a name under a planet, at most
+
+/** A player's label under their planet: shortened to fit. */
+export function arenaLabel(name: string, id: string): string {
+  const chars = [...playerName(name, id)];
+  return chars.length <= LABEL_CHARS ? chars.join('') : `${chars.slice(0, LABEL_CHARS - 1).join('')}…`;
 }
 
 export function chip(i: number): HTMLElement {
@@ -71,7 +81,21 @@ export function arenaScreen(game: Game, host: ArenaHost): Screen {
   const renderer = new ArenaRenderer(canvas);
   const unbindKeys = bindKeyboard(host.controls);
   const drawn: DrawnPlanet[] = [];
-  const view: ArenaView = { me: -1, ring: true, ringRadius: PARAMS.ringRadius, r: PARAMS.r, cx: PARAMS.cx, cy: PARAMS.cy };
+  const view: ArenaView = { me: -1, ring: true, ringRadius: PARAMS.ringRadius, r: PARAMS.r, cx: PARAMS.cx, cy: PARAMS.cy, thrust: [], labels: null, now: 0 };
+  // Names under the planets, rebuilt only when a planet's ID or name changes.
+  const labelIds: string[] = [];
+  const labelNames: string[] = [];
+  const labels: string[] = [];
+  const labelsFor = (ps: readonly { id: string; name: string }[]): string[] => {
+    labels.length = labelIds.length = labelNames.length = ps.length;
+    ps.forEach((p, i) => {
+      if (labelIds[i] === p.id && labelNames[i] === p.name) return;
+      labelIds[i] = p.id;
+      labelNames[i] = p.name;
+      labels[i] = arenaLabel(p.name, p.id);
+    });
+    return labels;
+  };
   let readyOn = false;
   ready.addEventListener('click', () => game.ready(!readyOn));
 
@@ -148,6 +172,11 @@ export function arenaScreen(game: Game, host: ArenaHost): Screen {
       const head = t.head;
       view.me = head.planets.findIndex((p) => p.id === me);
       view.ring = head.phase === PRESTART || head.phase === COUNTDOWN;
+      const running = head.phase === RUNNING;
+      view.thrust.length = head.planets.length;
+      head.planets.forEach((p, i) => { view.thrust[i] = running && (t.headButtons(p.id) & THRUST) !== 0; });
+      view.labels = host.names ? labelsFor(head.planets) : null;
+      view.now = now;
       renderer.draw(interpolate(t.prevHead, head, t.alpha(now), drawn), view);
 
       // Buttons follow the predicted phase, so Thrust is live at 0.

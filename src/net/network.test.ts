@@ -93,6 +93,30 @@ describe('rounds over the network (PLAN §8.9)', () => {
     }
   });
 
+  it('names the buttons each planet holds at the head, for its thrust flame: a player\'s own exactly, the others\' as predicted', () => {
+    const net = new LoopbackNet(3, uniform(13, 30, 60, 20));
+    const nodes = lobby(net, [1, 2, 3], 2000, {}, { ante: 50, minPlayers: 3, maxPlayers: 8 });
+    const tally = { own: 0, ownRight: 0, others: 0, othersRight: 0 };
+    for (let at = 4000; at < 40_000; at += 250) {
+      net.at(at, () => {
+        for (const n of nodes) {
+          const tl = n.session.timeline;
+          if (tl.head.phase !== RUNNING) continue;
+          for (const p of tl.head.planets) {
+            // Buttons sampled at tick n apply at tick n + delay.
+            const right = tl.headButtons(p.id) === scriptButtons(7, parseInt(p.id, 16) - 1, tl.localTick - config.inputDelayTicks);
+            if (p.id === n.session.cfg.me) { tally.own++; if (right) tally.ownRight++; }
+            else { tally.others++; if (right) tally.othersRight++; }
+          }
+        }
+      });
+    }
+    net.run(40_000);
+    expect(tally.own).toBeGreaterThan(100);
+    expect(tally.ownRight).toBe(tally.own);
+    expect(tally.othersRight / tally.others).toBeGreaterThan(0.8);
+  });
+
   it('numbers players the same everywhere when they join at the same moment (P4)', () => {
     const net = new LoopbackNet(2, uniform(12, 10, 150, 40));
     const keeper = node(net, 0);

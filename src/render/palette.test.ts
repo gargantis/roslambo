@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { INK, PLANET_COLOURS } from './palette';
+import { ARENA, HUNTER, INK, MARK, PLANET_COLOURS, QUARRY } from './palette';
 
 // OKLab (Björn Ottosson, 2020) and the Machado, Oliveira and Fernandes
 // (2009) dichromacy matrices at full severity, applied in linear RGB.
@@ -53,4 +53,15 @@ describe('the planet palette (PLAN §12)', () => {
       for (const [i, j] of neighbours()) expect(dist(labs[i]!, labs[j]!), `${i + 1} and ${j + 1}`).toBeGreaterThan(0.1);
     });
   }
+
+  it('draws every mark at 3:1 or more against the arena', () => {
+    const arena = luminance(rgb(ARENA));
+    for (const c of [MARK, QUARRY, HUNTER]) expect((luminance(rgb(c)) + 0.05) / (arena + 0.05), c).toBeGreaterThanOrEqual(3);
+  });
+
+  it('keeps the quarry\'s mark and the hunter\'s apart in colour too, for every kind of vision checked', () => {
+    const [q, h] = [QUARRY, HUNTER].map(rgb);
+    expect(dist(oklab(q!), oklab(h!))).toBeGreaterThan(0.1);
+    for (const [kind, M] of Object.entries(CVD)) expect(dist(oklab(see(M, q!)), oklab(see(M, h!))), kind).toBeGreaterThan(0.1);
+  });
 });

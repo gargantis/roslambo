@@ -14,9 +14,21 @@ export function planetColour(k: number): string {
   return PLANET_COLOURS[(k - 1) % PLANET_COLOURS.length]!;
 }
 
-/** Numbers, the notch and the planet outline are drawn in this. */
+/** Numbers and the orientation pip are drawn in this. */
 export const INK = '#0b0d12';
-/** Your planet, your quarry and your hunter are marked in this, by shape. */
+/** Your planet's ring. Your quarry's and your hunter's marks differ in
+ *  shape as well as colour, so they never rely on colour alone. */
 export const MARK = '#ffffff';
+/** Your quarry's ring, in four arcs. */
+export const QUARRY = '#ffc145';
+/** Your hunter's ring, dashed. */
+export const HUNTER = '#ff5470';
 export const ARENA = '#121620';
 export const RING_GUIDE = '#283044';
+/** Over each planet's colour: lit from the top left, darker at the limb. */
+export const SHADE = ['rgba(255,255,255,0.45)', 'rgba(255,255,255,0)', 'rgba(11,13,18,0.34)'] as const;
+/** A thrusting planet's flame, from its base to its tip. */
+export const FLAME = ['rgba(255,240,180,0.95)', 'rgba(255,140,60,0.8)', 'rgba(255,90,40,0)'] as const;
+/** Names under the planets, outlined so they read over anything. */
+export const LABEL = '#d7deea';
+export const LABEL_OUTLINE = 'rgba(11,13,18,0.92)';

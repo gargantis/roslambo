@@ -1,5 +1,6 @@
 // Settings (PLAN §11): extra signalling relays and the player's own TURN
-// server, checked as typed, and how many relays this tab reaches now.
+// server, checked as typed, and how many relays this tab reaches now; and
+// whether names show under the planets (the owner, 2026-10-26).
 
 import { h, setText } from '../dom';
 import type { SettingsStore } from '../../storage/settings';
@@ -19,6 +20,8 @@ export function settingsScreen(host: SettingsHost): Screen {
   const turnUrl = h('input', { type: 'text', spellcheck: 'false', placeholder: 'turns:turn.example.com:443', value: turn?.urls ?? '', 'data-test': 'turn-url' });
   const turnUser = h('input', { type: 'text', autocomplete: 'off', value: turn?.username ?? '', 'data-test': 'turn-user' });
   const turnPass = h('input', { type: 'password', autocomplete: 'off', value: turn?.credential ?? '', 'data-test': 'turn-credential' });
+  const names = h('input', { type: 'checkbox', 'data-test': 'names' });
+  names.checked = s.names;
   const message = h('p', { role: 'status', 'aria-live': 'polite', 'data-test': 'settings-message' });
   const health = h('p', { class: 'muted', 'data-test': 'relay-health' });
 
@@ -29,6 +32,7 @@ export function settingsScreen(host: SettingsHost): Screen {
     const problem = host.settings.set({
       relays: list,
       turn: anyTurn ? [{ urls: turnUrl.value.trim(), username: turnUser.value, credential: turnPass.value }] : [],
+      names: names.checked,
     });
     message.className = problem ? 'error' : 'muted';
     message.textContent = problem ?? 'Saved. Rounds you open from now on use these.';
@@ -37,6 +41,7 @@ export function settingsScreen(host: SettingsHost): Screen {
   const el = h('section', { class: 'screen' },
     h('h1', {}, 'Settings'),
     h('form', { class: 'form', novalidate: true, onsubmit: save },
+      h('label', { class: 'check' }, names, h('span', {}, 'Show names under the planets')),
       h('label', { class: 'field' }, h('span', {}, 'Extra relays, one per line, as well as the built-in six'), relays),
       h('fieldset', { class: 'field' },
         h('legend', {}, 'Your own TURN server, for networks that block direct connections'),

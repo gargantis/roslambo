@@ -1,5 +1,6 @@
-// Settings (PLAN §11, A.3): extra signalling relays and the player's own
-// TURN server. Checked when typed; used by every room opened after.
+// Settings (PLAN §11, A.3): extra signalling relays, the player's own
+// TURN server, and whether names show under the planets (the owner,
+// 2026-10-26). Checked when typed; used by every room opened after.
 
 import { browserStorage, tryRead, tryWrite, type KeyValue } from './kv';
 
@@ -14,6 +15,7 @@ export interface TurnServer {
 export interface Settings {
   relays: string[];
   turn: TurnServer[];
+  names: boolean; // draw names under the planets; off unless chosen
 }
 
 const MAX_RELAYS = 10;
@@ -39,7 +41,7 @@ export function turnProblem(t: TurnServer): string | null {
 }
 
 function parse(raw: string | null): Settings {
-  const empty: Settings = { relays: [], turn: [] };
+  const empty: Settings = { relays: [], turn: [], names: false };
   if (raw === null) return empty;
   try {
     const x = JSON.parse(raw) as Record<string, unknown>;
@@ -51,7 +53,7 @@ function parse(raw: string | null): Settings {
         return typeof o?.['urls'] === 'string' && typeof o['username'] === 'string' && typeof o['credential'] === 'string' && turnProblem(o as unknown as TurnServer) === null;
       })
       : [];
-    return { relays: relays.slice(0, MAX_RELAYS), turn };
+    return { relays: relays.slice(0, MAX_RELAYS), turn, names: x['names'] === true };
   } catch {
     return empty;
   }

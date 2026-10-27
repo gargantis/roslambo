@@ -486,7 +486,7 @@ Each decision gives the choice, the options rejected, and the cost if it's wrong
 **D-21 — Canvas 2D.**
 - **Choice:**
   - One canvas, sized to the device pixel ratio (capped at 2).
-  - Planets, numbers, orientation marks and hunter and quarry highlights, drawn every animation frame and interpolated between the two newest ticks.
+  - Planets, numbers, orientation marks and hunter and quarry highlights, drawn every animation frame and interpolated between the two newest ticks. Since 2026-10-26 also thrust flames and, if the player chooses, names (§12).
   - Screens, lists and buttons are DOM.
 - **Rejected:**
   - WebGL2: a dozen circles don't need it.
@@ -966,7 +966,7 @@ Rules:
 | Pre-start | The arena with the orbiting ring. The players' numbers, colours, names and Ready status. The **Ready** button and the two rotate buttons for players. The countdown over the arena. |
 | Round | The arena, every player's points, and the three buttons below the arena for players. Spectators see no buttons. |
 | Results | Final points and balance changes (final − ante) for every player, your new balance, **Play again**, **Home**. |
-| Settings | Extra relays (`wss://` URLs, validated); a TURN URL, username and credential; "n of m relays reachable". |
+| Settings | Extra relays (`wss://` URLs, validated); a TURN URL, username and credential; "n of m relays reachable". *The owner, 2026-10-26:* **Show names under the planets**, off by default (§12). |
 | Messages | Not a secure context; canary failure (D-17); a build mismatch; a failed connection: "Couldn't connect to the other players. One of your networks may be blocking direct connections; try another network, or add a TURN server in Settings"; a full round. |
 
 **Input.**
@@ -1012,11 +1012,14 @@ Rules:
 **M4, as built:**
 - **One dark theme.** The arena is space, and the planet colours appear only on it and on the lists' dark chips. So "distinct in light and dark surroundings" reduces to the dark arena.
 - **The palette** came from a search: 12 colours, each carrying a dark number at 7:1 contrast or more. Every pair is at least 0.12 apart in OKLab. Every pair that is hunter and quarry for some N ≤ 12 is at least 0.1 apart under simulated protanopia, deuteranopia and tritanopia (Machado 2009). `src/render/palette.test.ts` checks all of it.
-- **Orientation** is a nose on the planet's outline, so it doesn't cross the number.
-- **The marks are shapes, not colours:** your planet a solid ring, your quarry a ring with target ticks, your hunter a dashed ring. The lists also name them ("your quarry", "your hunter").
+- **Orientation** is a nose on the planet's outline, so it doesn't cross the number. *Changed 2026-10-26 at the owner's request*, chosen from the samples in [research/appearance/](research/appearance/REPORT.md): a dark pip just inside the rim, centred 0.7 r from the planet's centre, of radius 0.16 r. Unlike the nose, which reached 1.6 r, it never leaves the collision circle.
+- **The marks are shapes, not colours:** your planet a solid ring, your quarry a ring with target ticks, your hunter a dashed ring. The lists also name them ("your quarry", "your hunter"). *Changed 2026-10-26 at the owner's request:* colour and shape, all at 1.34 r, where the old marks reached 2.7 r. You get a white ring, your quarry an amber ring in four arcs, your hunter a red dashed ring. The shapes still differ, so colour is never the only cue; `palette.test.ts` checks the three colours against the arena, and the amber against the red under the same colour blindness simulations as the palette.
+- **Planets are shaded spheres** (*the owner, 2026-10-26*): each colour lit from the top left and darker at the limb. The shading is clear over the middle of the disc, so the numbers keep their contrast.
+- **Thrust flames** (*the owner, 2026-10-26*): a flame behind every planet whose player holds thrust while the round runs. For other players that is the predicted input (`Timeline.headButtons`: their input for the head tick if it has arrived, else their last), so a flame can start or stop a few ticks late, as the planet's motion can.
+- **Names under the planets** (*the owner, 2026-10-26*): each player's choice in Settings, off by default. A name is shortened to 12 characters, and drawn above a planet near the bottom wall. A player without a name shows as "Player 3F2A", as in the lists.
 - **The walls** are the canvas border, drawn by CSS.
 - **Corrections:** not yet judged by eye. Nobody has played over a real network, and in the gate's rounds resyncs are rare. That waits for the Q-2 runs.
-- **Budget:** frame work in desktop Chromium averages 0.3 ms with 8 planets. The phone's figure waits for the Pixel 8a run; the throttled proxy is in docs/acceptance.md.
+- **Budget:** frame work in desktop Chromium averages 0.3 ms with 8 planets (as of M4; see docs/acceptance.md for the runs since the 2026-10-26 look). The phone's figure waits for the Pixel 8a run; the throttled proxy is in docs/acceptance.md.
 
 ---
 
@@ -1306,7 +1309,7 @@ Rules:
 | Requirement | Where | Verified by |
 |---|---|---|
 | Planets: same mass and size, orientation, number, colour, names | §7, §11, §12 | M2 tests; M4 |
-| Own hunter and quarry highlighted | §12 | marks by shape (§12, M4); palette tests |
+| Own hunter and quarry highlighted | §12 | marks by colour and shape (§12, 2026-10-26); palette tests |
 | Arena not tied to the square | D-6 | ring radius test with a non-square polygon |
 | W, A, D; conserved rotation; maximum rate; thrust direction | D-2, §7.2, §11 | rotation and thrust tests |
 | On-screen buttons; held together; multi-touch | §11 | `touch.spec.ts` (Chromium touch emulation); by hand on the phone |
@@ -1424,7 +1427,7 @@ n × { u8[16] player ID, u8+n display name, i32 final points }   (M5: was u32)
 | `roslambo.v1.profile.backup` | the last unreadable profile, verbatim |
 | `roslambo.v1.round.<roundId>` | `{ v: 1, timelineId, tick, state: base64(A.1), savedAt }` |
 | `roslambo.v1.witness.<roundId>` | `{ v: 1, record: base64(A.2), unacknowledged: [playerId], expiresAt }` |
-| `roslambo.v1.settings` | `{ v: 1, relays: [url], turn: [{ urls, username, credential }] }` |
+| `roslambo.v1.settings` | `{ v: 1, relays: [url], turn: [{ urls, username, credential }], names }`; `names` (2026-10-26) reads as false when absent |
 
 ### A.4 Implementation constants (*provisional*; M0 confirms)
 

@@ -33,8 +33,9 @@ Status: draft from the requirements discussion of 2026-10-24, amended the same d
 - All planets have the same fixed mass and the same fixed size
 - Each planet shows its orientation
 - Each planet shows its number in a distinct color
-- Each player can choose an optional display name, shown on the results screen. Names don't have to be unique
+- Each player can choose an optional display name, shown on the results screen and, if a player chooses in Settings, under the planets in the arena (the owner, 2026-10-26). Names don't have to be unique
 - Each player sees their own hunter and quarry highlighted
+- A planet whose player is thrusting shows a flame (the owner, 2026-10-26)
 - The arena is a fixed-size square. The design should not depend on the square shape, so the shape can change later
 
 ### Controls
@@ -123,7 +124,7 @@ Status: draft from the requirements discussion of 2026-10-24, amended the same d
 - **Pre-start**: the arena with the orbiting ring; a list of players with number, color, name and ready status; the **Ready** button and the rotation buttons; the countdown over the arena
 - **Round**: the arena, every player's current points, and the three buttons below the arena for players. Spectators see the arena without buttons
 - **Results**: final points and balance changes, with **Play again** and **Home**
-- **Settings**: extra relays and the player's own TURN server
+- **Settings**: extra relays and the player's own TURN server, and whether names show under the planets (the owner, 2026-10-26)
 - On a phone held upright, the square arena fills the width with the buttons below it. On a desktop, the arena is centered
 
 ## Multiplayer
