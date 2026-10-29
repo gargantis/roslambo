@@ -257,7 +257,7 @@ class Rogue implements RoomPeer {
 }
 
 describe('closing connections that misbehave (§9.4)', () => {
-  const tick = M.encodeTick({ t: 5, buttons: 1, voteTick: M.NO_TICK, voteHash: M.ZERO_HASH, phase: 0, histMask: 0, hist: new Array<number>(16).fill(0), events: [] });
+  const tick = M.encodeTick({ t: 5, own: true, buttons: 1, voteTick: M.NO_TICK, voteHash: M.ZERO_HASH, phase: 0, histMask: 0, hist: new Array<number>(16).fill(0), events: [], bots: [] });
 
   it('closes a peer that floods TICKs, and the round goes on', () => {
     const net = new LoopbackNet(36, uniform(46));

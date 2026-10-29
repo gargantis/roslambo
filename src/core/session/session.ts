@@ -2,10 +2,11 @@
 // map from connections to players, PEERS gossip and forwarding for pairs
 // that can't connect (D-14), joining a timeline, merging two (D-12, Q-7),
 // resuming a paused round from a saved state (§8.5), answering settlers
-// (§8.7), closing connections that misbehave (§9.4), and the local
-// player's Play, Ready and Leave. Pure: the caller passes `now` and wires
-// a transport to the on… methods.
+// (§8.7), closing connections that misbehave (§9.4), the local player's
+// Play, Ready and Leave, and the bots this browser hosts (Q-23). Pure: the
+// caller passes `now` and wires a transport to the on… methods.
 
+import { botButtons, botIds, botName } from '../bot/bot';
 import { hash64 } from '../sim/hash';
 import type { SimParams } from '../sim/params';
 import { JOIN, LEAVE, READY, UNREADY } from '../sim/rules';
@@ -34,6 +35,16 @@ export interface SavedTimeline {
   timelineId: string;
   state: RoundState;
   hash: string;
+}
+
+/** A bot this browser hosts (Q-23). */
+interface HostedBot {
+  id: string;
+  /** It wants a planet; false once removed, until its LEAVE is final. */
+  wanted: boolean;
+  joinSentAt: number; // local tick of its last JOIN, −1 if none pending
+  readySentAt: number; // local tick of its last READY, −1 if none
+  leaveAt: number; // the tick of its LEAVE, once removed
 }
 
 interface PeerInfo {
@@ -104,10 +115,15 @@ export class Session implements RoomPeer {
    *  absence: the Ready expired, or the player was removed and rejoined. */
   private readyWant: { on: boolean; sentAt: number; joinTick: number; until: number } | null = null;
   private openedAt = -1;
+  private readonly hosted: HostedBot[] = [];
+  private readonly botIds: string[]; // the IDs this browser gives its bots, in order
+  private adopted = false; // this timeline's roster was searched for this browser's bots
+  private left = false;
 
   constructor(cfg: SessionConfig, link: Link) {
     this.cfg = cfg;
     this.link = link;
+    this.botIds = botIds(cfg.me);
     this.timeline = this.newTimeline();
   }
 
@@ -125,7 +141,10 @@ export class Session implements RoomPeer {
     if (this.timeline) {
       t.sending = this.timeline.sending;
       t.controls = this.timeline.controls;
+      t.bots = this.timeline.bots;
     }
+    this.adopted = false;
+    for (const b of this.hosted) b.joinSentAt = b.readySentAt = -1;
     return t;
   }
 
@@ -151,9 +170,118 @@ export class Session implements RoomPeer {
     this.readyWant = { on, sentAt: this.timeline.localTick, joinTick: mine.joinTick, until: 0 };
   }
 
+  /** Leave the round, and take this browser's bots out of it too. */
   leave(): void {
     this.wantsToPlay = false;
+    this.left = true;
     if (this.inRoster()) this.timeline.queueEvent(LEAVE);
+    for (const b of this.hosted) if (b.wanted) this.unwant(b);
+  }
+
+  // ---- bots (Q-23) ----
+
+  /** The bots this browser hosts that want a planet. */
+  hostedBots(): string[] {
+    return this.hosted.filter((b) => b.wanted).map((b) => b.id);
+  }
+
+  /** Whether this browser may host one more bot: before the countdown,
+   *  with a seat left for it. Without a timeline yet (Play again), its
+   *  JOIN waits for one, and the round may refuse it. */
+  canAddBot(): boolean {
+    const t = this.timeline;
+    if (this.hosted.length >= this.botIds.length) return false;
+    return !t.started || (t.final.phase === PRESTART && this.seatsLeft() > 0);
+  }
+
+  addBot(): boolean {
+    if (!this.canAddBot()) return false;
+    const used = new Set(this.hosted.map((b) => b.id));
+    this.host(this.botIds.find((id) => !used.has(id))!);
+    return true;
+  }
+
+  /** The newest of this browser's bots leaves, before the countdown. */
+  removeBot(): boolean {
+    const t = this.timeline;
+    if (t.started && t.final.phase !== PRESTART) return false;
+    for (let i = this.hosted.length - 1; i >= 0; i--) {
+      const b = this.hosted[i]!;
+      if (!b.wanted) continue;
+      if (t.started) this.unwant(b);
+      else this.unhost(b);
+      return true;
+    }
+    return false;
+  }
+
+  /** The round's maximum, less its planets and this browser's joins on their way. */
+  private seatsLeft(): number {
+    const s = this.timeline.final;
+    const has = (id: string): boolean => s.planets.some((p) => p.id === id);
+    let pending = this.wantsToPlay && !has(this.cfg.me) ? 1 : 0;
+    for (const b of this.hosted) if (b.wanted && !has(b.id)) pending++;
+    return s.maxPlayers - s.planets.length - pending;
+  }
+
+  private host(id: string): void {
+    this.hosted.push({ id, wanted: true, joinSentAt: -1, readySentAt: -1, leaveAt: 0 });
+    this.timeline.bots.set(id, () => botButtons(this.timeline.head, id, this.cfg.params));
+  }
+
+  private unhost(b: HostedBot): void {
+    this.hosted.splice(this.hosted.indexOf(b), 1);
+    this.timeline.bots.delete(b.id);
+  }
+
+  private unwant(b: HostedBot): void {
+    b.wanted = false;
+    this.timeline.queueEvent(LEAVE, '', b.id);
+    b.leaveAt = this.timeline.localTick + 1 + this.timeline.cfg.delay; // it goes out with the next tick's input
+  }
+
+  /** Once a timeline is held: this browser's bots in its roster are its
+   *  own again, as after a reload. */
+  private adoptBots(): void {
+    if (this.adopted) return;
+    this.adopted = true;
+    const roster = new Set(this.timeline.final.planets.map((p) => p.id));
+    for (const id of this.botIds) if (roster.has(id) && !this.hosted.some((b) => b.id === id)) this.host(id);
+  }
+
+  /** Each bot joins, then stays ready (a Ready expires after a minute),
+   *  and goes once removed. A JOIN or READY that was lost is sent again,
+   *  as the player's are; a bot the round can't take is given up. */
+  private tendBots(): void {
+    const t = this.timeline;
+    const s = t.final;
+    const retry = t.cfg.delay + 30;
+    for (const b of [...this.hosted]) {
+      const planet = s.planets.find((p) => p.id === b.id);
+      if (!b.wanted) {
+        if (t.finalTick < b.leaveAt) continue;
+        if (planet && s.phase !== PRESTART && !this.left) b.wanted = true; // its LEAVE came after the roster locked: it plays
+        else this.unhost(b);
+        continue;
+      }
+      if (planet) {
+        b.joinSentAt = -1;
+        if (s.phase === PRESTART && planet.readyUntil <= s.tick && t.finalTick > b.readySentAt + retry) {
+          t.queueEvent(READY, '', b.id);
+          b.readySentAt = t.localTick;
+        }
+        continue;
+      }
+      if (s.phase !== PRESTART || s.planets.length >= s.maxPlayers) {
+        // No JOIN can succeed now; one already sent gets until it is final.
+        if (b.joinSentAt < 0 || t.finalTick > b.joinSentAt + t.cfg.delay) this.unhost(b);
+        continue;
+      }
+      if (b.joinSentAt < 0 || t.finalTick > b.joinSentAt + retry) {
+        t.queueEvent(JOIN | READY, botName(b.id), b.id);
+        b.joinSentAt = b.readySentAt = t.localTick;
+      }
+    }
   }
 
   /** Results screen: tell the room the next round exists (a UI hint). */
@@ -353,6 +481,10 @@ export class Session implements RoomPeer {
     if (this.timeline.started && this.wantsToPlay) {
       this.joinOrGiveUp();
       this.keepReady();
+    }
+    if (this.timeline.started) {
+      this.adoptBots();
+      this.tendBots();
     }
     if (this.peersDirty || now - this.lastPeersSent >= PEERS_EVERY_MS) {
       this.peersDirty = false;

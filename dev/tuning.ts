@@ -4,7 +4,7 @@
 import { DEFAULT_SETTINGS, makeParams, type SimParams, type SimSettings } from '../src/core/sim/params';
 import { JOIN, LEFT, READY, RIGHT, step, THRUST, type PlayerInput } from '../src/core/sim/rules';
 import { COUNTDOWN, FROZEN, genesis, hunterOf, PRESTART, quarryOf, RUNNING, type RoundState } from '../src/core/sim/state';
-import { steer } from './steer';
+import { steer } from '../src/core/bot/steer';
 
 type Key = keyof SimSettings;
 const SLIDERS: [Key, string, number, number, number][] = [

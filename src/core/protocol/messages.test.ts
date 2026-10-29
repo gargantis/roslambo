@@ -8,16 +8,22 @@ import { MAX_MESSAGE } from './bytes';
 import {
   decode, encodeAgain, encodeFwd, encodeHello, encodePeers, encodeRefuse, encodeResult, encodeResultReq,
   encodeSettled, encodeState, encodeStateReq, encodeTick, NO_TICK, PROTOCOL_VERSION, ROLE, T, TIMELINE, ZERO_HASH,
-  type InputRecord, type StateMsg, type Tick,
+  type BotInput, type InputRecord, type StateMsg, type Tick,
 } from './messages';
 
 const id = (k: number): string => (k + 1).toString(16).padStart(32, '0');
 const hash = 'a1b2c3d4e5f60718';
 
 const tick: Omit<Tick, 'type'> = {
-  t: 1234, buttons: 5, voteTick: 1200, voteHash: hash, phase: 0.25, histMask: 0b1010_0000_0000_0011,
+  t: 1234, own: true, buttons: 5, voteTick: 1200, voteHash: hash, phase: 0.25, histMask: 0b1010_0000_0000_0011,
   hist: [1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0],
   events: [{ back: 0, events: JOIN | READY, name: 'Ana' }, { back: 3, events: READY, name: '' }],
+  bots: [],
+};
+
+const bot: BotInput = {
+  id: id(40), buttons: 3, histMask: 0b11, hist: [3, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  events: [{ back: 2, events: JOIN | READY, name: 'Bot 0000' }],
 };
 
 function roundState(players: number): { bytes: Uint8Array; roster: string[] } {
@@ -39,6 +45,7 @@ describe('wire protocol (PLAN §9)', () => {
         { type: T.HELLO, protocol: PROTOCOL_VERSION, build: hash, player: id(3), role: ROLE.PLAYER, timeline: hash, timelineKind: TIMELINE.LIVE, phase: 1, finalTick: 99, hash, holdsResult: false, name: 'Zoë' }],
       [encodeRefuse(3), { type: T.REFUSE, reason: 3 }],
       [encodeTick(tick), { type: T.TICK, ...tick }],
+      [encodeTick({ ...tick, bots: [bot, { ...bot, id: id(41), events: [] }] }), { type: T.TICK, ...tick, bots: [bot, { ...bot, id: id(41), events: [] }] }],
       [encodeFwd(id(7), encodeTick(tick)), { type: T.FWD, origin: id(7), tick: { type: T.TICK, ...tick } }],
       [encodePeers([id(1), id(2)]), { type: T.PEERS, players: [id(1), id(2)] }],
       [encodeAgain(), { type: T.AGAIN }],
@@ -53,8 +60,15 @@ describe('wire protocol (PLAN §9)', () => {
     for (const [bytes, want] of cases) expect(decode(bytes)).toEqual(want);
   });
 
-  it('keeps a TICK small: 29 bytes without events', () => {
-    expect(encodeTick({ ...tick, events: [] }).length).toBe(29);
+  it('keeps a TICK small: 30 bytes without events, and 26 more for each bot without events', () => {
+    expect(encodeTick({ ...tick, events: [] }).length).toBe(30);
+    expect(encodeTick({ ...tick, events: [], bots: [{ ...bot, events: [] }] }).length).toBe(56);
+  });
+
+  it('marks a TICK without an input of the sender\'s own: a spectator who hosts bots (Q-23)', () => {
+    const none = { ...tick, own: false, buttons: 0, histMask: 0, hist: new Array<number>(16).fill(0), events: [], bots: [bot] };
+    expect(decode(encodeTick(none))).toEqual({ type: T.TICK, ...none });
+    expect((decode(encodeTick(tick)) as Tick).own).toBe(true);
   });
 
   it('fits STATE within 16,000 bytes by sending fewer input ticks', () => {
@@ -72,7 +86,7 @@ describe('wire protocol (PLAN §9)', () => {
       decode(b);
       return true;
     }), { numRuns: 2000 });
-    const msg = encodeTick(tick);
+    const msg = encodeTick({ ...tick, bots: [bot] });
     for (let i = 0; i < msg.length; i++) expect(decode(msg.subarray(0, i))).toBeNull();
     expect(decode(new Uint8Array([...msg, 0]))).toBeNull();
   });

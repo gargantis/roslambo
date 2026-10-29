@@ -1,7 +1,10 @@
 // The round ledger (PLAN §10, D-18): each round's ante is paid once and
-// its result credited at most once (P6). Pure: these functions change a
+// its result credited at most once (P6). A round with bots is practice
+// (Q-23): nothing is paid or credited. Pure: these functions change a
 // profile in memory and say whether they did; src/storage writes the whole
 // profile in one step, so a closed tab can't leave half a transition.
+
+import { isBot } from '../bot/bot';
 
 export interface LedgerEntry {
   ante: number;
@@ -9,6 +12,7 @@ export interface LedgerEntry {
   antePaid: boolean;
   settled: boolean;
   seenAt: number; // ms since the epoch
+  practice?: boolean; // started with bots in it (Q-23)
 }
 
 export interface Profile {
@@ -43,6 +47,30 @@ export function payAnte(p: Profile, roundId: string, ante: number, now: number):
   e.seenAt = now;
   p.balance -= e.ante;
   return true;
+}
+
+/** Whether a round with these players is practice: one of them is a bot (Q-23). */
+export function isPractice(players: readonly string[]): boolean {
+  return players.some(isBot);
+}
+
+/** The start of a practice round is confirmed with this player in it:
+ *  nothing is paid (Q-23). */
+export function notePractice(p: Profile, roundId: string, ante: number, now: number): boolean {
+  const e = entry(p, roundId, ante, now);
+  if (e.practice || e.antePaid) return false;
+  e.practice = true;
+  e.seenAt = now;
+  return true;
+}
+
+/** A practice round's freeze is confirmed, or its result arrived: nothing
+ *  was paid, so nothing is owed, and the round is forgotten. A round whose
+ *  ante was paid all the same is settled as usual, so a paid ante is never
+ *  stranded. */
+export function settlePractice(p: Profile, roundId: string, ante: number, finalPoints: number, now: number): boolean {
+  if (!p.rounds[roundId]?.antePaid) return forget(p, roundId);
+  return settle(p, roundId, ante, finalPoints, now);
 }
 
 /** The freeze is confirmed, or a result arrived: credit the final points.

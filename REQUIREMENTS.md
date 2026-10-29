@@ -25,6 +25,7 @@ Status: draft from the requirements discussion of 2026-10-24, amended the same d
 - **Balance**: a player's running point total across rounds
 - **Round ID**: the secret that identifies a round and lets people join it
 - **Witness**: a peer that was present when a round ended and keeps its result
+- **Bot**: a computer-controlled player, hosted by a player's or a spectator's browser (Q-23)
 
 ## Gameplay (MVP)
 
@@ -56,7 +57,7 @@ Status: draft from the requirements discussion of 2026-10-24, amended the same d
 
 ### Scoring
 
-- At the start of a round, each player pays the ante from their balance. The ante is their starting points
+- At the start of a round, each player pays the ante from their balance, except in a practice round (see *End of round*). The ante is their starting points
 - When a planet collides with its quarry, the planet gains 1 point and the quarry loses 1 point. Every collision counts, including repeated collisions between the same pair (MVP)
 - A collision is one contact episode: planets that stay touching, or bounce within a small gap of each other, score once. The pair scores again only once their surfaces are a full planet diameter apart (C-16)
 - Any other collision changes no points, including collisions between planets that aren't neighbors in the cycle (such as 1 and 3 of 4)
@@ -85,6 +86,7 @@ Status: draft from the requirements discussion of 2026-10-24, amended the same d
 - A player who leaves or disconnects during the countdown keeps their planet, which drifts. The countdown goes on (Q-5)
 - A new player's join is refused once the round has its maximum number of players, or once the countdown has started. A returning player is not a new join (see *Disconnects*)
 - Spectators can join at any time, including after the round has started, up to 4 per round (Q-3)
+- Players and spectators can add bots to a round before its countdown, one at a time, up to its maximum players. A bot joins at the end like any player, and is always ready, so the people's Ready starts the round. Its host can remove it before the countdown, and a host who leaves before the countdown takes its bots out (Q-23)
 
 ### Ready and countdown
 
@@ -112,18 +114,19 @@ Status: draft from the requirements discussion of 2026-10-24, amended the same d
 - The round **freezes** the moment any player reaches 0 points
 - There is no time limit. A round runs until a player reaches 0, however long that takes. Any player of the round can rejoin and hunt its drifting quarry down to 0 to end it
 - Each player's final points are credited to their balance. Their net change is final points minus ante
+- A round with a bot in it is practice: nobody pays the ante, and nobody's final points are credited (Q-23)
 - Everyone, players and spectators alike, sees a **results screen** with final points and balance changes
-- The results screen has a **Play again** button. The first press proposes a new round with the same settings and a new round ID, and everyone still on the results screen can join it with one click
+- The results screen has a **Play again** button. The first press proposes a new round with the same settings and a new round ID, and everyone still on the results screen can join it with one click. A host's bots join it too (Q-23)
 - Players in the new round are numbered in the order they join, as usual
 
 ## Screens
 
 - **Home**: the player's balance and display name (editable), with **Propose a round** and **Join** (enter a code), and the player's unsettled rounds, each with **Rejoin** (still running) or **Resume** (paused) (Q-6). Opening a `#join=` link skips Home
-- **Propose**: set the ante, minimum and maximum. Shows the link and code to share, and asks the proposer to keep the page open until someone joins. The proposer can play at once, or watch once someone has joined, or leave (the owner, 2026-10-25)
+- **Propose**: set the ante, minimum and maximum. Shows the link and code to share, and asks the proposer to keep the page open until someone joins. The proposer can play or watch at once, or leave (the owner, 2026-10-25; watching at once, Q-23)
 - **Join**: choose **Play** or **Watch**
-- **Pre-start**: the arena with the orbiting ring; a list of players with number, color, name and ready status; the **Ready** button and the rotation buttons; the countdown over the arena
+- **Pre-start**: the arena with the orbiting ring; a list of players with number, color, name and ready status; the **Ready** button and the rotation buttons; **Add a bot** and **Remove a bot**, for players and spectators (Q-23); the countdown over the arena
 - **Round**: the arena, every player's current points, and the three buttons below the arena for players. Spectators see the arena without buttons
-- **Results**: final points and balance changes, with **Play again** and **Home**
+- **Results**: final points and balance changes, with **Play again** and **Home**, and a note when bots made the round practice (Q-23)
 - **Settings**: extra relays and the player's own TURN server, and whether names show under the planets (the owner, 2026-10-26)
 - On a phone held upright, the square arena fills the width with the buttons below it. On a desktop, the arena is centered
 
@@ -151,15 +154,16 @@ The same format as amorfus's join secret:
 
 - Every peer, players and spectators alike, runs the same simulation
 - Each player broadcasts its control inputs, and a hash of its state for its newest final tick, to every other peer. A peer sends its full state only to a peer that asks for it (Q-4)
-- When states conflict, the state held by the **majority** of players wins
+- When states conflict, the state held by the **majority** wins
 - The majority is counted among the votes received for that tick
 - On a tie, the state with the smallest hash wins: an arbitrary choice, but every peer makes the same one
-- Only players vote. Spectators follow the majority state
+- Only browsers that control a planet vote, one vote each however many planets they control: a player's, or a spectator's that hosts bots and sends their inputs. Other spectators follow the majority state (Q-23)
 - Cheating is left to the honor system in the MVP
 
 ### Disconnects
 
 - A disconnected player's planet keeps drifting under physics, and it can still win and lose points
+- A bot's planet drifts while its host is away, like a disconnected player's. A host that comes back takes its bots back (Q-23)
 - A player who comes back while the round is still running, from the same browser with the same round ID, takes control of their planet again. Peers recognize them by their player ID
 - Each browser saves the latest state of any round it's in. If every peer leaves, the round pauses at that state. When a player of the round returns, their browser restores it and play resumes, even if they're alone
 - If peers hold different histories of a round, a running round wins over a saved state, and between saved states the later tick wins (Q-7)
@@ -224,7 +228,6 @@ A returning player collects a result they missed from the peers, without any ser
 - Audio beyond optional simple effects
 - Chat
 - Leaderboards
-- Bots or computer-controlled planets
 
 ## Acceptance
 

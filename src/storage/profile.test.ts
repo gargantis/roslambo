@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { payAnte, settle } from '../core/ledger/ledger';
+import { notePractice, payAnte, settle } from '../core/ledger/ledger';
 import { MemoryStorage } from './kv';
 import { BACKUP_KEY, PROFILE_KEY, ProfileStore, parseProfile } from './profile';
 
@@ -36,6 +36,12 @@ describe('the profile store (D-18)', () => {
     reloaded.update((p) => settle(p, 'R', 5, 9, 2)); // the result arrives again
     reloaded.update((p) => settle(p, 'R', 5, 9, 3)); // and again
     expect(new ProfileStore(kv, () => ID).get().balance).toBe(4);
+  });
+
+  it('keeps a practice round\'s mark across visits (Q-23)', () => {
+    const kv = new MemoryStorage();
+    new ProfileStore(kv, () => ID).update((p) => notePractice(p, 'R', 5, 0));
+    expect(new ProfileStore(kv, () => ID).get().rounds['R']).toEqual({ ante: 5, joined: true, antePaid: false, settled: false, seenAt: 0, practice: true });
   });
 
   it('works without storage, and says so', () => {

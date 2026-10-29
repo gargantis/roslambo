@@ -21,7 +21,7 @@ npm install
 npm run dev        # http://localhost:5173
 ```
 
-To play against yourself, open the page in two different browsers, or in a normal and a private window: each browser profile is one player, and one tab per browser plays at a time. Proposing or joining contacts the public Nostr relays.
+To play alone, propose a round, press **Play**, add two bots, and press **Ready**. A round with bots is practice, so it doesn't change your balance. To play against yourself, open the page in two different browsers, or in a normal and a private window: each browser profile is one player, and one tab per browser plays at a time. Proposing or joining contacts the public Nostr relays.
 
 The simulation's tuning page, with a slider for every gameplay setting, is at http://localhost:5173/dev/tuning.html. It's dev-only and never built.
 

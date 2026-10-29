@@ -4,6 +4,7 @@
 - The owner left the open questions to Claude's judgement for the MVP, so every question is settled at its proposal except four. Q-1, Q-2, Q-9 and Q-19 need facts or choices only the owner has.
 - Q-19 was settled on 2026-10-24: no license. The owner keeps all rights.
 - Q-1 was settled on 2026-10-24: the owner's Pixel 8a is the reference phone, and there is no laptop.
+- Q-23 was settled on 2026-10-28 at its proposal: bots, which the owner asked for, so that one person can play alone. They're built as D-27.
 - Manual runs are deferred for now (§15). On 2026-10-24 the owner deferred the phone and network tests again ("too much hassle") and asked to deploy and see what happens. So the first deploy comes before Q-2 and Q-9, to the account's `workers.dev` address (M6 amended). **Deployed 2026-10-24.** The address isn't written here because it carries the account's name, and this repo is public.
 - M5 finished on 2026-10-24. The passive-room probe is in [research/passive/REPORT.md](research/passive/REPORT.md). Its amendments are marked "M5".
 - M4 finished on 2026-10-24, except its runs on the phone, which wait with the other manual runs. The devices and criteria are in [docs/acceptance.md](docs/acceptance.md). Its amendments are marked "M4".
@@ -117,12 +118,13 @@ Approval needs only §0–§4. Once the plan is approved, a Q, C, D or M number 
 | Q-20 | A phone held sideways | The arena fills the height, with the buttons in a column beside it. |
 | Q-21 | Cancelling Ready | Pressing Ready again cancels it, except during the countdown. |
 | Q-22 | Display name length | Up to 20 characters, always shown as plain text. |
+| Q-23 | Bots. The owner, 2026-10-28: "allow players and watchers [to] host several bot players, which will enable easily setup solo play". Bots were out of scope. | **Settled 2026-10-28 at this proposal**, under the MVP delegation; any part can be overridden. Built as D-27, and the requirements say so (§2).<br>• A bot is a player of the round, hosted by a player's or a spectator's browser. Its host adds bots before the countdown, one at a time, up to the round's maximum. A bot joins at the end like anyone, and is always ready, so the people's Ready starts the round. Its host can remove it before the countdown, and leaving takes it out too. While its host is away it drifts, like a disconnected player's planet, and a host that returns takes its bots back.<br>• **A round with a bot in it is practice:** nobody pays the ante or is credited. Otherwise a player could farm points from bots it controls, and the balance would stop measuring play against people. Alternatives: credit the people as usual and let the bots' points vanish; or credit each bot's change to its host, which keeps balances zero-sum but makes a spectator's balance move.<br>• **One vote per browser that controls a planet:** a player's, or a spectator's that hosts bots. Never one per bot, so a host with bots can't outvote the players. A spectator who hosts bots does vote: its bots' inputs are its own, and without its vote a round of bots that others watch would have no voter to repair them.<br>• **The proposer can watch at once,** to host a round of bots. Until now Watch waited for someone to arrive. |
 
 ---
 
 ## 2. Requirement changes your answers would make
 
-REQUIREMENTS.md is yours. These edits went in on 2026-10-24, in one commit that cites the Q-numbers, except three rows that waited: Q-12 (the values, applied at M2), Q-1 (applied at M4) and Q-2 (the networks, still waiting).
+REQUIREMENTS.md is yours. These edits went in on 2026-10-24, in one commit that cites the Q-numbers, except three rows that waited: Q-12 (the values, applied at M2), Q-1 (applied at M4) and Q-2 (the networks, still waiting). The Q-23 rows went in on 2026-10-28, with the bots.
 
 | Requirement (current) | Amended wording | From |
 |---|---|---|
@@ -138,6 +140,14 @@ REQUIREMENTS.md is yours. These edits went in on 2026-10-24, in one commit that 
 | Acceptance: "Three browsers on different machines …" | "… on the networks named in `docs/acceptance.md` …" | Q-2 |
 | Acceptance: "60 fps on the reference devices (**TBD**)" | "… on the devices and by the frame-time criteria in `docs/acceptance.md`". **Applied at M4** as "60 fps on the reference phone, a Pixel 8a in Chrome, by the frame-time criteria in `docs/acceptance.md`". Performance, "a mid-range phone, and a recent laptop with integrated graphics", now names the Pixel 8a and says there is no laptop to test on | Q-1 |
 | Configuration table | The values you sign off at M2 | Q-12 |
+| *Terms* | Add "**Bot**: a computer-controlled player, hosted by a player's or a spectator's browser" | Q-23 |
+| Proposing: "The proposer can play at once, or watch once someone has joined, or leave" | "The proposer can play or watch at once, or leave" | Q-23 |
+| *Joining* | Add: players and spectators can add bots before the countdown, up to the maximum; a bot joins at the end, is always ready, and leaves when its host removes it or leaves before the countdown | Q-23 |
+| End of round: "Each player's final points are credited to their balance" | Add: "A round with a bot in it is practice: nobody pays the ante, and nobody's final points are credited" | Q-23 |
+| Consensus: "the state held by the **majority** of players wins"; "Only players vote. Spectators follow the majority state" | "… the **majority** wins"; "Only browsers that control a planet vote, one vote each however many planets they control: a player's, or a spectator's that hosts bots. Other spectators follow the majority state" | Q-23 |
+| *Disconnects* | Add: "A bot's planet drifts while its host is away, like a disconnected player's. A host that comes back takes its bots back" | Q-23 |
+| Screens: Pre-start and Results | Add **Add a bot** and **Remove a bot**, for players and spectators; a note on Results when bots made the round practice | Q-23 |
+| Out of scope: "Bots or computer-controlled planets" | Removed | Q-23 |
 
 ---
 
@@ -355,6 +365,7 @@ Each decision gives the choice, the options rejected, and the cost if it's wrong
   - Full states: C-3.
 - **Cost if wrong:** a deliberately crafted hash collision counts as cheating, which is out of scope. Changing the hash means one function plus the goldens.
 - **M3:** a tally counts only the votes of players in this peer's own roster at tick g, so a candidate or a spectator can't vote.
+- **Q-23:** it also counts the vote of a browser whose bot is in that roster, once however many bots it has (D-27).
 - **M0, amended** (REPORT §3.2): a peer more than about 200 ms away heard only its own vote by tally time, and stayed diverged.
   - A vote now counts whenever it arrives, while its tick is still in the 256-tick history, and a changed outcome triggers the resync.
   - Confirmed: a corrupted peer is caught at the first tally of the corrupted tick (0.4 s) and repaired one round trip later.
@@ -545,6 +556,23 @@ Each decision gives the choice, the options rejected, and the cost if it's wrong
   - Findings go in `research/lockstep/REPORT.md`.
 - **Cost if wrong:** some code is written twice, which is the point of a throwaway.
 
+### Bots
+
+**D-27 — Bots ride in their host's TICK (Q-23, 2026-10-28).**
+- **Choice:**
+  - A bot is an ordinary member of the roster, so the simulation, the state codec and the goldens don't change.
+  - Its player ID is derived from its host's and its slot, as a UUID of version 8, RFC 9562's custom version. A browser's own ID is version 4 (D-20), so every peer tells a bot by its ID alone, and a host finds its bots again after a reload without storing anything.
+  - Its inputs ride in its host's TICK, after the host's own (§9.3). That is one message per tick however many bots, so the flood rule and forwarding (D-14) are unchanged. A spectator who hosts bots sends TICKs without an input of its own.
+  - A receiver takes a bot's inputs only from the host its ID derives from.
+  - A host votes once while it controls a planet in the roster, its player's or a bot's; a tally counts it once (D-9).
+  - Bots fly the steering bot that M2's tuning measured: chase the quarry, veer from a close hunter. Each has its own temper, read from its ID. It runs only on the host, so it may use any maths.
+- **Rejected:**
+  - Bots inside the simulation, flown by every peer from the state. A bot would then never drift when its host left. But its steering would need exact operations (no `atan2`), every rollback would run it again on every peer, and the state, the codec and the goldens would change.
+  - A separate message for bots' inputs: a second message per host per tick, with its own flood counter and its own kind of FWD, for the same bytes.
+  - A vote per bot: a host with bots would outvote the players.
+  - A bot flag in the state: a codec change, and new goldens, for what the ID already says.
+- **Cost if wrong:** if bots drifting while their host is away proves a nuisance, another peer can take over the host's bots, whose IDs it can derive. Or the bots move into the simulation.
+
 ---
 
 ## 5. Evidence: what this plan rests on
@@ -598,6 +626,7 @@ src/core/protocol/     message codecs (§9)
 src/core/round-id.ts   generate, format, normalise, derive (from amorfus src/net/secret.ts)
 src/core/ledger/       ante, credit, settlement, witness records, retention
 src/core/names.ts      display-name limits (Q-22)
+src/core/bot/          bots (Q-23, D-27): IDs derived from the host's, and the steering bot
 src/net/               Transport interface; loopback with latency, jitter, loss and partitions;
                        trystero.ts (the only Trystero import); forwarding; peer gossip
 src/storage/           profile, saved rounds, witness records, tab lock
@@ -684,6 +713,8 @@ Everything below is in the canonical state (A.1) and so in the hash. Spectators 
 | Settler | asking for a missed result (§8.7) | no | no |
 | Witness | holds a result, in a `passive` room (§8.7) | no | no |
 
+*Q-23:* a player or a spectator may also host bots. It sends their inputs in its own TICKs every tick, and votes once while it controls a planet in the roster, its own or a bot's (D-27).
+
 ### 8.2 A round's life
 
 1. **Propose.** The proposer's browser creates the round ID and the genesis state (settings, no planets, tick 0). It starts the timeline and joins the room as keeper. The URL becomes `#join=<round ID>`.
@@ -705,7 +736,7 @@ At each new local tick n:
    - STATE_REQ (g, winning hash) to the lowest-numbered player who voted for it, then to the next after 500 ms.
    - On STATE: check that the state hashes to the winner; replace my state at g; adopt the sender's inputs after g; re-simulate.
 
-Spectators run steps 2–5 without sending. A keeper with no players runs steps 3 and 4.
+Spectators run steps 2–5 without sending, unless they host bots (Q-23): then step 1 sends their bots' inputs. A keeper with no players runs steps 3 and 4.
 
 **Fixed at the first deploy: a lost Ready, so the round never started.**
 - An end-to-end run failed once this way, and so did the first three-engine round on the live site, over the public relays. That round's trace (2026-10-24) found the cause:
@@ -805,7 +836,7 @@ joinRoom(
   - A tick is a u32.
   - A string is a u8 byte length followed by UTF-8, at most 32 bytes, decoded strictly. An invalid string invalidates the message.
 - **Size:** at most 16,000 bytes per message (D-15).
-- **Protocol version:** 1. Peers must match exactly (D-16).
+- **Protocol version:** 2, since TICKs carry bots' inputs (Q-23). Peers must match exactly (D-16).
 
 ### 9.2 Messages
 
@@ -813,7 +844,7 @@ joinRoom(
 |---|---|---|---|---|
 | 0x01 | HELLO | everyone ↔ everyone | inside the Trystero handshake | ~60 B |
 | 0x02 | REFUSE | refusing peer → joiner | instead of completing the handshake | 2 B |
-| 0x10 | TICK | players and candidates → all peers | every tick | 29 B |
+| 0x10 | TICK | players, candidates and bots' hosts → all peers | every tick | 30 B, plus 26 B per bot (Q-23) |
 | 0x11 | FWD | forwarder → peer lacking the origin | for each TICK of a missing pair | ~46 B |
 | 0x12 | PEERS | everyone → all peers | on change and every 5 s | 1 + 16n B |
 | 0x13 | AGAIN | presser → old room | Play again pressed (UI hint only) | 1 B |
@@ -862,7 +893,7 @@ joinRoom(
 |---|---|---|
 | 0 | 1 | type |
 | 1 | 4 | t: the tick this input is for |
-| 5 | 1 | buttons: bit 0 thrust, bit 1 rotate left, bit 2 rotate right; other bits 0 |
+| 5 | 1 | buttons: bit 0 thrust, bit 1 rotate left, bit 2 rotate right; bit 7 set when the TICK carries no input of the sender's own (a spectator who hosts bots, Q-23), and its buttons, history and events are then 0; other bits 0 |
 | 6 | 4 | vote tick (0xFFFFFFFF: none yet) |
 | 10 | 8 | vote hash |
 | 18 | 2 | clock phase: the sender's fraction of its current tick × 65,536, at send time |
@@ -870,6 +901,8 @@ joinRoom(
 | 22 | 6 | history: 16 × 3 bits, tick t − 1 first (M0) |
 | 28 | 1 | event count |
 | 29 | … | events |
+| … | 1 | bot count (Q-23) |
+| … | … | per bot: `u8[16]` bot ID, `u8` buttons, `u16` history mask, `u8[6]` history, `u8` event count, events: the fields above, for the same tick t |
 
 Events (M3): each is `u8 back`, `u8 kind`, then its payload. It belongs to the sender's input for tick t − back, so one TICK can carry the sender's events still waiting to be final.
 
@@ -885,6 +918,7 @@ Rules:
 - The history fills any of the sender's inputs the receiver doesn't have yet (M0). It carries buttons only. An event is repeated in each of the sender's TICKs until its tick is final, so a joiner can't miss one.
 - A t that is already final at the receiver is dropped.
 - A t more than 2w ahead of the receiver is dropped.
+- *Q-23:* a bot's entry counts only if the bot's ID derives from the sender's player ID (D-27). The vote and the clock phase are the sender's alone.
 - More than 3 TICKs per tick from one sender for 2 s closes the connection. *M5: enforced.* The transport closes that peer's RTCPeerConnection and refuses its Trystero peer ID from then on, so it can't come back without reloading. A timeline that stalled (a throttled timer) sends inputs only for the ticks still inside the late window, so catching up never looks like a flood.
 
 **FWD (0x11):** `u8[16] origin player ID`, then a complete TICK message, type byte included. The receiver treats it as the origin's TICK and drops duplicates by (origin, t). FWD is never forwarded again.
@@ -937,6 +971,7 @@ Rules:
     - → **ante paid** (balance −= ante) when the start is confirmed;
     - → **settled** (balance += final points) when the freeze is confirmed, or a RESULT arrives.
   - A player who first learns of the start from a RESULT pays and settles in the same write.
+  - *Q-23:* a practice round, one with a bot in the roster when it starts, pays nothing. Its entry is marked `practice` at the confirmed start, and forgotten at the confirmed freeze or when its RESULT arrives. Witnesses don't wait for bots.
 - **Saved rounds:** the newest final state and timeline ID of every round the browser is in, every second and on `pagehide`. Deleted once the round is settled and no longer witnessed.
 - **Witness records:** A.2 plus the unacknowledged players and an expiry time. At most 20 (Q-10); the oldest goes first.
 - **Settings:** extra relays and TURN.
@@ -991,6 +1026,14 @@ Rules:
 - **Play again** (Q-8) goes to the derived room. If an AGAIN arrived, the next round already exists, so the browser joins it. Otherwise it proposes the round with the same settings. Two proposals at once merge (D-12).
 - A returning player of an unsettled round (from the ledger) goes straight back to its planet. Everyone else gets Join.
 - *2026-10-25:* a player without a display name is labelled by their player ID ("Player 3F2A"), not by planet number ("Player 2"). Planet numbers follow the join order, so a number-based label belonged to a different browser in each round. Home's name field says what you appear as.
+
+**Q-23, as built (2026-10-28):**
+- The proposer's **Watch** is there at once, like **Play**: a spectator can fill the round with bots, so there is something to watch before anyone arrives.
+- Before the countdown, players and spectators see **Add a bot** and **Remove a bot**, which takes out their newest bot. A note says how many bots this browser hosts, and that a round with bots is practice.
+- A bot is named from its ID, "Bot 3F2A", as a nameless player is. The arena's list shows nothing more; the results tag a bot's row "bot", and say when no balance changed.
+- In the narrow column beside the arena, a list row puts its tags and status on a second line, under the name, so they never push the row out of the column.
+- **Play again** brings this browser's bots into the next round, so playing alone goes on in one click.
+- Home labels a practice round in the unsettled list "practice, with bots".
 
 ---
 
@@ -1154,6 +1197,20 @@ Rules:
   - two saved histories meet by link, and the later one wins.
   - `window.roslamboTest.inspect()` lets the tests read the open round's timeline, ticks and hashes.
 - `smoke.spec.ts`, in every engine: the tab lock's **Use here** both ways, and Settings' checks.
+
+**Q-23, as built (2026-10-28):**
+- `src/core/bot/bot.test.ts`: bot IDs (version 8, distinct per host, the same after a reload), names, when the steering bot turns and thrusts, and that every round of three bots, or of a player pressing nothing against two, reaches the freeze. Twelve hosts' rounds took 13–221 s of play.
+- `src/net/bots.test.ts`, in simulated time:
+  - a player alone plays two bots to the confirmed freeze;
+  - a spectator's bot fills a seat, and the spectator's vote counts once, over four seeds;
+  - two players outvote a host with two bots;
+  - a host that reloads takes its bots back;
+  - Remove takes out the newest bot, and leaving takes out the rest at once, not after 3 s;
+  - a host's bots are forwarded to a player who can't reach it (D-14);
+  - a bot's inputs count only from its host.
+  - Each of the vote, leave and host-only tests failed with its rule removed.
+- `ledger.test.ts` and `profile.test.ts`: a practice round pays and credits nothing.
+- `e2e/bots.spec.ts`, over the local relay: a player alone in Chromium against two bots, its balance unchanged; then spectators in WebKit and Firefox fill a round with bots and see the same results.
 
 **Outside the gate** (logged in `docs/acceptance.md`):
 - the 12-peer load run;
@@ -1336,6 +1393,7 @@ Rules:
 | Cross-browser determinism test | §14 | `determinism.spec.ts` in three engines |
 | No secrets, keys or tracking | D-25, §13 | dist audit; logs off |
 | Acceptance lines | §15 M6 | `docs/acceptance.md` |
+| Bots: hosted by players and spectators; practice rounds; one vote per host (Q-23) | D-27, §9.3, §10, §11 | `bot.test.ts`, `bots.test.ts`, `bots.spec.ts` |
 
 ---
 
@@ -1368,7 +1426,8 @@ Rules:
 - the unordered input channel (unless M0 needs it);
 - a WebGL renderer;
 - raising the mesh cap;
-- switching from spectator to player.
+- switching from spectator to player;
+- *Q-23:* a bot that plays on when its host leaves, taken over by another peer; bots kept across a reload before the countdown, when they've already been removed for silence; a choice of how well bots play.
 
 **Non-goals,** each of which would reopen a decision above:
 - any server-side code or storage;
@@ -1423,7 +1482,7 @@ n × { u8[16] player ID, u8+n display name, i32 final points }   (M5: was u32)
 
 | Key | Value (JSON) |
 |---|---|
-| `roslambo.v1.profile` | `{ v: 1, playerId, name, balance, rounds: { [roundId]: { ante, joined, antePaid, settled, seenAt } } }` |
+| `roslambo.v1.profile` | `{ v: 1, playerId, name, balance, rounds: { [roundId]: { ante, joined, antePaid, settled, seenAt, practice? } } }`; `practice` (Q-23) marks a round that started with bots |
 | `roslambo.v1.profile.backup` | the last unreadable profile, verbatim |
 | `roslambo.v1.round.<roundId>` | `{ v: 1, timelineId, tick, state: base64(A.1), savedAt }` |
 | `roslambo.v1.witness.<roundId>` | `{ v: 1, record: base64(A.2), unacknowledged: [playerId], expiresAt }` |

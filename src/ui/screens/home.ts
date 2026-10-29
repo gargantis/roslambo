@@ -27,7 +27,7 @@ function unsettledRow(u: UnsettledRound, host: HomeHost): HTMLElement {
   return h('li', { 'data-test': 'unsettled' },
     h('div', { class: 'grow' },
       h('span', { class: 'code small' }, code),
-      h('span', { class: 'muted' }, ` · ante ${u.entry.ante}${u.entry.antePaid ? '' : ', not started'}`),
+      h('span', { class: 'muted' }, u.entry.practice ? ' · practice, with bots' : ` · ante ${u.entry.ante}${u.entry.antePaid ? '' : ', not started'}`),
       h('p', { class: 'muted small', 'data-test': 'unsettled-status' }, what)),
     h('button', { type: 'button', 'data-test': 'unsettled-open', onclick: () => host.rejoin(u.roundId) }, label));
 }

@@ -1,5 +1,6 @@
 // The look book's two recorded rounds (REPORT.md): the game's simulation,
-// with every player steered by dev/steer.ts, written into look-book.html.
+// with every player steered by src/core/bot/steer.ts (dev/steer.ts when
+// they were recorded), written into look-book.html.
 // Planets press nothing before the round, so the ring keeps its default
 // facing; once it runs, each bot steers with its own style. Deterministic.
 // Run with
@@ -11,7 +12,7 @@ import { DEFAULT_SETTINGS, makeParams } from '../../src/core/sim/params';
 import { JOIN, READY, step, type PlayerInput } from '../../src/core/sim/rules';
 import { scriptPlayerId } from '../../src/core/sim/scripts';
 import { COUNTDOWN, FROZEN, RUNNING, genesis } from '../../src/core/sim/state';
-import { DEFAULT_STYLE, steer, type SteerStyle } from '../../dev/steer';
+import { DEFAULT_STYLE, steer, type SteerStyle } from '../../src/core/bot/steer';
 
 const PAGE = new URL('./look-book.html', import.meta.url);
 const NAMES = ['kepler', 'Mo', 'nova', 'Pia', 'rocky', 'Lumen', 'zed', 'Ines'];

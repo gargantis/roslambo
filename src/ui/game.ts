@@ -1,11 +1,13 @@
 // One round in this tab (PLAN §8.2): the session, its transport and its
 // clock, plus what the screens need: the ledger writes at the confirmed
-// start and freeze (D-10, D-18), the saved state (§10), the witness record
-// and SETTLED (§8.7), hidden-tab handling (D-23), and whether connecting
-// has failed (§8.6).
+// start and freeze (D-10, D-18; none for a practice round, Q-23), the
+// saved state (§10), the witness record and SETTLED (§8.7), hidden-tab
+// handling (D-23), whether connecting has failed (§8.6), and the bots
+// this browser hosts (Q-23).
 
 import { config } from '../config';
-import { forget, noteJoined, payAnte, settle } from '../core/ledger/ledger';
+import { isBot } from '../core/bot/bot';
+import { forget, isPractice, noteJoined, notePractice, payAnte, settle, settlePractice } from '../core/ledger/ledger';
 import type { ResultRecord } from '../core/protocol/messages';
 import { resultRecord } from '../core/results/record';
 import { buildHash } from '../core/session/build';
@@ -42,6 +44,7 @@ export interface Result {
   players: ResultRow[]; // in planet-number order
   me: number; // my index in players, or −1 for a spectator
   balance: number | null; // my balance after crediting, players only
+  practice: boolean; // bots played, so no balance changed (Q-23)
 }
 
 export const PARAMS = makeParams();
@@ -145,6 +148,25 @@ export class Game {
     this.session.ready(on);
   }
 
+  /** Host one more bot in the round (Q-23), if it has a seat for one. */
+  addBot(): boolean {
+    return this.session.addBot();
+  }
+
+  /** The newest bot this browser hosts leaves, before the countdown. */
+  removeBot(): boolean {
+    return this.session.removeBot();
+  }
+
+  canAddBot(): boolean {
+    return this.session.canAddBot();
+  }
+
+  /** The bots this browser hosts. */
+  bots(): string[] {
+    return this.session.hostedBots();
+  }
+
   isPlayer(): boolean {
     return this.session.wantsToPlay || this.session.inRoster();
   }
@@ -188,30 +210,35 @@ export class Game {
     this.rounds.save(this.roundId, t.id, t.final, Date.now());
   }
 
-  /** The ledger follows the confirmed timeline only (D-10). */
+  /** The ledger follows the confirmed timeline only (D-10). The roster
+   *  locks at the countdown, so from then on every peer agrees whether the
+   *  round is practice (Q-23). */
   private ledger(): void {
     const t = this.session.timeline;
     const s = t.final;
     const i = s.planets.findIndex((p) => p.id === this.session.cfg.me);
     const at = Date.now();
+    const practice = isPractice(s.planets.map((p) => p.id));
     if (i >= 0 && !this.joined) {
       this.joined = true;
       this.profile?.update((p) => noteJoined(p, this.roundId, s.ante, at));
     }
     if (i >= 0 && !this.paid && s.phase >= RUNNING && t.isConfirmed(s.countdownStart + PARAMS.countdownTicks)) {
       this.paid = true;
-      this.profile?.update((p) => payAnte(p, this.roundId, s.ante, at));
+      this.profile?.update((p) => (practice ? notePractice(p, this.roundId, s.ante, at) : payAnte(p, this.roundId, s.ante, at)));
     }
     if (s.phase !== FROZEN || !t.isConfirmed(s.freezeTick)) return;
     // The confirmed end (§8.2 step 6): credit, tell the room, and keep the
-    // result for the players who haven't acknowledged it (§8.7).
+    // result for the players who haven't acknowledged it (§8.7). Bots
+    // never ask for it.
     const record = resultRecord(this.roundId, s);
     this.session.resultRecord = record;
     if (i >= 0) {
-      this.profile?.update((p) => settle(p, this.roundId, s.ante, s.planets[i]!.points, at));
+      const points = s.planets[i]!.points;
+      this.profile?.update((p) => (practice ? settlePractice(p, this.roundId, s.ante, points, at) : settle(p, this.roundId, s.ante, points, at)));
       this.session.announceSettled();
     }
-    const waiting = s.planets.map((p) => p.id).filter((p) => p !== this.session.cfg.me && !this.settledSeen.has(p));
+    const waiting = s.planets.map((p) => p.id).filter((p) => p !== this.session.cfg.me && !isBot(p) && !this.settledSeen.has(p));
     this.witnesses?.put(record, waiting, at);
     this.rounds?.remove(this.roundId);
     this.result = {
@@ -221,6 +248,7 @@ export class Game {
       players: s.planets.map((p) => ({ id: p.id, name: p.name, points: p.points })),
       me: i,
       balance: i >= 0 && this.profile ? this.profile.get().balance : null,
+      practice,
     };
   }
 

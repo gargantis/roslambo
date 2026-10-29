@@ -1,10 +1,11 @@
-// A steering bot for the tuning page and the tuning metrics: chase the
-// quarry, veer away from a close hunter. Dev-only: roslambo has no bots
-// (REQUIREMENTS, out of scope), and this never ships.
+// The steering bot: chase the quarry, veer away from a close hunter. The
+// bots players and spectators host fly with it (bot.ts, Q-23), as did the
+// tuning page's planets and the rounds measured in research/tuning, so a
+// change here changes what those measured.
 
-import { hunterOf, quarryOf, RUNNING, type RoundState } from '../src/core/sim/state';
-import { LEFT, RIGHT, THRUST } from '../src/core/sim/rules';
-import type { SimParams } from '../src/core/sim/params';
+import { hunterOf, quarryOf, RUNNING, type RoundState } from '../sim/state';
+import { LEFT, RIGHT, THRUST } from '../sim/rules';
+import type { SimParams } from '../sim/params';
 
 const TWO_PI = 2 * Math.PI;
 const TURN = 4294967296;

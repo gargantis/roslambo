@@ -1,10 +1,12 @@
 // Pre-start, countdown and round (PLAN §11): the arena, the players and
-// their points, and for players the buttons below or beside the arena.
-// The canvas draws predicted ticks every frame, with the predicted
-// buttons for thrust flames; lists follow final ticks (§12), and only
-// change the DOM when their content changes.
+// their points, for players the buttons below or beside the arena, and
+// before the countdown, for players and spectators alike, adding and
+// removing bots (Q-23). The canvas draws predicted ticks every frame, with
+// the predicted buttons for thrust flames; lists follow final ticks (§12),
+// and only change the DOM when their content changes.
 
 import { config } from '../../config';
+import { isBot } from '../../core/bot/bot';
 import { LEFT, RIGHT, THRUST } from '../../core/sim/rules';
 import { COUNTDOWN, PRESTART, RUNNING, hunterOf, quarryOf, type RoundState } from '../../core/sim/state';
 import { interpolate, type DrawnPlanet } from '../../render/interpolate';
@@ -60,6 +62,10 @@ export function arenaScreen(game: Game, host: ArenaHost): Screen {
   const notice = h('p', { class: 'notice', hidden: true });
   const list = h('ol', { class: 'players', 'data-test': 'players' });
   const invite = h('details', { class: 'invite-box' }, h('summary', {}, 'Invite more players'), invitePanel(game.roundId));
+  const addBot = h('button', { type: 'button', class: 'small', 'data-test': 'add-bot', onclick: () => game.addBot() }, 'Add a bot');
+  const removeBot = h('button', { type: 'button', class: 'secondary small', 'data-test': 'remove-bot', onclick: () => game.removeBot() }, 'Remove a bot');
+  const botNote = h('span', { class: 'muted small', 'data-test': 'bot-note' });
+  const bots = h('div', { class: 'bots row', hidden: true }, addBot, removeBot, botNote);
   let inviteShown = false; // opened once while the round lacks players
 
   const left = h('button', { type: 'button', class: 'pad-button', 'aria-label': 'Rotate left (A)' }, '⟲');
@@ -76,7 +82,7 @@ export function arenaScreen(game: Game, host: ArenaHost): Screen {
   const stage = h('div', { class: 'stage' }, h('div', { class: 'arena-box' }, canvas, overlay), pad);
   const el = h('section', { class: 'screen arena-screen' },
     h('header', { class: 'bar' }, status, leave),
-    stage, notice, list, invite);
+    stage, notice, bots, list, invite);
 
   const renderer = new ArenaRenderer(canvas);
   const unbindKeys = bindKeyboard(host.controls);
@@ -138,7 +144,7 @@ export function arenaScreen(game: Game, host: ArenaHost): Screen {
       const detail = s.phase === PRESTART ? (p.readyUntil > s.tick ? 'ready' : 'not ready') : s.phase === COUNTDOWN ? 'ready' : `${p.points} ${p.points === 1 ? 'point' : 'points'}`;
       return h('li', { class: i === mine ? 'me' : '' }, chip(i),
         h('span', { class: 'name' }, playerName(p.name, p.id)),
-        tags.length ? h('span', { class: 'tag' }, tags.join(', ')) : null,
+        ...tags.map((tag) => h('span', { class: 'tag' }, tag)),
         h('span', { class: 'detail' }, detail));
     });
     list.replaceChildren(...rows);
@@ -206,6 +212,14 @@ export function arenaScreen(game: Game, host: ArenaHost): Screen {
         setText(status, statusLine(s));
         updateLists(s);
         invite.hidden = s.phase !== PRESTART;
+        bots.hidden = s.phase !== PRESTART;
+        addBot.disabled = !game.canAddBot();
+        const hosted = game.bots().length;
+        removeBot.hidden = hosted === 0;
+        setText(botNote, [
+          hosted > 0 ? `You host ${hosted} ${hosted === 1 ? 'bot' : 'bots'}.` : '',
+          s.planets.some((p) => isBot(p.id)) ? 'With bots, this round is practice: no balance changes.' : '',
+        ].filter(Boolean).join(' '));
         if (!inviteShown && s.phase === PRESTART && s.planets.length < s.minPlayers) {
           inviteShown = true;
           invite.open = true; // a proposer who played at once still needs the link

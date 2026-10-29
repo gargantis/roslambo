@@ -95,7 +95,7 @@ export class VirtualRoom implements Transport {
     const events: M.TickEvent[] = [];
     if (t - p.joinTick <= EVENT_REPEAT_TICKS) events.push({ back: t - p.joinTick, events: JOIN, name: `Peer ${p.k + 1}` });
     if (p.readyTick >= 0 && t - p.readyTick <= EVENT_REPEAT_TICKS) events.push({ back: t - p.readyTick, events: READY, name: '' });
-    const bytes = M.encodeTick({ t, buttons, voteTick: M.NO_TICK, voteHash: M.ZERO_HASH, phase: 0, histMask, hist, events });
+    const bytes = M.encodeTick({ t, own: true, buttons, voteTick: M.NO_TICK, voteHash: M.ZERO_HASH, phase: 0, histMask, hist, events, bots: [] });
     // A reliable, ordered channel: never overtakes the previous message.
     p.lastAt = Math.max(p.lastAt, now + p.latency + this.rand() * this.jitter);
     p.queue.push({ at: p.lastAt, bytes });

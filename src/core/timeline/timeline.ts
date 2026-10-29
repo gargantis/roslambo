@@ -4,14 +4,15 @@
 // for it by then are its inputs, and a player with none is absent. Every
 // TICK carries the sender's input for tick n + delay, its own inputs for
 // the 16 ticks before (so nothing in flight is lost), its events until
-// they are final, and its vote: the hash of its newest final state. Votes
-// for tick g are tallied at local tick g + window + voteWindow, and late
-// votes still count. A peer on the losing side fetches the winner's STATE
-// and replays from it.
+// they are final, the same for each bot it hosts (Q-23), and its vote: the
+// hash of its newest final state. Votes for tick g are tallied at local
+// tick g + window + voteWindow, and late votes still count. A peer on the
+// losing side fetches the winner's STATE and replays from it.
 //
 // Pure: no DOM, timers or clocks. The caller passes `now` (ms, monotonic)
 // and routes messages in.
 
+import { botIds } from '../bot/bot';
 import { decodeState, encodeState } from '../sim/codec';
 import { hash64 } from '../sim/hash';
 import type { SimParams } from '../sim/params';
@@ -87,6 +88,16 @@ interface OwnEvent {
   name: string;
 }
 
+/** The events of one local sender, this browser's player or one of its
+ *  bots: those for its next input, and those sent but not yet final. */
+interface Outbox {
+  events: number;
+  name: string;
+  sent: OwnEvent[];
+}
+
+const NO_INPUT: Omit<M.BotInput, 'id'> = { buttons: 0, histMask: 0, hist: new Array<number>(M.HISTORY).fill(0), events: [] };
+
 export class Timeline {
   readonly cfg: TimelineConfig;
   readonly stats: TimelineStats;
@@ -101,6 +112,9 @@ export class Timeline {
   sending = false;
   /** This browser's buttons, sampled once per tick when sending. */
   controls: () => number = () => 0;
+  /** The bots this browser hosts (Q-23), with their buttons, sampled once
+   *  per tick. Their inputs ride in this browser's TICKs. */
+  bots = new Map<string, () => number>();
   /** The newest tick whose tally agreed with this browser's state, or that
    *  had no other votes (D-10: only confirmed results count). */
   agreedTo = 0;
@@ -130,9 +144,8 @@ export class Timeline {
   private confirmed = true;
   private quietUntil = 0;
   private warm: { expect: string[]; until: number; from: number } | null = null;
-  private pendingEvents = 0;
-  private pendingName = '';
-  private ownEvents: OwnEvent[] = [];
+  private readonly outbox = new Map<string, Outbox>(); // by sender: me, or one of my bots
+  private readonly botIdsOf = new Map<string, Set<string>>(); // host → the IDs its bots may have
 
   constructor(cfg: TimelineConfig, out: TimelineOut) {
     this.cfg = cfg;
@@ -189,10 +202,31 @@ export class Timeline {
     this.out.sendToPeer(peer, M.encodeStateReq(M.NO_TICK, ''));
   }
 
-  /** Attach events (JOIN, READY, …) to this browser's next input. */
-  queueEvent(events: number, name = ''): void {
-    this.pendingEvents |= events;
-    if (name) this.pendingName = name;
+  /** Attach events (JOIN, READY, …) to the next input of this browser's
+   *  player, or of one of its bots. */
+  queueEvent(events: number, name = '', who = this.cfg.me): void {
+    const o = this.outboxOf(who);
+    o.events |= events;
+    if (name) o.name = name;
+  }
+
+  private outboxOf(who: string): Outbox {
+    let o = this.outbox.get(who);
+    if (!o) {
+      o = { events: 0, name: '', sent: [] };
+      this.outbox.set(who, o);
+    }
+    return o;
+  }
+
+  /** The IDs `host`'s bots may have (Q-23). */
+  private botsOf(host: string): Set<string> {
+    let ids = this.botIdsOf.get(host);
+    if (!ids) {
+      ids = new Set(botIds(host));
+      this.botIdsOf.set(host, ids);
+    }
+    return ids;
   }
 
   setOneWay(player: string, ms: number): void {
@@ -286,41 +320,62 @@ export class Timeline {
   // ---- per tick ----
 
   private stepLocal(n: number, now: number, send: boolean): void {
-    if (this.sending && send) this.send(n, now);
+    if (send) this.send(n, now);
     this.finalizeTo(n - this.cfg.window);
     this.tallyTo(Math.min(n - this.cfg.window - this.cfg.voteWindow, this.finalTick), now);
   }
 
+  /** One TICK: this browser's input if it plays, its bots' (Q-23), and its vote. */
   private send(n: number, now: number): void {
-    const me = this.cfg.me;
+    if (!this.sending && this.bots.size === 0) return;
     const t = n + this.cfg.delay;
-    const buttons = this.controls() & 7;
-    const events = this.pendingEvents;
-    const name = this.pendingName;
-    this.pendingEvents = 0;
-    this.pendingName = '';
-    this.setInput(me, t, buttons, events, name);
-    if (events !== 0) this.ownEvents.push({ t, events, name });
-    this.ownEvents = this.ownEvents.filter((e) => e.t > this.finalTick && t - e.t <= 255);
-    let histMask = 0;
-    const hist: number[] = [];
-    for (let k = 0; k < M.HISTORY; k++) {
-      const x = this.inputsAt(t - 1 - k)?.get(me);
-      hist.push(x ? x.buttons : 0);
-      if (x) histMask |= 1 << k;
-    }
+    const mine = this.sending ? this.input(this.cfg.me, this.controls, t) : NO_INPUT;
+    const bots = [...this.bots].map(([id, controls]) => ({ id, ...this.input(id, controls, t) }));
+    for (const id of this.outbox.keys()) if (id !== this.cfg.me && !this.bots.has(id)) this.outbox.delete(id);
     const vt = this.finalTick;
     this.out.broadcast(M.encodeTick({
-      t, buttons, voteTick: this.votesFor(vt) ? vt : M.NO_TICK, voteHash: this.hashAt(vt),
-      phase: Math.min(0.99998, Math.max(0, this.clock(now) - n)), histMask, hist,
-      events: this.ownEvents.map((e) => ({ back: t - e.t, events: e.events, name: e.name })),
+      t, own: this.sending, ...mine, bots, voteTick: this.votesFor(vt) ? vt : M.NO_TICK, voteHash: this.hashAt(vt),
+      phase: Math.min(0.99998, Math.max(0, this.clock(now) - n)),
     }));
     this.stats.sent++;
   }
 
-  /** Whether this browser votes on tick t: a confirmed player in its roster. */
+  /** A local sender's input for tick t: its buttons, its inputs for the
+   *  16 ticks before, and its events until they are final. */
+  private input(id: string, controls: () => number, t: number): Omit<M.BotInput, 'id'> {
+    const o = this.outboxOf(id);
+    const buttons = controls() & 7;
+    const { events, name } = o;
+    o.events = 0;
+    o.name = '';
+    this.setInput(id, t, buttons, events, name);
+    if (events !== 0) o.sent.push({ t, events, name });
+    o.sent = o.sent.filter((e) => e.t > this.finalTick && t - e.t <= 255);
+    let histMask = 0;
+    const hist: number[] = [];
+    for (let k = 0; k < M.HISTORY; k++) {
+      const x = this.inputsAt(t - 1 - k)?.get(id);
+      hist.push(x ? x.buttons : 0);
+      if (x) histMask |= 1 << k;
+    }
+    return { buttons, histMask, hist, events: o.sent.map((e) => ({ back: t - e.t, events: e.events, name: e.name })) };
+  }
+
+  /** Whether this browser votes on tick t: confirmed, and in control of a
+   *  planet in its roster there, its player's or a bot's. It has one vote
+   *  however many planets it controls (Q-23). */
   private votesFor(t: number): boolean {
-    return this.sending && this.confirmed && t > this.quietUntil && this.rosterAt(t).includes(this.cfg.me);
+    if (!this.confirmed || t <= this.quietUntil) return false;
+    const roster = this.rosterAt(t);
+    return (this.sending && roster.includes(this.cfg.me)) || roster.some((p) => this.bots.has(p));
+  }
+
+  /** Whether a vote from `voter` counts in a roster: it controlled one of
+   *  its planets, its own or one of its bots' (Q-23). */
+  private votesIn(voter: string, roster: Set<string>): boolean {
+    if (roster.has(voter)) return true;
+    for (const b of this.botsOf(voter)) if (roster.has(b)) return true;
+    return false;
   }
 
   private finalizeTo(target: number): void {
@@ -412,15 +467,16 @@ export class Timeline {
     if (this.stats.log.length < 300) this.stats.log.push([this.localTick, e]);
   }
 
-  /** Plurality of the votes from players in my roster at g, the smallest
-   *  hash on a tie (D-9). Null with no votes or no state. */
+  /** Plurality of the votes from players in my roster at g, and hosts of
+   *  bots in it (Q-23), the smallest hash on a tie (D-9). Null with no
+   *  votes or no state. */
   private tally(g: number): { win: string; agree: boolean; split: boolean } | null {
     const vs = this.votes.get(g);
     const mine = this.hashAt(g);
     if (!vs || !mine) return null;
     const roster = new Set(this.rosterAt(g));
     const counts = new Map<string, number>();
-    for (const [player, h] of vs) if (roster.has(player)) counts.set(h, (counts.get(h) ?? 0) + 1);
+    for (const [voter, h] of vs) if (this.votesIn(voter, roster)) counts.set(h, (counts.get(h) ?? 0) + 1);
     if (counts.size === 0) return null;
     let win = '';
     let best = 0;
@@ -451,24 +507,14 @@ export class Timeline {
 
   // ---- messages ----
 
-  /** A TICK from `origin` (a player ID), direct or forwarded. */
+  /** A TICK from `origin` (a player ID), direct or forwarded: its input,
+   *  its bots' (only bots whose IDs derive from it, Q-23), and its vote. */
   onTick(origin: string, m: M.Tick, now: number): void {
     if (origin === this.cfg.me) return;
     this.stats.received++;
     if (!this.started) return;
-    if (m.t <= this.finalTick) {
-      this.stats.late++;
-      this.note(`late ${origin.slice(-2)} t${m.t} by ${this.finalTick - m.t + 1}`);
-    }
-    else this.setInput(origin, m.t, m.buttons, 0, '', now);
-    for (let k = 0; k < M.HISTORY; k++) {
-      if ((m.histMask & (1 << k)) !== 0) this.setInput(origin, m.t - 1 - k, m.hist[k]!, 0, '', now);
-    }
-    for (const e of m.events) {
-      const et = m.t - e.back;
-      const x = this.inputsAt(et)?.get(origin);
-      this.setInput(origin, et, x ? x.buttons : 0, e.events, e.name, now);
-    }
+    if (m.own) this.take(origin, m.t, m, now);
+    for (const b of m.bots) if (this.botsOf(origin).has(b.id)) this.take(b.id, m.t, b, now);
     if (m.voteTick !== M.NO_TICK && m.voteHash) {
       this.vote(m.voteTick, origin, m.voteHash);
       if (m.voteTick <= this.lastTallied) this.lateVote(m.voteTick, now);
@@ -483,6 +529,24 @@ export class Timeline {
     const off = m.t - this.cfg.delay + m.phase + ow - this.clock(now);
     const prev = this.offset.get(origin);
     this.offset.set(origin, prev === undefined ? off : prev + EWMA * (off - prev));
+  }
+
+  /** One planet's input from a TICK: for tick t, the 16 ticks before, and its events. */
+  private take(id: string, t: number, x: Omit<M.BotInput, 'id'>, now: number): void {
+    if (t <= this.finalTick) {
+      this.stats.late++;
+      this.note(`late ${id.slice(-2)} t${t} by ${this.finalTick - t + 1}`);
+    }
+    else this.setInput(id, t, x.buttons, 0, '', now);
+    for (let k = 0; k < M.HISTORY; k++) {
+      if ((x.histMask & (1 << k)) !== 0) this.setInput(id, t - 1 - k, x.hist[k]!, 0, '', now);
+    }
+    for (const e of x.events) {
+      const et = t - e.back;
+      const y = this.inputsAt(et)?.get(id);
+      this.setInput(id, et, y ? y.buttons : 0, e.events, e.name, now);
+    }
+    if (!this.firstHeard.has(id)) this.firstHeard.set(id, now);
   }
 
   private rebalance(now: number): void {
@@ -592,7 +656,8 @@ export class Timeline {
       // Warm-up: hold finalisation until every active player has been heard
       // from, so inputs in flight when the STATE was built aren't lost.
       const expect = new Set<string>();
-      for (const tick of m.inputs) for (const x of tick) if (x.player !== this.cfg.me) expect.add(x.player);
+      const mine = this.botsOf(this.cfg.me); // a host back from a reload hears nothing from its own bots
+      for (const tick of m.inputs) for (const x of tick) if (x.player !== this.cfg.me && !mine.has(x.player)) expect.add(x.player);
       this.confirmed = false;
       this.warm = expect.size > 0 ? { expect: [...expect], until: now + this.cfg.warmupMs, from: now } : null;
       this.finalizeTo(target - this.cfg.window);

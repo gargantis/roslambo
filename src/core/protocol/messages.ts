@@ -4,7 +4,7 @@
 import { JOIN, LEAVE, READY, UNREADY } from '../sim/rules';
 import { MAX_MESSAGE, Reader, Writer } from './bytes';
 
-export const PROTOCOL_VERSION = 1;
+export const PROTOCOL_VERSION = 2; // 2: TICKs carry bots' inputs (Q-23)
 export const NO_TICK = 0xffffffff;
 export const ZERO_HASH = '0000000000000000';
 export const HISTORY = 16; // ticks of the sender's own input repeated in each TICK (M0)
@@ -58,9 +58,22 @@ export interface TickEvent {
   name: string; // with JOIN
 }
 
+/** A hosted bot's input, in its host's TICK (Q-23): the same fields as
+ *  the host's own input, for the same tick t. */
+export interface BotInput {
+  id: string;
+  buttons: number;
+  histMask: number;
+  hist: number[];
+  events: TickEvent[];
+}
+
 export interface Tick {
   type: typeof T.TICK;
   t: number;
+  /** Whether the sender's own input is here: not for a spectator who only
+   *  hosts bots (Q-23). Without it, buttons, history and events are 0. */
+  own: boolean;
   buttons: number;
   voteTick: number;
   voteHash: string;
@@ -68,6 +81,7 @@ export interface Tick {
   histMask: number;
   hist: number[]; // HISTORY entries, tick t − 1 first
   events: TickEvent[];
+  bots: BotInput[];
 }
 
 export interface Fwd {
@@ -164,23 +178,41 @@ export function encodeRefuse(reason: number): Uint8Array {
   return new Writer().u8(T.REFUSE).u8(reason).done();
 }
 
-function writeTick(w: Writer, m: Omit<Tick, 'type'>): void {
-  w.u8(T.TICK).u32(m.t).u8(m.buttons & 7).u32(m.voteTick).hex(m.voteHash || ZERO_HASH, 8)
-    .u16(Math.min(65535, Math.max(0, Math.floor(m.phase * 65536)))).u16(m.histMask & 0xffff);
+/** The history mask, then 16 × 3 bits of buttons, tick t − 1 first. */
+function writeHistory(w: Writer, histMask: number, hist: number[]): void {
+  w.u16(histMask & 0xffff);
   let lo = 0;
   let hi = 0;
-  for (let k = 0; k < 8; k++) lo |= (m.hist[k]! & 7) << (3 * k);
-  for (let k = 0; k < 8; k++) hi |= (m.hist[8 + k]! & 7) << (3 * k);
+  for (let k = 0; k < 8; k++) lo |= (hist[k]! & 7) << (3 * k);
+  for (let k = 0; k < 8; k++) hi |= (hist[8 + k]! & 7) << (3 * k);
   w.u8(lo & 0xff).u8((lo >>> 8) & 0xff).u8((lo >>> 16) & 0xff).u8(hi & 0xff).u8((hi >>> 8) & 0xff).u8((hi >>> 16) & 0xff);
+}
+
+function writeTickEvents(w: Writer, events: TickEvent[]): void {
   let n = 0;
-  for (const e of m.events) n += eventCount(e.events);
+  for (const e of events) n += eventCount(e.events);
   w.u8(n);
-  for (const e of m.events) {
+  for (const e of events) {
     for (const [bit, kind] of BIT_KINDS) {
       if ((e.events & bit) === 0) continue;
       w.u8(e.back).u8(kind);
       if (bit === JOIN) w.string(e.name);
     }
+  }
+}
+
+const NOT_OWN = 0x80; // the buttons byte's flag: no input of the sender's own (Q-23)
+
+function writeTick(w: Writer, m: Omit<Tick, 'type'>): void {
+  w.u8(T.TICK).u32(m.t).u8((m.buttons & 7) | (m.own ? 0 : NOT_OWN)).u32(m.voteTick).hex(m.voteHash || ZERO_HASH, 8)
+    .u16(Math.min(65535, Math.max(0, Math.floor(m.phase * 65536))));
+  writeHistory(w, m.histMask, m.hist);
+  writeTickEvents(w, m.events);
+  w.u8(m.bots.length);
+  for (const b of m.bots) {
+    w.hex(b.id, 16).u8(b.buttons & 7);
+    writeHistory(w, b.histMask, b.hist);
+    writeTickEvents(w, b.events);
   }
 }
 
@@ -251,12 +283,7 @@ export function encodeSettled(player: string): Uint8Array {
 
 // ---- decoding ----
 
-function readTick(r: Reader): Tick | null {
-  const t = r.u32();
-  const buttons = r.u8() & 7;
-  const voteTick = r.u32();
-  const voteHash = r.hex(8);
-  const phase = r.u16() / 65536;
+function readHistory(r: Reader): { histMask: number; hist: number[] } | null {
   const histMask = r.u16();
   const b = r.bytes(6);
   if (r.bad) return null;
@@ -265,6 +292,10 @@ function readTick(r: Reader): Tick | null {
   const hist: number[] = [];
   for (let k = 0; k < 8; k++) hist.push((lo >>> (3 * k)) & 7);
   for (let k = 0; k < 8; k++) hist.push((hi >>> (3 * k)) & 7);
+  return { histMask, hist };
+}
+
+function readTickEvents(r: Reader): TickEvent[] | null {
   const n = r.u8();
   const byBack = new Map<number, TickEvent>();
   for (let i = 0; i < n; i++) {
@@ -277,8 +308,30 @@ function readTick(r: Reader): Tick | null {
     if (bit === JOIN) e.name = name;
     byBack.set(back, e);
   }
+  return r.bad ? null : [...byBack.values()];
+}
+
+function readTick(r: Reader): Tick | null {
+  const t = r.u32();
+  const flags = r.u8();
+  const voteTick = r.u32();
+  const voteHash = r.hex(8);
+  const phase = r.u16() / 65536;
+  const history = readHistory(r);
+  const events = history && readTickEvents(r);
+  if (!events) return null;
+  const bots: BotInput[] = [];
+  const n = r.u8();
+  for (let i = 0; i < n && !r.bad; i++) {
+    const id = r.hex(16);
+    const buttons = r.u8() & 7;
+    const h = readHistory(r);
+    const e = h && readTickEvents(r);
+    if (!e) return null;
+    bots.push({ id, buttons, ...h, events: e });
+  }
   if (r.bad) return null;
-  return { type: T.TICK, t, buttons, voteTick, voteHash, phase, histMask, hist, events: [...byBack.values()] };
+  return { type: T.TICK, t, own: (flags & NOT_OWN) === 0, buttons: flags & 7, voteTick, voteHash, phase, ...history, events, bots };
 }
 
 function readInputEvents(r: Reader): { events: number; name: string } | null {

@@ -6,7 +6,7 @@
 // Neither takes part in a round: opening it is the player's choice.
 
 import { config } from '../config';
-import { forget, settle, type LedgerEntry } from '../core/ledger/ledger';
+import { forget, isPractice, settle, settlePractice, type LedgerEntry } from '../core/ledger/ledger';
 import * as M from '../core/protocol/messages';
 import { ResultsPeer } from '../core/session/results-peer';
 import type { RoomPeer } from '../core/session/room-peer';
@@ -141,7 +141,8 @@ export class Background {
       const peer = new ResultsPeer({ me: me.id, name: me.name, build: this.o.build, roundId, role: M.ROLE.SETTLER }, this.linkFor(this.settlerRooms, roundId), {
         onResult: (r) => {
           const points = r.players.find((p) => p.player === me.id)!.points;
-          this.o.profile.update((p) => settle(p, roundId, entry.ante, points, Date.now()));
+          const practice = isPractice(r.players.map((p) => p.player)); // Q-23: nothing was paid
+          this.o.profile.update((p) => (practice ? settlePractice : settle)(p, roundId, entry.ante, points, Date.now()));
           this.o.rounds.remove(roundId);
           this.statuses.delete(roundId);
           this.changed();

@@ -9,7 +9,7 @@ import { writeFileSync } from 'node:fs';
 import { makeParams, DEFAULT_SETTINGS, type SimSettings, type SimParams } from '../src/core/sim/params';
 import { step, JOIN, READY, THRUST, type PlayerInput } from '../src/core/sim/rules';
 import { genesis, RUNNING, FROZEN, type RoundState } from '../src/core/sim/state';
-import { steer, prograde, DEFAULT_STYLE, type SteerStyle } from './steer';
+import { steer, prograde, DEFAULT_STYLE, type SteerStyle } from '../src/core/bot/steer';
 import { LEFT, RIGHT } from '../src/core/sim/rules';
 
 const id = (k: number): string => (k + 1).toString(16).padStart(32, '0');

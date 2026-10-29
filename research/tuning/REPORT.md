@@ -13,7 +13,7 @@
 | Ring break-up | Seconds after release, with nobody pressing anything, until a ring is 10% out of round |
 | Escape | Two planets at rest, touching; one thrusts straight away while the other coasts. Seconds until they're 0.3 apart. |
 | Escape margin | Thrust ÷ (2 × the strongest pull at any distance). Both planets feel the pull, so escape needs a margin above 1. |
-| Rounds | 12 rounds each with 3, 5 and 8 steering bots (`dev/steer.ts`: chase the quarry, veer from a close hunter), ante 5: median length, points moved per minute, top speed |
+| Rounds | 12 rounds each with 3, 5 and 8 steering bots (`dev/steer.ts`, now `src/core/bot/steer.ts`: chase the quarry, veer from a close hunter), ante 5: median length, points moved per minute, top speed |
 
 Steering bots aren't people, so round lengths are only a guide. Human rounds will probably run longer.
 

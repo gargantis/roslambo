@@ -6,7 +6,7 @@
 **Setup:** open `look-book.html` in a browser. It contacts nothing; the photos and the recorded rounds are inline.
 - The samples use the game's geometry and palette: planet radius 0.03 arena sides, the ring of radius 0.18, the 12 colours of `src/render/palette.ts`, and the renderer's line widths.
 - Each specimen is drawn at two sizes: a 760 px arena, the largest on a desktop (r = 22.8 px), and a 380 px arena, a Pixel 8a held upright (r = 11.4 px).
-- The moving samples replay two rounds recorded tick by tick from `src/core/sim`, with every player steered by `dev/steer.ts`, each with its own gain and nerve: 8 planets with an ante of 5, and 5 planets with an ante of 4. The countdown was cut to 3 s for the recordings.
+- The moving samples replay two rounds recorded tick by tick from `src/core/sim`, with every player steered by `dev/steer.ts` (now `src/core/bot/steer.ts`), each with its own gain and nerve: 8 planets with an ante of 5, and 5 planets with an ante of 4. The countdown was cut to 3 s for the recordings.
 
 ## What the page shows
 

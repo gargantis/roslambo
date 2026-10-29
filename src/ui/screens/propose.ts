@@ -1,6 +1,6 @@
 // Propose (PLAN §11): ante, minimum and maximum, then the link and code to
-// share. The proposer holds the round until someone arrives, and can then
-// play, watch or leave (REQUIREMENTS "Proposing").
+// share. The proposer holds the round until someone arrives, and can play,
+// watch or leave at once (REQUIREMENTS "Proposing").
 
 import { config, playersCap } from '../../config';
 import type { RoundSettings } from '../../core/sim/state';
@@ -62,12 +62,13 @@ export interface CreatedHost {
 }
 
 /** After Create: share, and keep the page open. Play at once (the owner,
- *  2026-10-25); Watch once someone has arrived, since there is nothing to
- *  watch before; Leave at any time. */
+ *  2026-10-25), or watch at once: a spectator can fill the round with
+ *  bots, so there is something to watch before anyone arrives (Q-23).
+ *  Leave at any time. */
 export function createdScreen(game: Game, host: CreatedHost): Screen {
   const waiting = h('p', { class: 'status', 'data-test': 'created-status', 'aria-live': 'polite' });
   const play = h('button', { type: 'button', class: 'primary', 'data-test': 'play', onclick: () => host.play() }, 'Play');
-  const watch = h('button', { type: 'button', disabled: true, 'data-test': 'watch', onclick: () => host.watch() }, 'Watch');
+  const watch = h('button', { type: 'button', 'data-test': 'watch', onclick: () => host.watch() }, 'Watch');
   const el = h('section', { class: 'screen' },
     h('h1', {}, 'Share this round'),
     h('p', {}, 'Send the link, or read out the code. Keep this page open until someone joins: until then, the round exists only here.'),
@@ -80,9 +81,7 @@ export function createdScreen(game: Game, host: CreatedHost): Screen {
     el,
     frame(): void {
       const n = game.peers();
-      const arrived = n > 0;
-      watch.disabled = !arrived;
-      setText(waiting, arrived ? `${n} ${n === 1 ? 'person has' : 'people have'} joined.` : 'Nobody has joined yet. You can play now, or wait to watch.');
+      setText(waiting, n > 0 ? `${n} ${n === 1 ? 'person has' : 'people have'} joined.` : 'Nobody has joined yet. Play or watch now, and add bots to the round if you like.');
     },
   };
 }

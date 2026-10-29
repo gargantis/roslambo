@@ -262,7 +262,9 @@ export class App {
   }
 
   /** Q-8: every press leads to the same derived round. Whoever finds it
-   *  empty proposes it with the same settings; two at once merge (D-12). */
+   *  empty proposes it with the same settings; two at once merge (D-12).
+   *  This browser's bots come along (Q-23), so solo play goes on in one
+   *  click. */
   private async playAgain(old: Game, r: Result): Promise<void> {
     const id = await nextRoundId(old.roundId);
     if (this.game !== old) return; // left meanwhile
@@ -272,6 +274,7 @@ export class App {
     const g = this.newGame(id);
     if (!old.session.againSeen) g.propose(r.settings);
     g.play();
+    for (let k = old.bots().length; k > 0; k--) g.addBot();
     this.arena(g);
   }
 

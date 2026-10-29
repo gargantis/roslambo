@@ -1,6 +1,7 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
-import { forget, noteJoined, payAnte, prune, settle, unsettled, type Profile } from './ledger';
+import { botId } from '../bot/bot';
+import { forget, isPractice, noteJoined, notePractice, payAnte, prune, settle, settlePractice, unsettled, type Profile } from './ledger';
 
 const fresh = (): Profile => ({ v: 1, playerId: 'a'.repeat(32), name: '', balance: 0, rounds: {} });
 const DAY = 86_400_000;
@@ -56,6 +57,34 @@ describe('the ledger (P6)', () => {
     settle(p, 'recent', 2, 2, 29 * DAY);
     expect(prune(p, 31 * DAY, 30 * DAY)).toBe(true);
     expect(Object.keys(p.rounds).sort()).toEqual(['recent', 'waiting']);
+  });
+
+  it('neither pays nor credits a practice round, and forgets it at its result (Q-23)', () => {
+    const p = fresh();
+    noteJoined(p, 'R', 5, 0);
+    expect(notePractice(p, 'R', 5, 1)).toBe(true);
+    expect(notePractice(p, 'R', 5, 2)).toBe(false);
+    expect(p.rounds['R']).toMatchObject({ practice: true, antePaid: false, settled: false });
+    expect(unsettled(p)).toEqual([]);
+    expect(settlePractice(p, 'R', 5, 9, 3)).toBe(true);
+    expect(settlePractice(p, 'R', 5, 9, 4)).toBe(false);
+    expect(p.rounds['R']).toBeUndefined();
+    // A result that is the first news of the start forgets the round too.
+    noteJoined(p, 'S', 5, 5);
+    expect(settlePractice(p, 'S', 5, 0, 6)).toBe(true);
+    expect(p.balance).toBe(0);
+    // A paid ante is never stranded: that round settles as usual.
+    payAnte(p, 'T', 5, 7);
+    expect(notePractice(p, 'T', 5, 8)).toBe(false);
+    expect(settlePractice(p, 'T', 5, 9, 9)).toBe(true);
+    expect(p.balance).toBe(4);
+  });
+
+  it('tells a practice round by its players: one of them is a bot', () => {
+    const me = 'a'.repeat(32);
+    expect(isPractice([me, 'b'.repeat(32)])).toBe(false);
+    expect(isPractice([me, botId(me, 0)])).toBe(true);
+    expect(isPractice([botId(me, 0), botId(me, 1), botId(me, 2)])).toBe(true);
   });
 
   it('forgets a round that never started for this player, but never one it paid for', () => {
