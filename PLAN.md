@@ -1101,7 +1101,7 @@ Rules:
 
 **wrangler.jsonc:** assets only, `./dist`, `observability.enabled: false`, the domain once Q-9 is answered (A.7).
 
-**CI:** GitHub Actions on push and pull request: `npm ci`, `npx playwright install --with-deps`, `npm run check`. No secrets in CI. This needs Actions enabled on `reindoer/roslambo`.
+**CI:** GitHub Actions on push and pull request: `npm ci`, `npx playwright install --with-deps`, `npm run check`. No secrets in CI. This needs Actions enabled on `gargantis/roslambo`.
 
 **README:** how to run, build and deploy; secure context (https or localhost); supported browsers; the privacy notes of §18; known limits (C-1, C-5).
 
