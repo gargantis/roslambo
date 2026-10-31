@@ -7,7 +7,7 @@ import { expect, test } from '@playwright/test';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { cpus } from 'node:os';
 import { hashAt, launch, openNetPage, report } from './lib/browsers';
-import { startNostrRelay } from './lib/nostr-relay.mjs';
+import { startNostrRelay } from '../vendor/hermet/nostr-relay.mjs';
 
 const SECONDS = Number(process.env.LOAD_SECONDS ?? 90);
 

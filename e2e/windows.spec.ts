@@ -7,7 +7,7 @@
 
 import { expect, test, type Page } from '@playwright/test';
 import { launch, type Engine } from './lib/browsers';
-import { startNostrRelay } from './lib/nostr-relay.mjs';
+import { startNostrRelay } from '../vendor/hermet/nostr-relay.mjs';
 import type { Inspection } from '../src/ui/app';
 
 // Each page can be "behind another window": hidden, and its timers held to one a second.

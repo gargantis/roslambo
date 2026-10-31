@@ -5,7 +5,7 @@
 
 import { expect, test } from '@playwright/test';
 import { hashAt, launch, openNetPage, report, type NetReport } from './lib/browsers';
-import { startNostrRelay } from './lib/nostr-relay.mjs';
+import { startNostrRelay } from '../vendor/hermet/nostr-relay.mjs';
 
 test('three engines play a round to the freeze and agree', async ({ baseURL }) => {
   test.setTimeout(180_000);

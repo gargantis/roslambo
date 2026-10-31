@@ -6,7 +6,7 @@
 
 import { expect, test, type Browser, type Page } from '@playwright/test';
 import { launch } from './lib/browsers';
-import { startNostrRelay } from './lib/nostr-relay.mjs';
+import { startNostrRelay } from '../vendor/hermet/nostr-relay.mjs';
 
 async function open(b: Browser, base: string, relay: string, k: number): Promise<{ page: Page; errors: string[] }> {
   const ctx = await b.newContext();

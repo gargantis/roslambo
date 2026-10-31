@@ -10,6 +10,8 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
+        with:
+          submodules: true # vendor/hermet, the shared gate tooling
       - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
@@ -25,6 +27,8 @@ jobs:
     runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v7
+        with:
+          submodules: true
       - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc

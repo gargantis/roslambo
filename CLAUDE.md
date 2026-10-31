@@ -19,6 +19,7 @@ That is lint, public-scan, typecheck, unit tests, build with the dist audit, and
 - Only `src/net/trystero.ts` imports Trystero (D-13). Build its room config as a literal typed against `JoinRoomConfig`: an untyped spread made amorfus silently fall back to the library's own relays.
 - Only `src/storage/**` touches browser storage (D-18).
 - Every external host is listed in `third-party.json`; the dist audit fails on any other.
+- `vendor/hermet` is the gate tooling shared with amorfus (D-28): public-scan, the dist audit, the licence notices, the exact-ops rule, the local Nostr relay and the ESLint and tsconfig bases. It is a pinned submodule of gargantis/hermet; roslambo's own policy stays in `scripts/` and the configs. Change shared code in gargantis/hermet, then move the pin. Never edit `vendor/hermet` in place.
 - `research/lockstep/` is the throwaway M0 spike (D-26), with its own toolchain. Product code never imports it.
 - The test pages (`#test=determinism`, `net`, `frames`) and `window.roslamboTest` (set by end-to-end tests before load) must never change what a normal page does.
 

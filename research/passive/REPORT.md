@@ -4,7 +4,7 @@
 **Answers:** PLAN M5's first step. Before witnesses wait in passive rooms (§8.7), does Trystero 0.26.0's `passive` mode do what the plan assumes, and at what cost to the relays (C-6)?
 **Setup:** `npx playwright test -c research/passive/playwright.config.ts` drives the dev-only page `dev/passive-probe.html` on the Vite dev server.
 - Headless Chromium 156, one page per peer, on one machine.
-- The local Nostr relay (`e2e/lib/nostr-relay.mjs`), which counts what each connection sends it.
+- The local Nostr relay (then `e2e/lib/nostr-relay.mjs`, now `vendor/hermet/nostr-relay.mjs`), which counts what each connection sends it.
 - Raw numbers are in `results.json`.
 
 The pages:

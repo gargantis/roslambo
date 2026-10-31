@@ -8,7 +8,7 @@
 
 import { writeFileSync } from 'node:fs';
 import { chromium, expect, test, type Browser, type Page } from '@playwright/test';
-import { startNostrRelay } from '../../e2e/lib/nostr-relay.mjs';
+import { startNostrRelay } from '../../vendor/hermet/nostr-relay.mjs';
 
 interface ProbeEvent { at: number; room: string; kind: string; peer: string; data?: string }
 

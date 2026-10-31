@@ -7,7 +7,7 @@
 import { expect, test, type Browser, type BrowserContext, type Page } from '@playwright/test';
 import type { Inspection } from '../src/ui/app';
 import { launch } from './lib/browsers';
-import { startNostrRelay } from './lib/nostr-relay.mjs';
+import { startNostrRelay } from '../vendor/hermet/nostr-relay.mjs';
 
 interface Player {
   ctx: BrowserContext;

@@ -14,9 +14,10 @@ Next is M6, acceptance and release. It needs the networks and people for the man
 
 ## Run
 
-Needs Node 22.12 or later (`.nvmrc`).
+Needs Node 22.12 or later (`.nvmrc`). The gate's tooling, shared with amorfus, is the submodule `vendor/hermet`: clone with `--recurse-submodules`, or fetch it once after cloning.
 
 ```sh
+git submodule update --init   # vendor/hermet, once
 npm install
 npm run dev        # http://localhost:5173
 ```

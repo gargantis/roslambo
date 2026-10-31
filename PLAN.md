@@ -556,6 +556,16 @@ Each decision gives the choice, the options rejected, and the cost if it's wrong
   - Findings go in `research/lockstep/REPORT.md`.
 - **Cost if wrong:** some code is written twice, which is the point of a throwaway.
 
+**D-28 — The gate tooling is shared with amorfus (the owner's request, 2026-10-30).**
+- **Choice:**
+  - public-scan, the dist audit, the licence notices, the exact-ops rule, the local Nostr relay, and the ESLint and tsconfig bases live in `gargantis/hermet`, a submodule at `vendor/hermet` that amorfus mounts too. They were ported from amorfus (§13), and the two copies had drifted apart.
+  - roslambo's own policy stays here: `scripts/audit-dist.mjs` passes the "stun" exception, `scripts/public-scan.mjs` names the denylist variable, and the configs add roslambo's rules to the shared bases.
+  - The gate runs `vendor/hermet`'s tests too, under roslambo's own ESLint, ws and vitest.
+- **Rejected:**
+  - Two copies: a fix in one never reached the other. The M5 tokenizer stayed out of amorfus until the move.
+  - An npm package: a registry to publish to and versions to bump, for code only the gate runs.
+- **Cost if wrong:** a submodule to fetch after cloning, and a pin to move when the shared code changes.
+
 ### Bots
 
 **D-27 — Bots ride in their host's TICK (Q-23, 2026-10-28).**
@@ -1097,11 +1107,12 @@ Rules:
 - No source maps, no `.md` files, nothing matching a secret pattern.
 - *M4:* a URL's scheme must start a word. Minified CSS such as `grid-template-rows:auto` contains `ws:auto`, which the scan had read as a WebSocket URL to a host named "auto". The self-test now includes that case.
 - *M5:* the JavaScript scan finds string literals with a small tokenizer instead of a regular expression. A regular expression can't follow template literals nested inside `${…}`, and it read code between two of them as a string. A host must also start with a letter or digit, so the sentence "must start with wss://." names none. Both cases are in the self-test.
+- *D-28:* the audit is shared with amorfus, in `vendor/hermet`. A root-absolute URL is read only where a string starts: in `` `${n}/8` `` the part after the expression continues the string.
 - A self-test with planted failures.
 
 **wrangler.jsonc:** assets only, `./dist`, `observability.enabled: false`, the domain once Q-9 is answered (A.7).
 
-**CI:** GitHub Actions on push and pull request: `npm ci`, `npx playwright install --with-deps`, `npm run check`. No secrets in CI. This needs Actions enabled on `gargantis/roslambo`.
+**CI:** GitHub Actions on push and pull request: a checkout with submodules (D-28), `npm ci`, `npx playwright install --with-deps`, `npm run check`. No secrets in CI. This needs Actions enabled on `gargantis/roslambo`.
 
 **README:** how to run, build and deploy; secure context (https or localhost); supported browsers; the privacy notes of §18; known limits (C-1, C-5).
 
