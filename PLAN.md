@@ -421,7 +421,7 @@ Each decision gives the choice, the options rejected, and the cost if it's wrong
 - **Choice:**
   - `@trystero-p2p/nostr` 0.26.0, pinned exactly. One binary action carries every message (§9). `maxReceiveBytes` is 1 MiB; the default is 256 MiB.
   - Only `src/net/trystero.ts` imports the library.
-  - The room config is an object literal typed against `JoinRoomConfig`. This is amorfus's lesson: an untyped spread there silently fell back to the library's own relays.
+  - The room config is an object literal typed against `JoinRoomConfig`. This is amorfus's lesson: an untyped spread there silently fell back to the library's own relays. Since amorfus moved to 0.26.0 too, `vendor/hermet/room-config.ts` builds it for both (D-28).
   - 0.26.0 adds a per-room receive budget, payload size checks, receive approval and pending-data timeouts. Together they cover what amorfus patched; M0 floods it to confirm.
   - Optional, only if M0 shows stalls on the reliable channel: a negotiated, unordered, no-retransmit channel for input messages. Trystero shares one connection per remote peer across rooms and keeps it about 123 s after leaving, so that channel would need a room tag on every frame, as in amorfus.
 - **Rejected:**
@@ -561,9 +561,10 @@ Each decision gives the choice, the options rejected, and the cost if it's wrong
   - public-scan, the dist audit, the licence notices, the exact-ops rule, the local Nostr relay, and the ESLint and tsconfig bases live in `gargantis/hermet`, a submodule at `vendor/hermet` that amorfus mounts too. They were ported from amorfus (§13), and the two copies had drifted apart.
   - roslambo's own policy stays here: `scripts/audit-dist.mjs` passes the "stun" exception, `scripts/public-scan.mjs` names the denylist variable, and the configs add roslambo's rules to the shared bases.
   - The gate runs `vendor/hermet`'s tests too, under roslambo's own ESLint, ws and vitest.
+  - Once amorfus moved to Trystero 0.26.0 (2026-10-31), the room config's builder moved too: `vendor/hermet/room-config.ts` builds the §8.8 config from what `src/net/room-config.ts` passes it, roslambo's relays, ICE servers, 1 MiB budget and passive rooms.
 - **Rejected:**
   - Two copies: a fix in one never reached the other. The M5 tokenizer stayed out of amorfus until the move.
-  - An npm package: a registry to publish to and versions to bump, for code only the gate runs.
+  - An npm package: a registry to publish to and versions to bump, for code only these two apps use.
 - **Cost if wrong:** a submodule to fetch after cloning, and a pin to move when the shared code changes.
 
 ### Bots
